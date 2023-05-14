@@ -1,0 +1,17 @@
+{
+	"folders": [
+		{
+			"path": "."
+		}
+	],
+	"settings": {
+		"files.associations": {
+			"typeinfo": "cpp",
+			"fusion.h": "c",
+			"device.h": "c",
+			"io.h": "c",
+			"log.h": "c",
+			"kernel.h": "c"
+		}
+	}
+}

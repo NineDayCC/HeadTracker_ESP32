@@ -1,0 +1,365 @@
+#include "imu.h"
+
+#include <zephyr/kernel.h>
+#include <zephyr/device.h>
+#include <zephyr/drivers/sensor.h>
+#include <zephyr/logging/log.h>
+#include <stdio.h>
+
+#include "defines.h"
+#include "io.h"
+#include "Fusion/Fusion.h"
+//------------------------------------------------------------------------------
+// Temporary
+
+bool isUsingMagn = false;
+
+//------------------------------------------------------------------------------
+// Macro Modules
+
+LOG_MODULE_REGISTER(imuLog, LOG_LEVEL_DBG);
+K_MUTEX_DEFINE(imu_mutex);
+
+//------------------------------------------------------------------------------
+// Private Functions Declarations
+
+static const char *now_str(void);
+
+//------------------------------------------------------------------------------
+// Private Values
+
+FusionVector racc = {0}; // Raw values in m/s^2
+FusionVector rgyr = {0}; // Raw values in rad/s
+FusionVector rmag = {0}; // Raw values in guss
+FusionVector acc = {0};  // in m/s^2
+FusionVector gyr = {0};  // in rad/s
+FusionVector mag = {0};  // in guss
+FusionEuler euler = {0};
+FusionEuler eulerCentOffset = {0};
+
+static float tilt = 0, roll = 0, pan = 0;
+static float accxoff = 0, accyoff = 0, acczoff = 0;
+static float gyrxoff = 0, gyryoff = 0, gyrzoff = 0;
+static float magxoff = 0, magyoff = 0, magzoff = 0;
+
+/**
+ * @brief IMU thread runs when the signal is set.
+ */
+static struct k_poll_signal imuThreadRunSignal = K_POLL_SIGNAL_INITIALIZER(imuThreadRunSignal);
+struct k_poll_event imuRunEvents[1] = {
+    K_POLL_EVENT_INITIALIZER(K_POLL_TYPE_SIGNAL, K_POLL_MODE_NOTIFY_ONLY, &imuThreadRunSignal),
+};
+
+/**
+ * @brief Calculate thread runs when the signal is set.
+ */
+static struct k_poll_signal calculateThreadRunSignal =
+    K_POLL_SIGNAL_INITIALIZER(calculateThreadRunSignal);
+struct k_poll_event calculateRunEvents[1] = {
+    K_POLL_EVENT_INITIALIZER(K_POLL_TYPE_SIGNAL, K_POLL_MODE_NOTIFY_ONLY, &calculateThreadRunSignal),
+};
+
+//--------------------Function Defines--------------------
+
+/**
+ * @brief Initialises the IMU device.
+ */
+int imu_Init(void)
+{
+    const struct device *imu_Dev = DEVICE_DT_GET(DT_NODELABEL(mpu9250));
+    if (!device_is_ready(imu_Dev))
+    {
+        LOG_ERR("Device %s is not ready\n", imu_Dev->name);
+        return -ENODEV;
+    }
+    else
+    {
+        // Start reading the IMU sensors + fusion algorithm
+        k_poll_signal_raise(&imuThreadRunSignal, 1);
+    }
+
+    // Set IMU Offset. For Test
+    gyrxoff = 0.004608 - 0.001077;
+    gyryoff = -0.0253 + 0.00173;
+    gyrzoff = -0.002058 + 0.001139;
+
+    accxoff = 0;
+    accyoff = 0;
+    acczoff = 0;
+
+    return 0;
+}
+
+/**
+ * @brief IMU Reading Channel Thread.
+ */
+void imu_Thread(void)
+{
+    int64_t usImuElapse = 0;
+    while (1)
+    {
+        // Only run when imuThreadRunSignal is raised
+        k_poll(imuRunEvents, 1, K_FOREVER);
+
+        usImuElapse = micros64(); // Timestamp record
+        // printf("[%s] imu0\r\n", now_str()); // test
+        const struct device *imu_Dev = DEVICE_DT_GET(DT_NODELABEL(mpu9250));
+
+        k_mutex_lock(&imu_mutex, K_FOREVER);
+        if (!sensor_sample_fetch(imu_Dev))
+        {
+            struct sensor_value tmp[3];
+            uint8_t res = 0;
+
+            // 1) Read Raw IMU Data
+            // -- Accelerometer
+            res = sensor_channel_get(imu_Dev, SENSOR_CHAN_ACCEL_XYZ, &tmp);
+            if (!res)
+            {
+                racc.axis.x = (float)sensor_value_to_double(&tmp[0]);
+                racc.axis.y = (float)sensor_value_to_double(&tmp[1]);
+                racc.axis.z = (float)sensor_value_to_double(&tmp[2]);
+
+                acc.axis.x = racc.axis.x - accxoff;
+                acc.axis.y = racc.axis.y - accyoff;
+                acc.axis.z = racc.axis.z - acczoff;
+            }
+            else
+                LOG_ERR("Get accelerometer data failed!");
+
+            // -- Gyrometer
+            res = sensor_channel_get(imu_Dev, SENSOR_CHAN_GYRO_XYZ, &tmp);
+            if (!res)
+            {
+                rgyr.axis.x = (float)sensor_value_to_double(&tmp[0]);
+                rgyr.axis.y = (float)sensor_value_to_double(&tmp[1]);
+                rgyr.axis.z = (float)sensor_value_to_double(&tmp[2]);
+
+                gyr.axis.x = rgyr.axis.x - gyrxoff;
+                gyr.axis.y = rgyr.axis.y - gyryoff;
+                gyr.axis.z = rgyr.axis.z - gyrzoff;
+            }
+            else
+                LOG_ERR("Get gyrometer data failed!");
+
+            // -- Magnetometer
+            if (isUsingMagn)
+            {
+                res = sensor_channel_get(imu_Dev, SENSOR_CHAN_MAGN_XYZ, &tmp);
+                if (!res)
+                {
+                    rmag.axis.x = (float)sensor_value_to_double(&tmp[0]);
+                    rmag.axis.y = (float)sensor_value_to_double(&tmp[1]);
+                    rmag.axis.z = (float)sensor_value_to_double(&tmp[2]);
+
+                    mag.axis.x = rmag.axis.x - magxoff;
+                    mag.axis.y = rmag.axis.y - magyoff;
+                    mag.axis.z = rmag.axis.z - magzoff;
+                }
+                else
+                    LOG_ERR("Get gyrometer data failed!");
+            }
+            else
+            {
+                mag.axis.x = 0;
+                mag.axis.y = 0;
+                mag.axis.z = 0;
+            }
+
+            // 3) Apply Rotation
+        }
+        else
+        {
+            LOG_ERR("Get IMU data failed!");
+        }
+        k_mutex_unlock(&imu_mutex);
+
+        // printf("\r\n\r\n[%s]\r\n", now_str());                               // test
+        // printf("rgyr: %f,%f,%f\r\n", rgyr.axis.x, rgyr.axis.y, rgyr.axis.z); // test
+        // printf("racc: %f,%f,%f\r\n", racc.axis.x, racc.axis.y, racc.axis.z); // test
+        // printf("gyr0: %f,%f,%f\r\n", gyr.axis.x, gyr.axis.y, gyr.axis.z);    // test
+        // printf("acc0: %f,%f,%f\r\n", acc.axis.x, acc.axis.y, acc.axis.z);    // test
+
+        // // Start doing the other calculations
+        // printf("[%s] imu1\r\n", now_str()); // test
+        k_poll_signal_raise(&calculateThreadRunSignal, 1);
+
+        // Adjust sleep for a more accurate period
+        usImuElapse = micros64() - usImuElapse;
+        // printf("[%s] %lld\r\n", now_str(), usImuElapse); // test
+        // Took a long time. Will crash if sleep is too short
+        if (IMU_PERIOD - usImuElapse < IMU_PERIOD * 0.7)
+        {
+            k_usleep(IMU_PERIOD);
+        }
+        else
+        {
+            k_usleep(IMU_PERIOD - usImuElapse);
+        }
+    }
+}
+
+/**
+ * @brief Calculations and Main Channel Thread.
+ */
+void calculate_Thread(void)
+{
+    // Define calibration (replace with actual calibration data if available)
+    const FusionMatrix gyroscopeMisalignment = {1.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 1.0f};
+    const FusionVector gyroscopeSensitivity = {1.0f, 1.0f, 1.0f};
+    const FusionVector gyroscopeOffset = {0.0f, 0.0f, 0.0f};
+    const FusionMatrix accelerometerMisalignment = {1.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 1.0f};
+    const FusionVector accelerometerSensitivity = {1.0f, 1.0f, 1.0f};
+    const FusionVector accelerometerOffset = {0.0f, 0.0f, 0.0f};
+    const FusionMatrix softIronMatrix = {1.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 1.0f};
+    const FusionVector hardIronOffset = {0.0f, 0.0f, 0.0f};
+
+    // Initialise algorithms
+    FusionOffset offset;
+    FusionAhrs ahrs;
+
+    FusionOffsetInitialise(&offset, SAMPLE_RATE);
+    FusionAhrsInitialise(&ahrs);
+
+    // Set AHRS algorithm settings
+    const FusionAhrsSettings settings = {
+        .convention = FusionConventionNwu,
+        .gain = 0.5f,
+        .accelerationRejection = 10.0f,
+        .magneticRejection = 20.0f,
+        .rejectionTimeout = 5 * SAMPLE_RATE, /* 5 seconds */
+    };
+    FusionAhrsSetSettings(&ahrs, &settings);
+
+    // This loop should repeat each time new gyroscope data is available
+    while (true)
+    {
+        // printf("[%s] cal0\r\n", now_str()); // test
+
+        k_poll(calculateRunEvents, 1, K_FOREVER);
+
+        // Acquire latest sensor data
+        const int64_t timestamp = micros64();            // replace this with actual gyroscope timestamp
+        FusionVector gyroscope = {0.0f, 0.0f, 0.0f};     // replace this with actual gyroscope data in degrees/s
+        FusionVector accelerometer = {0.0f, 0.0f, 1.0f}; // replace this with actual accelerometer data in g
+        FusionVector magnetometer = {1.0f, 0.0f, 0.0f};  // replace this with actual magnetometer data in arbitrary units
+
+        // printf("gyr1: %f,%f,%f\r\n", gyr.axis.x, gyr.axis.y, gyr.axis.z); // test
+        // printf("acc1: %f,%f,%f\r\n", acc.axis.x, acc.axis.y, acc.axis.z); // test
+
+        // Use a mutex so sensor data can't be updated part way
+        k_mutex_lock(&imu_mutex, K_FOREVER);
+        gyroscope.axis.x = rad_to_degrees(gyr.axis.x);
+        gyroscope.axis.y = rad_to_degrees(gyr.axis.y);
+        gyroscope.axis.z = rad_to_degrees(gyr.axis.z);
+
+        accelerometer.axis.x = ms2_to_g(acc.axis.x);
+        accelerometer.axis.y = ms2_to_g(acc.axis.y);
+        accelerometer.axis.z = ms2_to_g(acc.axis.z);
+
+        // printf("gyr2: %f,%f,%f\r\n", gyroscope.axis.x, gyroscope.axis.y, gyroscope.axis.z);             // test
+        // printf("acc2: %f,%f,%f\r\n", accelerometer.axis.x, accelerometer.axis.y, accelerometer.axis.z); // test
+
+        if (isUsingMagn)
+        {
+            magnetometer.axis.x = mag.axis.x;
+            magnetometer.axis.y = mag.axis.y;
+            magnetometer.axis.z = mag.axis.z;
+
+            magnetometer = FusionCalibrationMagnetic(magnetometer, softIronMatrix, hardIronOffset);
+        }
+        k_mutex_unlock(&imu_mutex);
+
+        // Apply calibration
+        gyroscope = FusionCalibrationInertial(gyroscope, gyroscopeMisalignment, gyroscopeSensitivity, gyroscopeOffset);
+        accelerometer = FusionCalibrationInertial(accelerometer, accelerometerMisalignment, accelerometerSensitivity, accelerometerOffset);
+
+        // Update gyroscope offset correction algorithm
+        gyroscope = FusionOffsetUpdate(&offset, gyroscope);
+
+        // Calculate delta time (in seconds) to account for gyroscope sample clock error
+        static int64_t previousTimestamp;
+        const float deltaTime = (float)(timestamp - previousTimestamp) / (float)USEC_PER_SEC;
+        previousTimestamp = timestamp;
+
+        // Update gyroscope AHRS algorithm
+        if (isUsingMagn)
+            FusionAhrsUpdate(&ahrs, gyroscope, accelerometer, magnetometer, deltaTime);
+        else
+            FusionAhrsUpdateNoMagnetometer(&ahrs, gyroscope, accelerometer, deltaTime);
+
+        // Print algorithm outputs
+        euler = FusionQuaternionToEuler(FusionAhrsGetQuaternion(&ahrs));
+        const FusionVector earth = FusionAhrsGetEarthAcceleration(&ahrs);
+
+        // printf("Roll %0.1f, Pitch %0.1f, Yaw %0.1f\r\n"
+        //        "Ax %f, Ay %f, Az %f\r\n"
+        //        "Gx %f, Gy %f, Gz %f\r\n"
+        //        "Mx %f, My %f, Mz %f\r\n",
+        //        euler.angle.roll, euler.angle.pitch, euler.angle.yaw,
+        //        accelerometer.axis.x, accelerometer.axis.y, accelerometer.axis.z,
+        //        gyroscope.axis.x, gyroscope.axis.y, gyroscope.axis.z,
+        //        magnetometer.axis.x, magnetometer.axis.y, magnetometer.axis.z);
+
+        // printf("[%s]:\n"
+        //        "accel %f %f %f m/s/s\n"
+        //        "gyro  %f %f %f rad/s\n"
+        //        "magn  %f %f %f gauss\r\n",
+        //        now_str(),
+        //        accx, accy, accz,
+        //        gyrx, gyry, gyrz,
+        //        magx, magy, magz);
+
+        if (wasButtonPressed())
+        {
+            eulerCentOffset.angle.pitch = euler.angle.pitch;
+            eulerCentOffset.angle.roll = euler.angle.roll;
+            eulerCentOffset.angle.yaw = euler.angle.yaw;
+        }
+
+        printf("%0.1f,%0.1f,%0.1f\r\n", euler.angle.roll - eulerCentOffset.angle.roll,
+               euler.angle.pitch - eulerCentOffset.angle.pitch,
+               euler.angle.yaw - eulerCentOffset.angle.yaw); // test
+        // printf("%f,%f,%f\r\n", racc.axis.x, racc.axis.y, racc.axis.z); // test
+        // printf("%f,%f,%f\r\n", gyr.axis.x, gyr.axis.y, gyr.axis.z); // test
+
+        k_poll_signal_reset(&calculateThreadRunSignal);
+        // printf("[%s] cal1\r\n", now_str()); // test
+
+        // // Adjust sleep for a more accurate period
+        // usImuElapse = micros64() - usImuElapse;
+        // // Took a long time. Will crash if sleep is too short
+        // if (CALCULATE_PERIOD - usImuElapse < CALCULATE_PERIOD * 0.7)
+        // {
+        //     k_usleep(CALCULATE_PERIOD);
+        // }
+        // else
+        // {
+        //     k_usleep(CALCULATE_PERIOD - usImuElapse);
+        // }
+    }
+}
+
+static const char *now_str(void)
+{
+    static char buf[24]; /* ...HH:MM:SS.MMM,UUU */
+    uint64_t now = micros64();
+    uint16_t us = now % USEC_PER_MSEC;
+    uint16_t ms;
+    uint8_t s;
+    uint8_t min;
+    uint32_t h;
+
+    now /= USEC_PER_MSEC;
+    ms = now % MSEC_PER_SEC;
+    now /= MSEC_PER_SEC;
+    s = now % 60U;
+    now /= 60U;
+    min = now % 60U;
+    now /= 60U;
+    h = now;
+
+    snprintf(buf, sizeof(buf), "%u:%02u:%02u.%03u,%03u",
+             h, min, s, ms, us);
+    return buf;
+}
