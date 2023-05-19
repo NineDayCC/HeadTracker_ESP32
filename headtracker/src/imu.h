@@ -4,9 +4,8 @@
 //------------------------------------------------------------------------------
 // Includes
 
+#include <zephyr/kernel.h>
 #include <math.h> // M_PI, sqrtf, atan2f, asinf
-#include <stdbool.h>
-#include <stdint.h>
 
 #include "defines.h"
 

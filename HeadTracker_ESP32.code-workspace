@@ -11,7 +11,21 @@
 			"device.h": "c",
 			"io.h": "c",
 			"log.h": "c",
-			"kernel.h": "c"
+			"kernel.h": "c",
+			"trackersettings.h": "c",
+			"stdint.h": "c",
+			"stdio.h": "c",
+			"kernel_includes.h": "c",
+			"array": "c",
+			"*.tcc": "c",
+			"memory": "c",
+			"istream": "c",
+			"tuple": "c",
+			"utility": "c",
+			"bitset": "c",
+			"string_view": "c",
+			"initializer_list": "c",
+			"regex": "c"
 		}
 	}
 }

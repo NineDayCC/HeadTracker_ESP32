@@ -7,7 +7,7 @@
 #endif
 #define M_G 9.806650
 
-#define SAMPLE_RATE (200) // IMU sample rate, replace this with actual sample rate(Hz)
+#define SAMPLE_RATE (143) // IMU sample rate, replace this with actual sample rate(Hz)
 
 // Thread Periods
 #define IO_PERIOD 25           // (ms) IO Period (button reading)
@@ -15,7 +15,7 @@
 // #define SERIAL_PERIOD 30       // (ms) Serial processing
 // #define DATA_PERIOD 2          // Multiplier of Serial Period (Live Data Transmission Speed)
 #define IMU_PERIOD 4000 // (us) Sensor Reads
-// #define CALCULATE_PERIOD 7000 // (us) Channel Calculations
+#define CALCULATE_PERIOD IMU_PERIOD // (us) Channel Calculations
 // #define UART_PERIOD 4000       // (us) Update rate of UART
 // #define PWM_FREQUENCY 50       // (ms) PWM Period
 // #define PAUSE_BEFORE_FLASH 60  // (ms) Time to pause all threads before Flash writing

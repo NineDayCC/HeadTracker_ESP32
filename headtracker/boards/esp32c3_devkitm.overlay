@@ -1,25 +1,38 @@
 / {
-	gpio_keys {
-		compatible = "gpio-keys";
-		center_button: center_button {
-			label = "Center button";
-			gpios = <&gpio0 9 (GPIO_PULL_UP | GPIO_ACTIVE_LOW)>;
-		};
-	};
+    gpio_keys {
+        compatible = "gpio-keys";
+        center_button: center_button {
+            label = "Center button";
+            gpios = <&gpio0 9 (GPIO_PULL_UP | GPIO_ACTIVE_LOW)>;
+        };
+    };
 };
 
 &i2c0 {
-    mpu9250: mpu9250@68 {
-        compatible = "invensense,mpu9250";
-        reg = <0x68>;
-        status = "okay";
-        gyro-sr-div = <(1000/140-1)>;   //(1000/rate-1)
-        gyro-dlpf = <41>;
-        gyro-fs = <2000>;
-        accel-fs = <2>;
-        accel-dlpf = "10.2";
-    };
+        imu_label: mpu9250@68 {
+                compatible = "invensense,mpu9250";
+                reg = <0x68>;
+                status = "okay";
+                gyro-sr-div = <(1000/140-1)>;   //(1000/rate-1)
+                gyro-dlpf = <41>;
+                gyro-fs = <2000>;
+                accel-fs = <2>;
+                accel-dlpf = "10.2";
+        };
 };
+
+// &spi2 {
+//     imu_label: icm42688@0 {
+//         compatible = "invensense,icm42688";
+//         spi-max-frequency = <24000000>;
+//         reg = <0>;
+//         label = "icm42688";
+//         accel-fs = <2>;
+//         gyro-fs = <2000>;
+//         accel-hz = <200>;
+//         gyro-hz = <200>;
+//     };
+// };
 
 /* Flash Layout
  *    Bootloader    0x00000 - 0x10000 (Size 0x10000 64Kb)

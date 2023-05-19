@@ -5,14 +5,15 @@
 #include <zephyr/drivers/sensor.h>
 #include <zephyr/logging/log.h>
 #include <stdio.h>
+#include <string.h>
 
 #include "defines.h"
 #include "io.h"
 #include "Fusion/Fusion.h"
+#include "trackersettings.h"
+
 //------------------------------------------------------------------------------
 // Temporary
-
-bool isUsingMagn = false;
 
 //------------------------------------------------------------------------------
 // Macro Modules
@@ -22,25 +23,24 @@ K_MUTEX_DEFINE(imu_mutex);
 
 //------------------------------------------------------------------------------
 // Private Functions Declarations
-
+float normalize(const float value, const float start, const float end);
 static const char *now_str(void);
 
 //------------------------------------------------------------------------------
 // Private Values
 
-FusionVector racc = {0}; // Raw values in m/s^2
-FusionVector rgyr = {0}; // Raw values in rad/s
-FusionVector rmag = {0}; // Raw values in guss
-FusionVector acc = {0};  // in m/s^2
-FusionVector gyr = {0};  // in rad/s
-FusionVector mag = {0};  // in guss
-FusionEuler euler = {0};
-FusionEuler eulerCentOffset = {0};
-
+static FusionVector racc = {0}; // Raw values in m/s^2
+static FusionVector rgyr = {0}; // Raw values in rad/s
+static FusionVector rmag = {0}; // Raw values in guss
+static FusionVector acc = {0};  // in m/s^2
+static FusionVector gyr = {0};  // in rad/s
+static FusionVector mag = {0};  // in guss
 static float tilt = 0, roll = 0, pan = 0;
-static float accxoff = 0, accyoff = 0, acczoff = 0;
-static float gyrxoff = 0, gyryoff = 0, gyrzoff = 0;
-static float magxoff = 0, magyoff = 0, magzoff = 0;
+static float rolloffset = 0, panoffset = 0, tiltoffset = 0; // Center offset, used when pressed center button
+
+// static float tilt = 0, roll = 0, pan = 0;
+// static float accxoff = 0, accyoff = 0, acczoff = 0;
+// static float gyrxoff = 0, gyryoff = 0, gyrzoff = 0;
 
 /**
  * @brief IMU thread runs when the signal is set.
@@ -66,7 +66,7 @@ struct k_poll_event calculateRunEvents[1] = {
  */
 int imu_Init(void)
 {
-    const struct device *imu_Dev = DEVICE_DT_GET(DT_NODELABEL(mpu9250));
+    const struct device *imu_Dev = DEVICE_DT_GET(DT_NODELABEL(imu_label));
     if (!device_is_ready(imu_Dev))
     {
         LOG_ERR("Device %s is not ready\n", imu_Dev->name);
@@ -79,13 +79,13 @@ int imu_Init(void)
     }
 
     // Set IMU Offset. For Test
-    gyrxoff = 0.004608 - 0.001077;
-    gyryoff = -0.0253 + 0.00173;
-    gyrzoff = -0.002058 + 0.001139;
+    // gyrxoff = 0.004608 - 0.001077;
+    // gyryoff = -0.0253 + 0.00173;
+    // gyrzoff = -0.002058 + 0.001139;
 
-    accxoff = 0;
-    accyoff = 0;
-    acczoff = 0;
+    // accxoff = 0;
+    // accyoff = 0;
+    // acczoff = 0;
 
     return 0;
 }
@@ -103,7 +103,7 @@ void imu_Thread(void)
 
         usImuElapse = micros64(); // Timestamp record
         // printf("[%s] imu0\r\n", now_str()); // test
-        const struct device *imu_Dev = DEVICE_DT_GET(DT_NODELABEL(mpu9250));
+        const struct device *imu_Dev = DEVICE_DT_GET(DT_NODELABEL(imu_label));
 
         k_mutex_lock(&imu_mutex, K_FOREVER);
         if (!sensor_sample_fetch(imu_Dev))
@@ -120,9 +120,11 @@ void imu_Thread(void)
                 racc.axis.y = (float)sensor_value_to_double(&tmp[1]);
                 racc.axis.z = (float)sensor_value_to_double(&tmp[2]);
 
-                acc.axis.x = racc.axis.x - accxoff;
-                acc.axis.y = racc.axis.y - accyoff;
-                acc.axis.z = racc.axis.z - acczoff;
+                memcpy(acc.array, racc.array, sizeof(acc));
+
+                // acc.axis.x = racc.axis.x - accxoff;
+                // acc.axis.y = racc.axis.y - accyoff;
+                // acc.axis.z = racc.axis.z - acczoff;
             }
             else
                 LOG_ERR("Get accelerometer data failed!");
@@ -135,15 +137,17 @@ void imu_Thread(void)
                 rgyr.axis.y = (float)sensor_value_to_double(&tmp[1]);
                 rgyr.axis.z = (float)sensor_value_to_double(&tmp[2]);
 
-                gyr.axis.x = rgyr.axis.x - gyrxoff;
-                gyr.axis.y = rgyr.axis.y - gyryoff;
-                gyr.axis.z = rgyr.axis.z - gyrzoff;
+                memcpy(gyr.array, rgyr.array, sizeof(gyr));
+
+                // gyr.axis.x = rgyr.axis.x - gyrxoff;
+                // gyr.axis.y = rgyr.axis.y - gyryoff;
+                // gyr.axis.z = rgyr.axis.z - gyrzoff;
             }
             else
                 LOG_ERR("Get gyrometer data failed!");
 
             // -- Magnetometer
-            if (isUsingMagn)
+            if (isUsingMagn())
             {
                 res = sensor_channel_get(imu_Dev, SENSOR_CHAN_MAGN_XYZ, &tmp);
                 if (!res)
@@ -151,10 +155,6 @@ void imu_Thread(void)
                     rmag.axis.x = (float)sensor_value_to_double(&tmp[0]);
                     rmag.axis.y = (float)sensor_value_to_double(&tmp[1]);
                     rmag.axis.z = (float)sensor_value_to_double(&tmp[2]);
-
-                    mag.axis.x = rmag.axis.x - magxoff;
-                    mag.axis.y = rmag.axis.y - magyoff;
-                    mag.axis.z = rmag.axis.z - magzoff;
                 }
                 else
                     LOG_ERR("Get gyrometer data failed!");
@@ -188,7 +188,7 @@ void imu_Thread(void)
         usImuElapse = micros64() - usImuElapse;
         // printf("[%s] %lld\r\n", now_str(), usImuElapse); // test
         // Took a long time. Will crash if sleep is too short
-        if (IMU_PERIOD - usImuElapse < IMU_PERIOD * 0.7)
+        if (IMU_PERIOD - usImuElapse < IMU_PERIOD * 0.5)
         {
             k_usleep(IMU_PERIOD);
         }
@@ -207,12 +207,19 @@ void calculate_Thread(void)
     // Define calibration (replace with actual calibration data if available)
     const FusionMatrix gyroscopeMisalignment = {1.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 1.0f};
     const FusionVector gyroscopeSensitivity = {1.0f, 1.0f, 1.0f};
-    const FusionVector gyroscopeOffset = {0.0f, 0.0f, 0.0f};
     const FusionMatrix accelerometerMisalignment = {1.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 1.0f};
     const FusionVector accelerometerSensitivity = {1.0f, 1.0f, 1.0f};
-    const FusionVector accelerometerOffset = {0.0f, 0.0f, 0.0f};
     const FusionMatrix softIronMatrix = {1.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 1.0f};
     const FusionVector hardIronOffset = {0.0f, 0.0f, 0.0f};
+
+    FusionVector gyroscopeOffset;
+    FusionVector accelerometerOffset;
+
+    memcpy(accelerometerOffset.array, getAccOffset(), sizeof(accelerometerOffset));
+    memcpy(gyroscopeOffset.array, getGyrOffset(), sizeof(gyroscopeOffset));
+
+    printf("accelerometerOffset: %f %f %f\r\n", accelerometerOffset.array[0], accelerometerOffset.array[1], accelerometerOffset.array[2]);
+    printf("gyroscopeOffset: %f %f %f\r\n", gyroscopeOffset.array[0], gyroscopeOffset.array[1], gyroscopeOffset.array[2]);
 
     // Initialise algorithms
     FusionOffset offset;
@@ -244,9 +251,6 @@ void calculate_Thread(void)
         FusionVector accelerometer = {0.0f, 0.0f, 1.0f}; // replace this with actual accelerometer data in g
         FusionVector magnetometer = {1.0f, 0.0f, 0.0f};  // replace this with actual magnetometer data in arbitrary units
 
-        // printf("gyr1: %f,%f,%f\r\n", gyr.axis.x, gyr.axis.y, gyr.axis.z); // test
-        // printf("acc1: %f,%f,%f\r\n", acc.axis.x, acc.axis.y, acc.axis.z); // test
-
         // Use a mutex so sensor data can't be updated part way
         k_mutex_lock(&imu_mutex, K_FOREVER);
         gyroscope.axis.x = rad_to_degrees(gyr.axis.x);
@@ -257,10 +261,7 @@ void calculate_Thread(void)
         accelerometer.axis.y = ms2_to_g(acc.axis.y);
         accelerometer.axis.z = ms2_to_g(acc.axis.z);
 
-        // printf("gyr2: %f,%f,%f\r\n", gyroscope.axis.x, gyroscope.axis.y, gyroscope.axis.z);             // test
-        // printf("acc2: %f,%f,%f\r\n", accelerometer.axis.x, accelerometer.axis.y, accelerometer.axis.z); // test
-
-        if (isUsingMagn)
+        if (isUsingMagn())
         {
             magnetometer.axis.x = mag.axis.x;
             magnetometer.axis.y = mag.axis.y;
@@ -283,14 +284,16 @@ void calculate_Thread(void)
         previousTimestamp = timestamp;
 
         // Update gyroscope AHRS algorithm
-        if (isUsingMagn)
+        if (isUsingMagn())
             FusionAhrsUpdate(&ahrs, gyroscope, accelerometer, magnetometer, deltaTime);
         else
             FusionAhrsUpdateNoMagnetometer(&ahrs, gyroscope, accelerometer, deltaTime);
 
-        // Print algorithm outputs
-        euler = FusionQuaternionToEuler(FusionAhrsGetQuaternion(&ahrs));
-        const FusionVector earth = FusionAhrsGetEarthAcceleration(&ahrs);
+        // Convert pitch/roll/yaw to roll/tilt/pan
+        const FusionEuler euler = FusionQuaternionToEuler(FusionAhrsGetQuaternion(&ahrs));
+        tilt = euler.angle.roll;
+        roll = euler.angle.pitch;
+        pan = euler.angle.yaw;
 
         // printf("Roll %0.1f, Pitch %0.1f, Yaw %0.1f\r\n"
         //        "Ax %f, Ay %f, Az %f\r\n"
@@ -310,16 +313,107 @@ void calculate_Thread(void)
         //        gyrx, gyry, gyrz,
         //        magx, magy, magz);
 
+        // Zero button was pressed, adjust all values to zero
+        bool butdnw = false;
         if (wasButtonPressed())
         {
-            eulerCentOffset.angle.pitch = euler.angle.pitch;
-            eulerCentOffset.angle.roll = euler.angle.roll;
-            eulerCentOffset.angle.yaw = euler.angle.yaw;
+            rolloffset = roll;
+            panoffset = pan;
+            tiltoffset = tilt;
+            butdnw = true;
         }
 
-        printf("%0.1f,%0.1f,%0.1f\r\n", euler.angle.roll - eulerCentOffset.angle.roll,
-               euler.angle.pitch - eulerCentOffset.angle.pitch,
-               euler.angle.yaw - eulerCentOffset.angle.yaw); // test
+        // Tilt output
+        float tiltout =
+            (tilt - tiltoffset) * getTiltGain() * (isTiltReversed() ? -1.0 : 1.0);
+        uint16_t tiltout_ui = tiltout + getTiltCnt();                  // Apply Center Offset
+        tiltout_ui = MAX(MIN(tiltout_ui, getTiltMax()), getTiltMin()); // Limit Output
+
+        // Roll output
+        float rollout =
+            (roll - rolloffset) * getRollGain() * (isRollReversed() ? -1.0 : 1.0);
+        uint16_t rollout_ui = rollout + getRollCnt();                  // Apply Center Offset
+        rollout_ui = MAX(MIN(rollout_ui, getRollMax()), getRollMin()); // Limit Output
+
+        // Pan output, Normalize to +/- 180 Degrees
+        float panout = normalize((pan - panoffset), -180, 180) * getPanGain() *
+                       (isPanReversed() ? -1.0 : 1.0);
+        uint16_t panout_ui = panout + getPanCnt();                 // Apply Center Offset
+        panout_ui = MAX(MIN(panout_ui, getPanMax()), getPanMin()); // Limit Output
+
+        // // Reset on tilt
+        // static bool doresetontilt = false;
+        // if (trkset.getRstOnTlt())
+        // {
+        //     static bool tiltpeak = false;
+        //     static float resettime = 0.0f;
+        //     enum
+        //     {
+        //         HITNONE,
+        //         HITMIN,
+        //         HITMAX,
+        //     };
+        //     static int minmax = HITNONE;
+        //     if (rollout_ui == trkset.getRll_Max())
+        //     {
+        //         if (tiltpeak == false && minmax == HITNONE)
+        //         {
+        //             tiltpeak = true;
+        //             minmax = HITMAX;
+        //         }
+        //         else if (minmax == HITMIN)
+        //         {
+        //             minmax = HITNONE;
+        //             tiltpeak = false;
+        //             doresetontilt = true;
+        //         }
+        //     }
+        //     else if (rollout_ui == trkset.getRll_Min())
+        //     {
+        //         if (tiltpeak == false && minmax == HITNONE)
+        //         {
+        //             tiltpeak = true;
+        //             minmax = HITMIN;
+        //         }
+        //         else if (minmax == HITMAX)
+        //         {
+        //             minmax = HITNONE;
+        //             tiltpeak = false;
+        //             doresetontilt = true;
+        //         }
+        //     }
+
+        //     // If hit a max/min wait an amount of time and reset it
+        //     if (tiltpeak == true)
+        //     {
+        //         resettime += (float)CALCULATE_PERIOD / 1000000.0;
+        //         if (resettime > TrackerSettings::RESET_ON_TILT_TIME)
+        //         {
+        //             tiltpeak = false;
+        //             minmax = HITNONE;
+        //             resettime = 0;
+        //         }
+        //     }
+        // }
+
+        // // Do the actual reset after a delay
+        // static float timetoreset = 0;
+        // if (doresetontilt)
+        // {
+        //     if (timetoreset > TrackerSettings::RESET_ON_TILT_AFTER)
+        //     {
+        //         doresetontilt = false;
+        //         timetoreset = 0;
+        //         pressButton();
+        //     }
+        //     timetoreset += (float)CALCULATE_PERIOD / 1000000.0;
+        // }
+        int elipsed = micros64() - timestamp;
+        printf("[%d]:\r\n", elipsed);
+
+        printf("%0.1f,%0.1f,%0.1f\r\n", tilt - tiltoffset,
+               roll - rolloffset,
+               pan - panoffset); // test
         // printf("%f,%f,%f\r\n", racc.axis.x, racc.axis.y, racc.axis.z); // test
         // printf("%f,%f,%f\r\n", gyr.axis.x, gyr.axis.y, gyr.axis.z); // test
 
@@ -338,6 +432,18 @@ void calculate_Thread(void)
         //     k_usleep(CALCULATE_PERIOD - usImuElapse);
         // }
     }
+}
+
+// FROM https://stackoverflow.com/questions/1628386/normalise-orientation-between-0-and-360
+// Normalizes any number to an arbitrary range
+// by assuming the range wraps around when going below min or above max
+float normalize(const float value, const float start, const float end)
+{
+  const float width = end - start;          //
+  const float offsetValue = value - start;  // value relative to 0
+
+  return (offsetValue - (floor(offsetValue / width) * width)) + start;
+  // + start to reset back to start of original range
 }
 
 static const char *now_str(void)
