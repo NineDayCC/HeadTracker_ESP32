@@ -10,9 +10,9 @@ TrackerSettings trkset = {
     .v.useMagn = 0,     // Use Magnetometer. Y:1 N:0
     .v.useBlutooth = 0, // Open Blutooth. Y:1 N:0
 
-    .v.reserved0 = 0,
-    .v.reserved1 = 0,
-    .v.reserved2 = 0,
+    .v.rollEn = 1, // Enable roll ppm output
+    .v.tiltEn = 1, // Enable tile ppm output
+    .v.panEn = 1,  // Enable pan ppm output
 
     .v.rollMax = DEF_MAX_PWM, // pwm max
     .v.rollMin = DEF_MIN_PWM, // pwm min
@@ -29,11 +29,15 @@ TrackerSettings trkset = {
     .v.tiltCnt = PPM_CENTER, // Tilt pwm center
     .v.panCnt = PPM_CENTER,  // Pan pwm center
 
-    .v.rollChl = 0, // Roll channel
-    .v.tiltChl = 0, // Tilt channel
-    .v.panChl = 0,  // Pan channel
+    .v.rollChl = 6, // Roll channel
+    .v.tiltChl = 7, // Tilt channel
+    .v.panChl = 8,  // Pan channel
 
-    .v.accOffset = {0.0f, 0.0f, 0.0f},
-    .v.gyrOffset = {0.2023113974f, -1.350461523f, -0.052654821f},
+    .v.accOffset = {0.0f, 0.0f, 0.0f}, // in g
+    // .v.gyrOffset = {0.2023113974f, -1.350461523f, -0.052654821f}, // in degress
+    .v.gyrOffset = {0.0f, 0.0f, 0.0f}, // in degress
 
+    .v.ppmframe = 20000, // PPM Frame Length (us)
+    .v.ppmsync = 500,    // PPM Sync Pulse Length (us)
+    .v.ppmchcnt = 8,     // PPM channels to output
 };

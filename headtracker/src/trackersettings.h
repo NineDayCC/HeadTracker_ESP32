@@ -16,9 +16,9 @@ typedef union
         uint8_t useMagn : 1;     // Use Magnetometer. Y:1 N:0
         uint8_t useBlutooth : 1; // Open Blutooth. Y:1 N:0
 
-        uint8_t reserved0 : 1;
-        uint8_t reserved1 : 1;
-        uint8_t reserved2 : 1;
+        uint8_t rollEn : 1; // Enable roll ppm output
+        uint8_t tiltEn : 1; // Enable tilt ppm output
+        uint8_t panEn : 1;  // Enable pan ppm output
 
         uint16_t rollMax; // pwm max
         uint16_t rollMin; // pwm min
@@ -41,7 +41,15 @@ typedef union
 
         float accOffset[3]; // accelerometerOffset in g, X Y Z
         float gyrOffset[3]; // gyroscopeOffset in degrees/s, X Y Z
-    } v;                    // Value
+
+        uint8_t ppmininvert : 1;
+        uint8_t reserved : 7;
+
+        uint16_t ppmframe; // PPM Frame Length (us)
+        uint16_t ppmsync;    // PPM Sync Pulse Length (us)
+        uint8_t ppmchcnt;      // PPM channels to output
+
+    } v; // Value
 } TrackerSettings;
 
 extern TrackerSettings trkset;
@@ -51,6 +59,9 @@ inline bool isUsingBlutooth(void) { return trkset.v.useBlutooth; }
 inline bool isRollReversed(void) { return trkset.v.rollReverse; }
 inline bool isTiltReversed(void) { return trkset.v.tiltReverse; }
 inline bool isPanReversed(void) { return trkset.v.panReverse; }
+inline bool isRollEn(void) { return trkset.v.rollEn; }
+inline bool isTiltEn(void) { return trkset.v.tiltEn; }
+inline bool isPanEn(void) { return trkset.v.panEn; }
 
 inline uint16_t getRollMax(void) { return trkset.v.rollMax; }
 inline uint16_t getRollMin(void) { return trkset.v.rollMin; }
@@ -63,9 +74,9 @@ inline float getRollGain(void) { return trkset.v.rollGain; }
 inline float getTiltGain(void) { return trkset.v.tiltGain; }
 inline float getPanGain(void) { return trkset.v.panGain; }
 
-inline uint8_t getRollCnt(void) { return trkset.v.rollCnt; }
-inline uint8_t getTiltCnt(void) { return trkset.v.tiltCnt; }
-inline uint8_t getPanCnt(void) { return trkset.v.panCnt; }
+inline uint16_t getRollCnt(void) { return trkset.v.rollCnt; }
+inline uint16_t getTiltCnt(void) { return trkset.v.tiltCnt; }
+inline uint16_t getPanCnt(void) { return trkset.v.panCnt; }
 
 inline uint8_t getRollChl(void) { return trkset.v.rollChl; }
 inline uint8_t getTiltChl(void) { return trkset.v.tiltChl; }
@@ -73,6 +84,11 @@ inline uint8_t getPanChl(void) { return trkset.v.panChl; }
 
 inline float *getAccOffset(void) { return trkset.v.accOffset; }
 inline float *getGyrOffset(void) { return trkset.v.gyrOffset; }
+
+inline bool isPPMininvert(void) { return trkset.v.ppmininvert; }
+inline uint16_t getPPMframe(void) { return trkset.v.ppmframe; }
+inline uint16_t getPPMsync(void) { return trkset.v.ppmsync; }
+inline uint8_t getPPMchcnt(void) { return trkset.v.ppmchcnt; }
 
 #define FLOAT_MIN -1000000
 #define FLOAT_MAX 1000000
@@ -90,9 +106,6 @@ inline float *getGyrOffset(void) { return trkset.v.gyrOffset; }
 #define BT_CHANNELS 8
 #define MAX_CHANNELS 16
 #define AUX_FUNCTIONS 7
-#define TILT_REVERSE_BIT 1
-#define ROLL_REVERSE_BIT 2
-#define PAN_REVERSE_BIT 4
 #define SBUS_CENTER 992
 #define SBUS_SCALE 1.6
 #define RESET_ON_TILT_TIME 1.5
@@ -100,6 +113,7 @@ inline float *getGyrOffset(void) { return trkset.v.gyrOffset; }
 #define RECENTER_PULSE_DURATION 0.5
 #define UART_ACTIVE_TIME 0.1
 #define PPM_MIN_FRAMESYNC 3000
+#define PPM_MIN_SYNC 500
 #define PPM_MIN_FRAME 6666
 #define PPM_MAX_FRAME 40000
 #define UART_MODE_OFF 0

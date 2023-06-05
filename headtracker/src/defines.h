@@ -7,7 +7,7 @@
 #endif
 #define M_G 9.806650
 
-#define SAMPLE_RATE (143) // IMU sample rate, replace this with actual sample rate(Hz)
+#define SAMPLE_RATE (200) // IMU sample rate, replace this with actual sample rate(Hz)
 
 // Thread Periods
 #define IO_PERIOD 25           // (ms) IO Period (button reading)

@@ -9,22 +9,22 @@
 
 #include "defines.h"
 #include "io.h"
+#include "ppm.h"
 #include "Fusion/Fusion.h"
 #include "trackersettings.h"
 
 //------------------------------------------------------------------------------
-// Temporary
+// Defines
+#define DT_IMU DT_NODELABEL(icm42688)
 
 //------------------------------------------------------------------------------
 // Macro Modules
-
 LOG_MODULE_REGISTER(imuLog, LOG_LEVEL_DBG);
 K_MUTEX_DEFINE(imu_mutex);
 
 //------------------------------------------------------------------------------
 // Private Functions Declarations
 float normalize(const float value, const float start, const float end);
-static const char *now_str(void);
 
 //------------------------------------------------------------------------------
 // Private Values
@@ -38,7 +38,8 @@ static FusionVector mag = {0};  // in guss
 static float tilt = 0, roll = 0, pan = 0;
 static float rolloffset = 0, panoffset = 0, tiltoffset = 0; // Center offset, used when pressed center button
 
-// static float tilt = 0, roll = 0, pan = 0;
+static uint16_t channel_data[MAX_CHANNELS] = {PPM_CENTER}; // Range 0-2500
+
 // static float accxoff = 0, accyoff = 0, acczoff = 0;
 // static float gyrxoff = 0, gyryoff = 0, gyrzoff = 0;
 
@@ -66,10 +67,10 @@ struct k_poll_event calculateRunEvents[1] = {
  */
 int imu_Init(void)
 {
-    const struct device *imu_Dev = DEVICE_DT_GET(DT_NODELABEL(imu_label));
+    const struct device *imu_Dev = DEVICE_DT_GET(DT_IMU);
     if (!device_is_ready(imu_Dev))
     {
-        LOG_ERR("Device %s is not ready\n", imu_Dev->name);
+        LOG_ERR("Device %s is not ready\r\n", imu_Dev->name);
         return -ENODEV;
     }
     else
@@ -103,7 +104,7 @@ void imu_Thread(void)
 
         usImuElapse = micros64(); // Timestamp record
         // printf("[%s] imu0\r\n", now_str()); // test
-        const struct device *imu_Dev = DEVICE_DT_GET(DT_NODELABEL(imu_label));
+        const struct device *imu_Dev = DEVICE_DT_GET(DT_IMU);
 
         k_mutex_lock(&imu_mutex, K_FOREVER);
         if (!sensor_sample_fetch(imu_Dev))
@@ -218,8 +219,8 @@ void calculate_Thread(void)
     memcpy(accelerometerOffset.array, getAccOffset(), sizeof(accelerometerOffset));
     memcpy(gyroscopeOffset.array, getGyrOffset(), sizeof(gyroscopeOffset));
 
-    printf("accelerometerOffset: %f %f %f\r\n", accelerometerOffset.array[0], accelerometerOffset.array[1], accelerometerOffset.array[2]);
-    printf("gyroscopeOffset: %f %f %f\r\n", gyroscopeOffset.array[0], gyroscopeOffset.array[1], gyroscopeOffset.array[2]);
+    // printf("accelerometerOffset: %f %f %f\r\n", accelerometerOffset.array[0], accelerometerOffset.array[1], accelerometerOffset.array[2]);
+    // printf("gyroscopeOffset: %f %f %f\r\n", gyroscopeOffset.array[0], gyroscopeOffset.array[1], gyroscopeOffset.array[2]);
 
     // Initialise algorithms
     FusionOffset offset;
@@ -260,6 +261,8 @@ void calculate_Thread(void)
         accelerometer.axis.x = ms2_to_g(acc.axis.x);
         accelerometer.axis.y = ms2_to_g(acc.axis.y);
         accelerometer.axis.z = ms2_to_g(acc.axis.z);
+        // printf("%f,%f,%f\r\n", gyroscope.axis.x, gyroscope.axis.y, gyroscope.axis.z); // test
+        // printf("%f,%f,%f\r\n", gyroscope.axis.x-gyroscopeOffset.axis.x, gyroscope.axis.y-gyroscopeOffset.axis.y, gyroscope.axis.z-gyroscopeOffset.axis.z); // test
 
         if (isUsingMagn())
         {
@@ -408,14 +411,49 @@ void calculate_Thread(void)
         //     }
         //     timetoreset += (float)CALCULATE_PERIOD / 1000000.0;
         // }
-        int elipsed = micros64() - timestamp;
-        printf("[%d]:\r\n", elipsed);
 
-        printf("%0.1f,%0.1f,%0.1f\r\n", tilt - tiltoffset,
-               roll - rolloffset,
-               pan - panoffset); // test
+        // Build PPM channel data
+        // Reset all channels to center
+        for (uint8_t i = 0; i < (sizeof(channel_data) / sizeof(channel_data[0])); i++)
+            channel_data[i] = PPM_CENTER;
+
+        // Set Tilt/Roll/Pan Channel Values
+        uint8_t tltch = getTiltChl();
+        uint8_t rllch = getRollChl();
+        uint8_t panch = getPanChl();
+        if (tltch > 0)
+            channel_data[tltch - 1] = isTiltEn() == true ? tiltout_ui : getTiltCnt();
+        if (rllch > 0)
+            channel_data[rllch - 1] = isRollEn() == true ? rollout_ui : getRollCnt();
+        if (panch > 0)
+            channel_data[panch - 1] = isPanEn() == true ? panout_ui : getPanCnt();
+
+        // 10) Set the PPM Outputs
+        // printf("%f,%f,%f\r\n", tiltout, rollout, panout); // test
+        // printf("%d,%d,%d\r\n", tiltout_ui, rollout_ui, panout_ui); // test
+        for (uint8_t i = 0; i < PpmOut_getChnCount(); i++)
+        {
+            uint16_t ppmout = channel_data[i];
+            if (ppmout == 0)
+                ppmout = PPM_CENTER;
+            // printf("%d  ", ppmout); //test
+            PpmOut_setChannel(i, ppmout);
+        }
+        buildChannels();
+
+        // printf("\r\n"); //test
+        int elipsed = micros64() - timestamp;
+        // printf("[%d]:\r\n", elipsed);
+
+        // printf("%0.1f,%0.1f,%0.1f\r\n", tilt - tiltoffset,
+        //        roll - rolloffset,
+        //        pan - panoffset); // test
         // printf("%f,%f,%f\r\n", racc.axis.x, racc.axis.y, racc.axis.z); // test
         // printf("%f,%f,%f\r\n", gyr.axis.x, gyr.axis.y, gyr.axis.z); // test
+        // printf("%f,%f,%f\r\n", gyroscope.axis.x, gyroscope.axis.y, gyroscope.axis.z); // test
+        // printf("%f,%f,%f\r\n", accelerometer.axis.x, accelerometer.axis.y, accelerometer.axis.z); // test
+
+        // printPPMdata(); // test
 
         k_poll_signal_reset(&calculateThreadRunSignal);
         // printf("[%s] cal1\r\n", now_str()); // test
@@ -439,14 +477,19 @@ void calculate_Thread(void)
 // by assuming the range wraps around when going below min or above max
 float normalize(const float value, const float start, const float end)
 {
-  const float width = end - start;          //
-  const float offsetValue = value - start;  // value relative to 0
+    const float width = end - start;         //
+    const float offsetValue = value - start; // value relative to 0
 
-  return (offsetValue - (floor(offsetValue / width) * width)) + start;
-  // + start to reset back to start of original range
+    return (offsetValue - (floor(offsetValue / width) * width)) + start;
+    // + start to reset back to start of original range
 }
 
-static const char *now_str(void)
+void getChannelData(uint16_t *buffer)
+{
+    memcpy(buffer, channel_data, sizeof(channel_data));
+}
+
+const char *now_str(void)
 {
     static char buf[24]; /* ...HH:MM:SS.MMM,UUU */
     uint64_t now = micros64();

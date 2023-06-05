@@ -6,6 +6,7 @@
 void start(void)
 {
     io_Init();
+    PPMinit();
     imu_Init();
 }
 

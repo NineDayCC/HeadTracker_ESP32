@@ -25,7 +25,10 @@
 			"bitset": "c",
 			"string_view": "c",
 			"initializer_list": "c",
-			"regex": "c"
-		}
+			"regex": "c",
+			"algorithm": "c",
+			"ppm.h": "c"
+		},
+		"search.useIgnoreFiles": false
 	}
 }
