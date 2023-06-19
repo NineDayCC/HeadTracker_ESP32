@@ -2,6 +2,7 @@
 
 #include <zephyr/kernel.h>
 #include <zephyr/device.h>
+#include <zephyr/drivers/spi.h>
 #include <zephyr/drivers/sensor.h>
 #include <zephyr/logging/log.h>
 #include <stdio.h>
@@ -12,10 +13,12 @@
 #include "ppm.h"
 #include "Fusion/Fusion.h"
 #include "trackersettings.h"
+#include "icm42688.h"
 
 //------------------------------------------------------------------------------
 // Defines
-#define DT_IMU DT_NODELABEL(icm42688)
+#define DT_IMU DT_NODELABEL(spi2)
+const static struct device *imu_Dev = DEVICE_DT_GET(DT_IMU);
 
 //------------------------------------------------------------------------------
 // Macro Modules
@@ -29,11 +32,11 @@ float normalize(const float value, const float start, const float end);
 //------------------------------------------------------------------------------
 // Private Values
 
-static FusionVector racc = {0}; // Raw values in m/s^2
-static FusionVector rgyr = {0}; // Raw values in rad/s
+static FusionVector racc = {0}; // Raw values in g
+static FusionVector rgyr = {0}; // Raw values in d/s
 static FusionVector rmag = {0}; // Raw values in guss
-static FusionVector acc = {0};  // in m/s^2
-static FusionVector gyr = {0};  // in rad/s
+static FusionVector acc = {0};  // in g
+static FusionVector gyr = {0};  // in d/s
 static FusionVector mag = {0};  // in guss
 static float tilt = 0, roll = 0, pan = 0;
 static float rolloffset = 0, panoffset = 0, tiltoffset = 0; // Center offset, used when pressed center button
@@ -67,7 +70,6 @@ struct k_poll_event calculateRunEvents[1] = {
  */
 int imu_Init(void)
 {
-    const struct device *imu_Dev = DEVICE_DT_GET(DT_IMU);
     if (!device_is_ready(imu_Dev))
     {
         LOG_ERR("Device %s is not ready\r\n", imu_Dev->name);
@@ -76,6 +78,8 @@ int imu_Init(void)
     else
     {
         // Start reading the IMU sensors + fusion algorithm
+        icm42688_Init(imu_Dev);
+
         k_poll_signal_raise(&imuThreadRunSignal, 1);
     }
 
@@ -96,17 +100,37 @@ int imu_Init(void)
  */
 void imu_Thread(void)
 {
+    static int64_t sleepElapse = 0;
     int64_t usImuElapse = 0;
+
     while (1)
     {
         // Only run when imuThreadRunSignal is raised
         k_poll(imuRunEvents, 1, K_FOREVER);
 
-        usImuElapse = micros64(); // Timestamp record
-        // printf("[%s] imu0\r\n", now_str()); // test
-        const struct device *imu_Dev = DEVICE_DT_GET(DT_IMU);
+        usImuElapse = micros64();           // Timestamp record
 
         k_mutex_lock(&imu_mutex, K_FOREVER);
+#ifdef USE_ICM42688
+        // ICM42688--------------------------
+
+        // acc data size(2*3) + gyro data size(2*3)
+        uint8_t readings[12];
+        // 1) Read Raw IMU Data
+        if (!icm42688_AccGyr_fetch(imu_Dev, readings, sizeof(readings)))
+        {
+            icm42688_acc_get(&readings[0], racc.array);
+            icm42688_gyr_get(&readings[6], rgyr.array);
+
+            memcpy(acc.array, racc.array, sizeof(acc));
+            memcpy(gyr.array, rgyr.array, sizeof(gyr));
+        }
+        else
+        {
+            LOG_ERR("Get IMU data failed!");
+        }
+        // ICM42688--------------------------
+#else
         if (!sensor_sample_fetch(imu_Dev))
         {
             struct sensor_value tmp[3];
@@ -114,12 +138,16 @@ void imu_Thread(void)
 
             // 1) Read Raw IMU Data
             // -- Accelerometer
-            res = sensor_channel_get(imu_Dev, SENSOR_CHAN_ACCEL_XYZ, &tmp);
+            res = sensor_channel_get(imu_Dev, SENSOR_CHAN_ACCEL_XYZ, tmp);
             if (!res)
             {
                 racc.axis.x = (float)sensor_value_to_double(&tmp[0]);
                 racc.axis.y = (float)sensor_value_to_double(&tmp[1]);
                 racc.axis.z = (float)sensor_value_to_double(&tmp[2]);
+
+                racc.axis.x = ms2_to_g(racc.axis.x);
+                racc.axis.y = ms2_to_g(racc.axis.y);
+                racc.axis.z = ms2_to_g(racc.axis.z);
 
                 memcpy(acc.array, racc.array, sizeof(acc));
 
@@ -131,12 +159,16 @@ void imu_Thread(void)
                 LOG_ERR("Get accelerometer data failed!");
 
             // -- Gyrometer
-            res = sensor_channel_get(imu_Dev, SENSOR_CHAN_GYRO_XYZ, &tmp);
+            res = sensor_channel_get(imu_Dev, SENSOR_CHAN_GYRO_XYZ, tmp);
             if (!res)
             {
                 rgyr.axis.x = (float)sensor_value_to_double(&tmp[0]);
                 rgyr.axis.y = (float)sensor_value_to_double(&tmp[1]);
                 rgyr.axis.z = (float)sensor_value_to_double(&tmp[2]);
+
+                rgyr.axis.x = rad_to_degrees(rgyr.axis.x);
+                rgyr.axis.y = rad_to_degrees(rgyr.axis.y);
+                rgyr.axis.z = rad_to_degrees(rgyr.axis.z);
 
                 memcpy(gyr.array, rgyr.array, sizeof(gyr));
 
@@ -150,7 +182,7 @@ void imu_Thread(void)
             // -- Magnetometer
             if (isUsingMagn())
             {
-                res = sensor_channel_get(imu_Dev, SENSOR_CHAN_MAGN_XYZ, &tmp);
+                res = sensor_channel_get(imu_Dev, SENSOR_CHAN_MAGN_XYZ, tmp);
                 if (!res)
                 {
                     rmag.axis.x = (float)sensor_value_to_double(&tmp[0]);
@@ -173,7 +205,11 @@ void imu_Thread(void)
         {
             LOG_ERR("Get IMU data failed!");
         }
+#endif
+
         k_mutex_unlock(&imu_mutex);
+
+        // printf("%f,%f,%f\r\n", rgyr.axis.x, rgyr.axis.y, rgyr.axis.z); // test
 
         // printf("\r\n\r\n[%s]\r\n", now_str());                               // test
         // printf("rgyr: %f,%f,%f\r\n", rgyr.axis.x, rgyr.axis.y, rgyr.axis.z); // test
@@ -181,21 +217,22 @@ void imu_Thread(void)
         // printf("gyr0: %f,%f,%f\r\n", gyr.axis.x, gyr.axis.y, gyr.axis.z);    // test
         // printf("acc0: %f,%f,%f\r\n", acc.axis.x, acc.axis.y, acc.axis.z);    // test
 
-        // // Start doing the other calculations
-        // printf("[%s] imu1\r\n", now_str()); // test
+        // Start doing the other calculations
         k_poll_signal_raise(&calculateThreadRunSignal, 1);
 
         // Adjust sleep for a more accurate period
         usImuElapse = micros64() - usImuElapse;
-        // printf("[%s] %lld\r\n", now_str(), usImuElapse); // test
         // Took a long time. Will crash if sleep is too short
+        // printk("%lld\n",usImuElapse);
         if (IMU_PERIOD - usImuElapse < IMU_PERIOD * 0.5)
         {
             k_usleep(IMU_PERIOD);
         }
         else
         {
-            k_usleep(IMU_PERIOD - usImuElapse);
+            //k_usleep precision is actually 1ms, it will round up the time to sleep
+            //minus 1ms to fix the that
+            k_usleep(IMU_PERIOD - usImuElapse - 1000);
         }
     }
 }
@@ -242,8 +279,6 @@ void calculate_Thread(void)
     // This loop should repeat each time new gyroscope data is available
     while (true)
     {
-        // printf("[%s] cal0\r\n", now_str()); // test
-
         k_poll(calculateRunEvents, 1, K_FOREVER);
 
         // Acquire latest sensor data
@@ -254,22 +289,13 @@ void calculate_Thread(void)
 
         // Use a mutex so sensor data can't be updated part way
         k_mutex_lock(&imu_mutex, K_FOREVER);
-        gyroscope.axis.x = rad_to_degrees(gyr.axis.x);
-        gyroscope.axis.y = rad_to_degrees(gyr.axis.y);
-        gyroscope.axis.z = rad_to_degrees(gyr.axis.z);
 
-        accelerometer.axis.x = ms2_to_g(acc.axis.x);
-        accelerometer.axis.y = ms2_to_g(acc.axis.y);
-        accelerometer.axis.z = ms2_to_g(acc.axis.z);
-        // printf("%f,%f,%f\r\n", gyroscope.axis.x, gyroscope.axis.y, gyroscope.axis.z); // test
-        // printf("%f,%f,%f\r\n", gyroscope.axis.x-gyroscopeOffset.axis.x, gyroscope.axis.y-gyroscopeOffset.axis.y, gyroscope.axis.z-gyroscopeOffset.axis.z); // test
+        memcpy(accelerometer.array, acc.array, sizeof(accelerometer));
+        memcpy(gyroscope.array, gyr.array, sizeof(gyroscope));
 
         if (isUsingMagn())
         {
-            magnetometer.axis.x = mag.axis.x;
-            magnetometer.axis.y = mag.axis.y;
-            magnetometer.axis.z = mag.axis.z;
-
+            memcpy(magnetometer.array, mag.array, sizeof(magnetometer));
             magnetometer = FusionCalibrationMagnetic(magnetometer, softIronMatrix, hardIronOffset);
         }
         k_mutex_unlock(&imu_mutex);
@@ -282,7 +308,7 @@ void calculate_Thread(void)
         gyroscope = FusionOffsetUpdate(&offset, gyroscope);
 
         // Calculate delta time (in seconds) to account for gyroscope sample clock error
-        static int64_t previousTimestamp;
+        static int64_t previousTimestamp = 0;
         const float deltaTime = (float)(timestamp - previousTimestamp) / (float)USEC_PER_SEC;
         previousTimestamp = timestamp;
 
@@ -297,6 +323,8 @@ void calculate_Thread(void)
         tilt = euler.angle.roll;
         roll = euler.angle.pitch;
         pan = euler.angle.yaw;
+
+        printf("%f,%f,%f\r\n", euler.angle.roll, euler.angle.pitch, euler.angle.yaw); // test
 
         // printf("Roll %0.1f, Pitch %0.1f, Yaw %0.1f\r\n"
         //        "Ax %f, Ay %f, Az %f\r\n"

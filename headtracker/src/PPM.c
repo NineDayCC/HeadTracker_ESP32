@@ -156,7 +156,7 @@ int PPMinit(void)
 
     // Init counter data
     buildChannels();
-    printPPMdata(); // test
+    // printPPMdata(); // test
     memcpy(isrchsteps, chsteps, sizeof(isrchsteps[0]) * 35);
 
     // Start ppm counter
@@ -213,7 +213,6 @@ void buildChannels(void)
     curtime += sync;
     chsteps[i++] = curtime;
     chstepcnt = i;
-    printk("chstepcnt: %d\r\n", chstepcnt); // test
     // Now we know how long the train is. Try to make the entire frame == framelength
     // If possible it will add this to the frame sync pulse
 

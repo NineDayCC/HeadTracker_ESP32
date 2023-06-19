@@ -7,11 +7,24 @@
         };
         ppm_pin: ppm {
             label = "PPM Output";
-            gpios = <&gpio0 8 (GPIO_PULL_DOWN | GPIO_ACTIVE_HIGH)>;
+            gpios = <&gpio0 10 (GPIO_PULL_DOWN | GPIO_ACTIVE_HIGH)>;
         };
     };
 };
 
+&pinctrl{
+	spim2_imu: spim2_imu {
+		group1 {
+			pinmux = <SPIM2_MISO_GPIO4>,
+				 <SPIM2_SCLK_GPIO6>,
+				 <SPIM2_CSEL_GPIO7>;
+		};
+		group2 {
+			pinmux = <SPIM2_MOSI_GPIO5>;
+			output-low;
+		};
+	};
+};
 // &i2c0 {
     //     mpu9250: mpu9250@68 {
         //         compatible = "invensense,mpu9250";
@@ -26,16 +39,21 @@
 // };
 
 &spi2 {
-    icm42688: icm42688@0 {
-        compatible = "invensense,icm42688";
-        spi-max-frequency = <24000000>;
-        reg = <0>;
-        label = "icm42688";
-        accel-fs = <2>;
-        gyro-fs = <2000>;
-        // accel-hz = <200>;
-        // gyro-hz = <200>;
-    };
+	#address-cells = <1>;
+	#size-cells = <0>;
+	status = "okay";
+	pinctrl-0 = <&spim2_imu>;
+	pinctrl-names = "default";
+    // icm42688: icm42688@0 {
+    //     compatible = "invensense,icm42688";
+    //     spi-max-frequency = <3000000>;
+    //     reg = <0>;
+    //     label = "icm42688";
+    //     accel-fs = <2>;
+    //     gyro-fs = <2000>;
+    //     accel-hz = <1000>;
+    //     gyro-hz = <1000>;
+    // };
 };
 
 &timer0 {

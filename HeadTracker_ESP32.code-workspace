@@ -27,7 +27,11 @@
 			"initializer_list": "c",
 			"regex": "c",
 			"algorithm": "c",
-			"ppm.h": "c"
+			"ppm.h": "c",
+			"spi.h": "c",
+			"sensor.h": "c",
+			"*.inc": "c",
+			"util.h": "c"
 		},
 		"search.useIgnoreFiles": false
 	}
