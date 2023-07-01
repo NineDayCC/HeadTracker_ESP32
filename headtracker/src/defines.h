@@ -11,7 +11,7 @@
 
 // Thread Periods
 #define IO_PERIOD 25 // (ms) IO Period (button reading)
-// #define BT_PERIOD 12500        // (us) Bluetooth update rate
+#define BT_PERIOD 12500        // (us) Bluetooth update rate
 // #define SERIAL_PERIOD 30       // (ms) Serial processing
 // #define DATA_PERIOD 2          // Multiplier of Serial Period (Live Data Transmission Speed)
 #define IMU_PERIOD 5000             // (us) Sensor Reads
@@ -30,7 +30,7 @@
 #define IO_THREAD_PRIO PRIORITY_LOW
 // #define SERIAL_THREAD_PRIO PRIORITY_LOW
 // #define DATA_THREAD_PRIO PRIORITY_LOW
-// #define BT_THREAD_PRIO -15
+#define BT_THREAD_PRIO -15
 #define IMU_THREAD_PRIO PRIORITY_MED
 #define CALCULATE_THREAD_PRIO PRIORITY_HIGH
 // #define UARTRX_THREAD_PRIO PRIORITY_LOW - 2

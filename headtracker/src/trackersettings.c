@@ -40,4 +40,6 @@ TrackerSettings trkset = {
     .v.ppmframe = 20000, // PPM Frame Length (us)
     .v.ppmsync = 500,    // PPM Sync Pulse Length (us)
     .v.ppmchcnt = 8,     // PPM channels to output
+
+    .v.btmode = 1,      //0:off 1:output mode
 };

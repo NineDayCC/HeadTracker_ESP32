@@ -45,10 +45,11 @@ typedef union
         uint8_t ppmininvert : 1;
         uint8_t reserved : 7;
 
-        uint16_t ppmframe; // PPM Frame Length (us)
-        uint16_t ppmsync;    // PPM Sync Pulse Length (us)
-        uint8_t ppmchcnt;      // PPM channels to output
+        uint16_t ppmframe;  // PPM Frame Length (us)
+        uint16_t ppmsync;   // PPM Sync Pulse Length (us)
+        uint8_t ppmchcnt;   // PPM channels to output
 
+        uint8_t btmode; // Bluetooth mode 0:off 1:output mode
     } v; // Value
 } TrackerSettings;
 
@@ -89,6 +90,8 @@ inline bool isPPMininvert(void) { return trkset.v.ppmininvert; }
 inline uint16_t getPPMframe(void) { return trkset.v.ppmframe; }
 inline uint16_t getPPMsync(void) { return trkset.v.ppmsync; }
 inline uint8_t getPPMchcnt(void) { return trkset.v.ppmchcnt; }
+
+inline uint8_t getBtMode(void) { return trkset.v.btmode; }
 
 #define FLOAT_MIN -1000000
 #define FLOAT_MAX 1000000

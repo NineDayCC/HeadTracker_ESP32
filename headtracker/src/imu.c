@@ -11,6 +11,7 @@
 #include "defines.h"
 #include "io.h"
 #include "ppm.h"
+#include "bt.h"
 #include "Fusion/Fusion.h"
 #include "trackersettings.h"
 #include "icm42688.h"
@@ -324,7 +325,7 @@ void calculate_Thread(void)
         roll = euler.angle.pitch;
         pan = euler.angle.yaw;
 
-        printf("%f,%f,%f\r\n", euler.angle.roll, euler.angle.pitch, euler.angle.yaw); // test
+        // printf("%f,%f,%f\r\n", euler.angle.roll, euler.angle.pitch, euler.angle.yaw); // test
 
         // printf("Roll %0.1f, Pitch %0.1f, Yaw %0.1f\r\n"
         //        "Ax %f, Ay %f, Az %f\r\n"
@@ -468,7 +469,7 @@ void calculate_Thread(void)
             PpmOut_setChannel(i, ppmout);
         }
         buildChannels();
-
+        buildBtChannels(channel_data, BT_CHANNELS);
         // printf("\r\n"); //test
         int elipsed = micros64() - timestamp;
         // printf("[%d]:\r\n", elipsed);
