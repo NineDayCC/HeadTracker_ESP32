@@ -1,6 +1,7 @@
 #include "bt.h"
 
 #include <zephyr/kernel.h>
+#include <stdio.h>
 
 #include <zephyr/bluetooth/bluetooth.h>
 #include <zephyr/bluetooth/conn.h>
@@ -15,6 +16,8 @@
 // Defines
 #define DEVICE_NAME CONFIG_BT_DEVICE_NAME
 #define DEVICE_NAME_LEN (sizeof(DEVICE_NAME) - 1)
+#define BT_HEADTRACKER_UUID_VALUE 0x4EF0
+#define BT_PWM_UUID_VALUE 0x4EF1
 
 //------------------------------------------------------------------------------
 // Macro Modules
@@ -34,17 +37,17 @@ struct k_poll_event btRunEvents[1] = {
 struct bt_conn *conn;
 
 // Service UUID
-static struct bt_uuid_128 bt_service_uuid = BT_UUID_INIT_128(
-    BT_UUID_128_ENCODE(0xB3A0D50A, 0x67E5, 0x717D, 0xBA7B, 0x9786A82734E0));
+static struct bt_uuid_16 bt_service_uuid = BT_UUID_INIT_16(
+    BT_HEADTRACKER_UUID_VALUE);
 
 // UUID's
-struct bt_uuid_16 bt_pwm_uuid = BT_UUID_INIT_16(0x4EF0);
+struct bt_uuid_16 bt_pwm_uuid = BT_UUID_INIT_16(BT_PWM_UUID_VALUE);
 
 // Bluetooth advertisement data
 static const struct bt_data ad[] = {
     BT_DATA_BYTES(BT_DATA_FLAGS, (BT_LE_AD_GENERAL | BT_LE_AD_NO_BREDR)),
     BT_DATA(BT_DATA_NAME_COMPLETE, DEVICE_NAME, DEVICE_NAME_LEN),
-    BT_DATA_BYTES(BT_DATA_UUID16_SOME, BT_UUID_16_ENCODE(0x4EF0))};
+    BT_DATA_BYTES(BT_DATA_UUID16_SOME, BT_UUID_16_ENCODE(BT_HEADTRACKER_UUID_VALUE))};
 
 //--------------------Function Defines--------------------
 void printBtData(void);
@@ -81,6 +84,12 @@ static void connected(struct bt_conn *connected, uint8_t err)
         {
             conn = bt_conn_ref(connected);
         }
+
+        struct bt_conn_info info;
+        bt_conn_get_info(connected, &info);
+
+        LOG_INF("BT Connection Params Int:%d Lat:%d Timeout:%d", info.le.interval, info.le.latency,
+                info.le.timeout);
     }
 }
 
@@ -142,8 +151,11 @@ void BTHeadExecute()
     if (conn)
     {
         // Send Trainer Data
-
+        // int64_t uselepsed = micros64();
         bt_gatt_notify(NULL, &bt_srv.attrs[2], bt_pwm_value, sizeof(bt_pwm_value));
+        printBtData();
+        // uselepsed = micros64() - uselepsed;
+        // LOG_DBG("Notify cost: %lld", uselepsed);
     }
 }
 
@@ -177,7 +189,6 @@ void bt_Thread()
 
         usduration = micros64();
 
-        // printBtData();  //test
         BTHeadExecute();
 
         // Adjust sleep for a more accurate period
@@ -198,16 +209,19 @@ void buildBtChannels(uint16_t *channelData, uint8_t channels)
 {
     for (uint8_t i = 0; i < channels; i++)
     {
-        bt_pwm_value[i*2] = channelData[i] >> 8;
-        bt_pwm_value[i*2 + 1] = channelData[i] & 0xff;
+        bt_pwm_value[i * 2] = channelData[i] >> 8;
+        bt_pwm_value[i * 2 + 1] = channelData[i] & 0xff;
     }
 }
 
 void printBtData(void)
 {
-    for (uint8_t i = 0; i < sizeof(bt_pwm_value); i++)
+    uint16_t u16_val;
+    printf("[%s]", now_str());
+    for (uint8_t i = 0; i < BT_CHANNELS; i++)
     {
-        printf("%d  ",bt_pwm_value[i]);
+        u16_val = (bt_pwm_value[i * 2] << 8) | bt_pwm_value[i * 2 + 1];
+        printf("%d  ", u16_val);
     }
     printf("\r\n");
 }

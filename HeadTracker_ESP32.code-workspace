@@ -31,7 +31,11 @@
 			"spi.h": "c",
 			"sensor.h": "c",
 			"*.inc": "c",
-			"util.h": "c"
+			"util.h": "c",
+			"uuid.h": "c",
+			"bluetooth.h": "c",
+			"byteorder.h": "c",
+			"conn.h": "c"
 		},
 		"search.useIgnoreFiles": false
 	}

@@ -109,7 +109,7 @@ void imu_Thread(void)
         // Only run when imuThreadRunSignal is raised
         k_poll(imuRunEvents, 1, K_FOREVER);
 
-        usImuElapse = micros64();           // Timestamp record
+        usImuElapse = micros64(); // Timestamp record
 
         k_mutex_lock(&imu_mutex, K_FOREVER);
 #ifdef USE_ICM42688
@@ -231,8 +231,8 @@ void imu_Thread(void)
         }
         else
         {
-            //k_usleep precision is actually 1ms, it will round up the time to sleep
-            //minus 1ms to fix the that
+            // k_usleep precision is actually 1ms, it will round up the time to sleep
+            // minus 1ms to fix the that
             k_usleep(IMU_PERIOD - usImuElapse - 1000);
         }
     }
@@ -321,8 +321,8 @@ void calculate_Thread(void)
 
         // Convert pitch/roll/yaw to roll/tilt/pan
         const FusionEuler euler = FusionQuaternionToEuler(FusionAhrsGetQuaternion(&ahrs));
-        tilt = euler.angle.roll;
-        roll = euler.angle.pitch;
+        roll = euler.angle.roll;
+        tilt = euler.angle.pitch;
         pan = euler.angle.yaw;
 
         // printf("%f,%f,%f\r\n", euler.angle.roll, euler.angle.pitch, euler.angle.yaw); // test
@@ -336,15 +336,6 @@ void calculate_Thread(void)
         //        gyroscope.axis.x, gyroscope.axis.y, gyroscope.axis.z,
         //        magnetometer.axis.x, magnetometer.axis.y, magnetometer.axis.z);
 
-        // printf("[%s]:\n"
-        //        "accel %f %f %f m/s/s\n"
-        //        "gyro  %f %f %f rad/s\n"
-        //        "magn  %f %f %f gauss\r\n",
-        //        now_str(),
-        //        accx, accy, accz,
-        //        gyrx, gyry, gyrz,
-        //        magx, magy, magz);
-
         // Zero button was pressed, adjust all values to zero
         bool butdnw = false;
         if (wasButtonPressed())
@@ -354,6 +345,11 @@ void calculate_Thread(void)
             tiltoffset = tilt;
             butdnw = true;
         }
+
+        // printf("Pitch=%f,Roll=%f,Yaw=%f\r\n",
+        //        tilt - tiltoffset,
+        //        roll - rolloffset,
+        //        normalize((pan - panoffset), -180, 180)); // test
 
         // Tilt output
         float tiltout =

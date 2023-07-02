@@ -7,3 +7,4 @@ zephyrproject\.venv\Scripts\activate.bat
 
 cd /d D:\0Document\HeadTracker\HeadTracker_ESP32\headtracker
 
+cd /d D:\0Document\HeadTracker\HeadTracker_ESP32\receiver
