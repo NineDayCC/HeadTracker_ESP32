@@ -10,6 +10,7 @@
 #include <zephyr/logging/log.h>
 
 #include "io.h"
+#include "imu.h"
 #include "trackersettings.h"
 
 //------------------------------------------------------------------------------

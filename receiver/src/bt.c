@@ -23,8 +23,8 @@
 #define BT_UUID_HEADTRACKER BT_UUID_DECLARE_16(BT_HEADTRACKER_UUID_VALUE)
 #define BT_UUID_PWM BT_UUID_DECLARE_16(BT_PWM_UUID_VALUE)
 
-#define BT_MIN_CONN_INTER 6   // Minimum Connection Interval (N * 1.25 ms)
-#define BT_MAX_CONN_INTER 6   // Maximum Connection Interval (N * 1.25 ms)
+#define BT_MIN_CONN_INTER 10   // Minimum Connection Interval (N * 1.25 ms)
+#define BT_MAX_CONN_INTER 10   // Maximum Connection Interval (N * 1.25 ms)
 #define BT_CONN_LOST_TIME 100 // Supervision Timeout (N * 10 ms)
 
 //------------------------------------------------------------------------------

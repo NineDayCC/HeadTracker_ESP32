@@ -8,6 +8,16 @@
     };
 };
 
+&pinctrl{
+    uart1_sbus: uart1_sbus
+    {
+		group1 {
+			pinmux = <UART0_TX_GPIO3>;
+			output-high;
+		};
+    };
+};
+
 &timer0 {
     status = "ok";
     label = "PPM Timer";
@@ -50,4 +60,14 @@
 
 &uart0 {
     current-speed = <921600>;
+};
+
+&uart1 {
+    status = "okay";
+    current-speed = <100000>;
+    pinctrl-0 = <&uart1_sbus>;
+    pinctrl-names = "default";
+    parity = "odd";
+    stop-bits = "2";
+    data-bits = <8>;
 };
