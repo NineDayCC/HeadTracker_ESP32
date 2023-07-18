@@ -45,12 +45,12 @@ typedef union
         uint8_t ppmininvert : 1;
         uint8_t reserved : 7;
 
-        uint16_t ppmframe;  // PPM Frame Length (us)
-        uint16_t ppmsync;   // PPM Sync Pulse Length (us)
-        uint8_t ppmchcnt;   // PPM channels to output
+        uint16_t ppmframe; // PPM Frame Length (us)
+        uint16_t ppmsync;  // PPM Sync Pulse Length (us)
+        uint8_t ppmchcnt;  // PPM channels to output
 
         uint8_t btmode; // Bluetooth mode 0:off 1:output mode
-    } v; // Value
+    } v;                // Value
 } TrackerSettings;
 
 extern TrackerSettings trkset;
@@ -83,8 +83,8 @@ inline uint8_t getRollChl(void) { return trkset.v.rollChl; }
 inline uint8_t getTiltChl(void) { return trkset.v.tiltChl; }
 inline uint8_t getPanChl(void) { return trkset.v.panChl; }
 
-inline float *getAccOffset(void) { return trkset.v.accOffset; }
-inline float *getGyrOffset(void) { return trkset.v.gyrOffset; }
+inline float getAccOffset(uint8_t xyz) { return trkset.v.accOffset[xyz]; }
+inline float getGyrOffset(uint8_t xyz) { return trkset.v.gyrOffset[xyz]; }
 
 inline bool isPPMininvert(void) { return trkset.v.ppmininvert; }
 inline uint16_t getPPMframe(void) { return trkset.v.ppmframe; }

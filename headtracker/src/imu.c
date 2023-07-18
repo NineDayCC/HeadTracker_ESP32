@@ -14,7 +14,7 @@
 #include "bt.h"
 #include "Fusion/Fusion.h"
 #include "trackersettings.h"
-#include "icm42688.h"
+#include "icm42688/icm42688.h"
 
 //------------------------------------------------------------------------------
 // Defines
@@ -254,8 +254,11 @@ void calculate_Thread(void)
     FusionVector gyroscopeOffset;
     FusionVector accelerometerOffset;
 
-    memcpy(accelerometerOffset.array, getAccOffset(), sizeof(accelerometerOffset));
-    memcpy(gyroscopeOffset.array, getGyrOffset(), sizeof(gyroscopeOffset));
+    for (uint8_t i = 0; i < 3; i++)
+    {
+        accelerometerOffset.array[i] = getAccOffset(i);
+        gyroscopeOffset.array[i] = getGyrOffset(i);
+    }
 
     // printf("accelerometerOffset: %f %f %f\r\n", accelerometerOffset.array[0], accelerometerOffset.array[1], accelerometerOffset.array[2]);
     // printf("gyroscopeOffset: %f %f %f\r\n", gyroscopeOffset.array[0], gyroscopeOffset.array[1], gyroscopeOffset.array[2]);
