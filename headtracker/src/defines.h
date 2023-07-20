@@ -10,8 +10,8 @@
 #define SAMPLE_RATE (int)(1000000 / IMU_PERIOD) // IMU sample rate, replace this with actual sample rate(Hz)
 
 // Thread Periods
-#define IO_PERIOD 25 // (ms) IO Period (button reading)
-#define BT_PERIOD 7500        // (us) Bluetooth update rate
+#define IO_PERIOD 5              // (ms) IO Period (button reading)
+#define BT_PERIOD 7500           // (us) Bluetooth update rate
 // #define SERIAL_PERIOD 30       // (ms) Serial processing
 // #define DATA_PERIOD 2          // Multiplier of Serial Period (Live Data Transmission Speed)
 #define IMU_PERIOD 5000             // (us) Sensor Reads

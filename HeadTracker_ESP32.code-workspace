@@ -35,7 +35,11 @@
 			"uuid.h": "c",
 			"bluetooth.h": "c",
 			"byteorder.h": "c",
-			"conn.h": "c"
+			"conn.h": "c",
+			"icm42688.h": "c",
+			"toolchain.h": "c",
+			"types.h": "c",
+			"stddef.h": "c"
 		},
 		"search.useIgnoreFiles": false
 	}

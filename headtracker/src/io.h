@@ -3,22 +3,15 @@
 
 #include <zephyr/kernel.h>
 
-extern struct k_sem button_pressed_sem;
+extern struct k_sem btn1_single_click_sem;
 
-void pressButton();
-
-// Reset Button Pressed Flag on Read
-bool wasButtonPressed();
+bool isSingleClick(void);
+bool isLongStart(void);
 
 int io_Init(void);
 void io_Thread(void);
 
-//test
-#define LED_RUNNING (1 << 0)
-#define LED_GYROCAL (1 << 1)
-#define LED_BTCONNECTED (1 << 2)
-#define LED_BTSCANNING (1 << 3)
-#define LED_MAGCAL (1 << 4)
-#define LED_BTCONFIGURATOR (1 << 5)
+void BTN1_SINGLE_Click_Handler(void* btn);
+void BTN1_LONG_PRESS_START_Handler(void* btn);
 
 #endif

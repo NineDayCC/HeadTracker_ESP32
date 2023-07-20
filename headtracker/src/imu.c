@@ -19,8 +19,8 @@
 //------------------------------------------------------------------------------
 // Defines
 #define DT_IMU DT_NODELABEL(spi2)
-const static struct device *imu_Dev = DEVICE_DT_GET(DT_IMU);
-
+#define IMU_HOLD 1
+#define IMU_RECOVER 0
 //------------------------------------------------------------------------------
 // Macro Modules
 LOG_MODULE_REGISTER(imuLog, LOG_LEVEL_DBG);
@@ -33,6 +33,7 @@ float normalize(const float value, const float start, const float end);
 //------------------------------------------------------------------------------
 // Private Values
 
+static const struct device *imu_Dev = DEVICE_DT_GET(DT_IMU);
 static FusionVector racc = {0}; // Raw values in g
 static FusionVector rgyr = {0}; // Raw values in d/s
 static FusionVector rmag = {0}; // Raw values in guss
@@ -44,6 +45,11 @@ static float rolloffset = 0, panoffset = 0, tiltoffset = 0; // Center offset, us
 
 static uint16_t channel_data[MAX_CHANNELS] = {PPM_CENTER}; // Range 0-2500
 
+static ImuStatus imuStatus = {
+    .hold = 0,
+    .reserved = 0,
+    .eularHold = {0, 0, 0},
+};
 // static float accxoff = 0, accyoff = 0, acczoff = 0;
 // static float gyrxoff = 0, gyryoff = 0, gyrzoff = 0;
 
@@ -340,19 +346,42 @@ void calculate_Thread(void)
         //        magnetometer.axis.x, magnetometer.axis.y, magnetometer.axis.z);
 
         // Zero button was pressed, adjust all values to zero
-        bool butdnw = false;
-        if (wasButtonPressed())
+        if (isSingleClick())
         {
             rolloffset = roll;
-            panoffset = pan;
             tiltoffset = tilt;
-            butdnw = true;
+            panoffset = pan;
+            imuStatus.hold = 0; // recover output
+        }
+        else if (isLongStart())
+        {
+            switch (imuStatus.hold)
+            {
+            case IMU_RECOVER:
+                imuStatus.hold = IMU_HOLD;
+                imuStatus.eularHold.axis.roll = roll;
+                imuStatus.eularHold.axis.tilt = tilt;
+                imuStatus.eularHold.axis.pan = pan;
+                break;
+            case IMU_HOLD:
+                imuStatus.hold = IMU_RECOVER;
+                // Adjust offset to make the output from current position
+                rolloffset = roll - (imuStatus.eularHold.axis.roll - rolloffset);
+                tiltoffset = tilt - (imuStatus.eularHold.axis.tilt - tiltoffset);
+                panoffset = pan - (imuStatus.eularHold.axis.pan - panoffset);
+                break;
+            default:
+                break;
+            }
         }
 
-        // printf("Pitch=%f,Roll=%f,Yaw=%f\r\n",
-        //        tilt - tiltoffset,
-        //        roll - rolloffset,
-        //        normalize((pan - panoffset), -180, 180)); // test
+        // Hold the output eular
+        if (imuStatus.hold == IMU_HOLD)
+        {
+            roll = imuStatus.eularHold.axis.roll;
+            tilt = imuStatus.eularHold.axis.tilt;
+            pan = imuStatus.eularHold.axis.pan;
+        }
 
         // Tilt output
         float tiltout =
@@ -458,7 +487,7 @@ void calculate_Thread(void)
 
         // 10) Set the PPM Outputs
         // printf("%f,%f,%f\r\n", tiltout, rollout, panout); // test
-        // printf("%d,%d,%d\r\n", tiltout_ui, rollout_ui, panout_ui); // test
+        printf("%d,%d,%d\r\n", tiltout_ui, rollout_ui, panout_ui); // test
         for (uint8_t i = 0; i < PpmOut_getChnCount(); i++)
         {
             uint16_t ppmout = channel_data[i];
