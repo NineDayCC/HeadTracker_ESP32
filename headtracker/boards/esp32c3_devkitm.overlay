@@ -12,18 +12,25 @@
     };
 };
 
-&pinctrl{
-	spim2_imu: spim2_imu {
-		group1 {
-			pinmux = <SPIM2_MISO_GPIO4>,
-				 <SPIM2_SCLK_GPIO6>,
-				 <SPIM2_CSEL_GPIO7>;
-		};
-		group2 {
-			pinmux = <SPIM2_MOSI_GPIO5>;
-			output-low;
-		};
-	};
+&pinctrl {
+    spim2_imu: spim2_imu {
+        group1 {
+            pinmux = <SPIM2_MISO_GPIO4>,
+                     <SPIM2_SCLK_GPIO6>,
+                     <SPIM2_CSEL_GPIO7>;
+        };
+        group2 {
+            pinmux = <SPIM2_MOSI_GPIO5>;
+            output-low;
+        };
+    };
+    uart1_sbus: uart1_sbus
+    {
+        group1 {
+            pinmux = <UART1_TX_GPIO3>,
+                     <UART1_RX_GPIO8>;
+        };
+    };
 };
 // &i2c0 {
     //     mpu9250: mpu9250@68 {
@@ -39,20 +46,20 @@
 // };
 
 &spi2 {
-	#address-cells = <1>;
-	#size-cells = <0>;
-	status = "okay";
-	pinctrl-0 = <&spim2_imu>;
-	pinctrl-names = "default";
+    #address-cells = <1>;
+    #size-cells = <0>;
+    status = "okay";
+    pinctrl-0 = <&spim2_imu>;
+    pinctrl-names = "default";
     // icm42688: icm42688@0 {
-    //     compatible = "invensense,icm42688";
-    //     spi-max-frequency = <3000000>;
-    //     reg = <0>;
-    //     label = "icm42688";
-    //     accel-fs = <2>;
-    //     gyro-fs = <2000>;
-    //     accel-hz = <1000>;
-    //     gyro-hz = <1000>;
+        //     compatible = "invensense,icm42688";
+        //     spi-max-frequency = <3000000>;
+        //     reg = <0>;
+        //     label = "icm42688";
+        //     accel-fs = <2>;
+        //     gyro-fs = <2000>;
+        //     accel-hz = <1000>;
+        //     gyro-hz = <1000>;
     // };
 };
 
@@ -96,6 +103,22 @@
     //     };
 // };
 
+&dma {
+    status = "okay";
+};
+
 &uart0 {
     current-speed = <921600>;
+};
+
+&uart1 {
+    status = "okay";
+    current-speed = <115200>;
+    pinctrl-0 = <&uart1_sbus>;
+    pinctrl-names = "default";
+    // parity = "odd";
+    // stop-bits = "2";
+    // data-bits = <8>;
+    // dmas = <&dma 3>, <&dma 5>;
+    // dma-names = "tx", "rx";
 };

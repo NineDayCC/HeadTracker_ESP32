@@ -107,7 +107,7 @@ int imu_Init(void)
  */
 void imu_Thread(void)
 {
-    static int64_t sleepElapse = 0;
+    // static int64_t sleepElapse = 0;
     int64_t usImuElapse = 0;
 
     while (1)
@@ -486,20 +486,22 @@ void calculate_Thread(void)
             channel_data[panch - 1] = isPanEn() == true ? panout_ui : getPanCnt();
 
         // 10) Set the PPM Outputs
-        // printf("%f,%f,%f\r\n", tiltout, rollout, panout); // test
-        printf("%d,%d,%d\r\n", tiltout_ui, rollout_ui, panout_ui); // test
         for (uint8_t i = 0; i < PpmOut_getChnCount(); i++)
         {
             uint16_t ppmout = channel_data[i];
             if (ppmout == 0)
                 ppmout = PPM_CENTER;
-            // printf("%d  ", ppmout); //test
             PpmOut_setChannel(i, ppmout);
         }
         buildChannels();
+
+        // 11) Set the SBUS Outputs
+        sbusBuildChannels(channel_data);
+
+        // 12) Set the BT Outputs
         buildBtChannels(channel_data, BT_CHANNELS);
-        // printf("\r\n"); //test
-        int elipsed = micros64() - timestamp;
+
+        // int elipsed = micros64() - timestamp;
         // printf("[%d]:\r\n", elipsed);
 
         // printf("%0.1f,%0.1f,%0.1f\r\n", tilt - tiltoffset,

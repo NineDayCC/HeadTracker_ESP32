@@ -51,17 +51,7 @@ static void ppm_counter_interrupt_fn(const struct device *counter_dev,
                                      void *user_data)
 {
     static const struct gpio_dt_spec ppm_dev = GPIO_DT_SPEC_GET(DT_PPM_PIN, gpios);
-    struct counter_alarm_cfg *config = user_data;
-    uint32_t now_ticks;
     static uint32_t ticks_offset = 0;
-    int err;
-
-    err = counter_get_value(counter_dev, &now_ticks);
-    if (err)
-    {
-        LOG_ERR("Failed to read counter value (err %d)", err);
-        return;
-    }
 
     // Reset, don't get stuck in the wrong signal level
     if (curstep == 0)
@@ -71,6 +61,9 @@ static void ppm_counter_interrupt_fn(const struct device *counter_dev,
             gpio_pin_set_dt(&ppm_dev, 1);
         else
             gpio_pin_set_dt(&ppm_dev, 0);
+
+        // Reset offset for a new ppm period
+        ticks_offset = ticks;
     }
     // Not last frame
     else if (curstep < chstepcnt - 1)
@@ -80,14 +73,8 @@ static void ppm_counter_interrupt_fn(const struct device *counter_dev,
 
     // Setup next capture event value
     // int ticks_over_flag = 0; // test
+    struct counter_alarm_cfg *config = user_data;
     config->ticks = ticks_offset + isrchsteps[curstep];
-    if (now_ticks > config->ticks)
-    {
-        // ticks_over_flag = 1; // test
-        // Reset offset, usually happened at the beginning
-        ticks_offset = (curstep > 0) ? (now_ticks - isrchsteps[curstep - 1]) : now_ticks;
-        config->ticks = ticks_offset + isrchsteps[curstep];
-    }
 
     curstep++;
     // Loop
@@ -96,11 +83,10 @@ static void ppm_counter_interrupt_fn(const struct device *counter_dev,
         if (!buildingdata)
             memcpy(isrchsteps, chsteps, sizeof(isrchsteps[0]) * 35);
         curstep = 0;
-        ticks_offset = config->ticks;
     }
 
     /* Set a new alarm with a double length duration */
-    err = counter_set_channel_alarm(counter_dev, ALARM_CHANNEL_ID,
+    int err = counter_set_channel_alarm(counter_dev, ALARM_CHANNEL_ID,
                                     user_data);
     if (err != 0)
     {
@@ -236,7 +222,7 @@ int PpmOut_getChnCount() { return ch_count; }
 // test function
 void printPPMdata(void)
 {
-    printf("[%s]",now_str());
+    printf("[%s]", now_str());
     for (uint8_t i = 0; i < sizeof(chsteps) / sizeof(chsteps[0]); i++)
     {
         printf("%d ", chsteps[i]);
