@@ -36,11 +36,10 @@ static bool failsafe_ = false, lost_frame_ = false, ch17_ = false, ch18_ = false
 static uint8_t localTXBuffer[SBUS_FRAME_LEN]; // Local Buffer
 static uint8_t dmaTXBuffer[SBUS_FRAME_LEN];
 
-static uint8_t testData[] = "UART1 OUT";
 static const struct uart_config sbus_uart_cfg = {
-		.baudrate = 115200,
-		.parity = UART_CFG_PARITY_NONE,
-		.stop_bits = UART_CFG_STOP_BITS_1,
+		.baudrate = 100000,
+		.parity = UART_CFG_PARITY_EVEN,
+		.stop_bits = UART_CFG_STOP_BITS_2,
 		.data_bits = UART_CFG_DATA_BITS_8,
 		.flow_ctrl = UART_CFG_FLOW_CTRL_NONE
 	};
@@ -85,8 +84,8 @@ void sbusTX(const struct device *dev)
     memcpy(dmaTXBuffer, localTXBuffer, SBUS_FRAME_LEN);
     k_mutex_unlock(&sbus_mutex);
 
-    print_uart(dev, testData, sizeof(testData));
-    LOG_DBG("Sbus Sent");
+    print_uart(dev, dmaTXBuffer, SBUS_FRAME_LEN);
+    //TO DO: DMA support
     // int err = uart_tx(dev, dmaTXBuffer, SBUS_FRAME_LEN, 0);
     // if (err)
     // {
