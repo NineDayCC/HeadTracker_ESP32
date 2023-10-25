@@ -1,0 +1,8 @@
+{
+    "search.useIgnoreFiles": false,
+    "files.associations": {
+        "esp_log.h": "c",
+        "spi_common.h": "c",
+        "spi_master.h": "c"
+    }
+}
