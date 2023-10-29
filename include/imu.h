@@ -1,4 +1,6 @@
 #pragma once
+#ifdef HEADTRAKCER
+
 #include "ht.h"
 
 #define PIN_NUM_MISO_SET    PIN_NUM_MISO
@@ -43,3 +45,5 @@ float normalize(const float value, const float start, const float end);
 int imu_Init(void);
 void imu_Thread(void *pvParameters);
 void calculate_Thread(void *pvParameters);
+
+#endif

@@ -1,6 +1,7 @@
 #pragma once
 
 #include "ht.h"
+#include "receiver.h"
 
 #define IO_ACTIVE_LOW  0
 #define IO_ACTIVE_HIGH 1

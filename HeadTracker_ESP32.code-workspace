@@ -41,7 +41,10 @@
 			"esp_bt.h": "c",
 			"esp_system.h": "c",
 			"nvs_flash.h": "c",
-			"imu.h": "c"
+			"imu.h": "c",
+			"receiver.h": "c",
+			"ht.h": "c",
+			"bt.h": "c"
 		}
 	}
 }

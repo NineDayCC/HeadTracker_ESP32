@@ -1,3 +1,5 @@
+#ifdef HEADTRAKCER
+
 #include <string.h>
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
@@ -462,3 +464,5 @@ void getChannelData(uint16_t *buffer)
 {
     memcpy(buffer, channel_data, sizeof(channel_data));
 }
+
+#endif

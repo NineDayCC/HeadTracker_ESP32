@@ -1,4 +1,5 @@
 #pragma once
+#ifdef HEADTRAKCER
 
 #include "defines.h"
 
@@ -23,3 +24,5 @@
  * @brief headtracker main fucntion
  */
 void headtracker_start(void);
+
+#endif

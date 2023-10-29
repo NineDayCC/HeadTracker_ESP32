@@ -1,3 +1,5 @@
+#ifdef HEADTRAKCER
+
 #include "bt.h"
 
 #include <stdio.h>
@@ -49,7 +51,8 @@
 static uint8_t bt_pwm_value[BT_CHANNELS * 2] = {0}; // pwm data to be sent via Bluetooth
 
 ///Declare the static function
-static void gatts_profile_a_event_handler(esp_gatts_cb_event_t event, esp_gatt_if_t gatts_if, esp_ble_gatts_cb_param_t *param);
+static void gatts_profile_a_event_handler(esp_gatts_cb_event_t event, esp_gatt_if_t gatts_if, \
+                                            esp_ble_gatts_cb_param_t *param);
 
 #define GATTS_SERVICE_UUID_TEST_A   BT_HEADTRACKER_UUID_VALUE
 #define GATTS_CHAR_UUID_TEST_A      BT_PWM_UUID_VALUE
@@ -65,7 +68,6 @@ static void gatts_profile_a_event_handler(esp_gatts_cb_event_t event, esp_gatt_i
 
 static uint8_t char1_str[] = {0x11,0x22,0x33};
 static esp_gatt_char_prop_t a_property = 0;
-static esp_gatt_char_prop_t b_property = 0;
 
 static esp_attr_value_t gatts_demo_char1_val =
 {
@@ -77,9 +79,6 @@ static esp_attr_value_t gatts_demo_char1_val =
 static uint8_t adv_config_done = 0;
 #define adv_config_flag      (1 << 0)
 #define scan_rsp_config_flag (1 << 1)
-
-static void gatts_profile_ht_event_handler(esp_gatts_cb_event_t event, esp_gatt_if_t gatts_if, \
-                                            esp_ble_gatts_cb_param_t *param);
 
 
 // Bluetooth advertisement data
@@ -522,7 +521,7 @@ static void gatts_event_handler(esp_gatts_cb_event_t event, esp_gatt_if_t gatts_
     } while (0);
 }
 
-void bt_ht_init()
+void bt_tx_init()
 {
     esp_err_t ret;
 
@@ -579,47 +578,34 @@ void bt_ht_init()
         ESP_LOGE(GATTS_TAG, "set local  MTU failed, error code = %x", local_mtu_ret);
     }
 
-    return;
+    xTaskCreate(bt_Thread, "bt_Thread", BT_THREAD_STACK_SIZE_SET, NULL, BT_THREAD_PRIORITY_SET, NULL);
 }
 
 
-// void BTHeadExecute()
-// {
-//     if (conn)
-//     {
-//         // Send Trainer Data
-//         // int64_t uselepsed = micros64();
-//         bt_gatt_notify(NULL, &bt_srv.attrs[2], bt_pwm_value, sizeof(bt_pwm_value));
-//         printBtData();
-//         // uselepsed = micros64() - uselepsed;
-//         // LOG_DBG("Notify cost: %lld", uselepsed);
-//     }
-// }
+void BTHeadExecute()
+{
+        // Send Trainer Data
+        // int64_t uselepsed = micros64();
+        esp_ble_gatts_send_indicate(gl_profile_tab[PROFILE_A_APP_ID].gatts_if, gl_profile_tab[PROFILE_A_APP_ID].conn_id,
+                                                    gl_profile_tab[PROFILE_A_APP_ID].char_handle, sizeof(bt_pwm_value), bt_pwm_value, false);
+        // uselepsed = micros64() - uselepsed;
+        // LOG_DBG("Notify cost: %lld", uselepsed);
+}
 
-// void bt_Thread()
-// {
-//     int64_t usduration = 0;
-//     while (1)
-//     {
-//         k_poll(btRunEvents, 1, K_FOREVER);
+void bt_Thread()
+{
+    TickType_t xLastWakeTime;
 
-//         usduration = micros64();
+    // Initialise the xLastWakeTime variable with the current time.
+    for ( ;; )
+    {
+        xLastWakeTime = xTaskGetTickCount();
 
-//         BTHeadExecute();
+        BTHeadExecute();
 
-//         // Adjust sleep for a more accurate period
-//         usduration = micros64() - usduration;
-//         if (BT_PERIOD - usduration <
-//             BT_PERIOD * 0.7)
-//         { // Took a long time. Will crash if sleep is too short
-//             k_usleep(BT_PERIOD);
-//         }
-//         else
-//         {
-//             k_usleep(BT_PERIOD - usduration);
-//         }
-//     }
-// }
+        xTaskDelayUntil(&xLastWakeTime,BT_THREAD_PERIOD);
+    }
+}
 
 void buildBtChannels(uint16_t *channelData, uint8_t channels)
 {
@@ -641,3 +627,5 @@ void buildBtChannels(uint16_t *channelData, uint8_t channels)
 //     }
 //     printf("\r\n");
 // }
+
+#endif
