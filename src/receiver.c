@@ -14,7 +14,6 @@
 
 void receiver_start(void)
 {
-    io_Init();
     PPMinit();
     bt_rx_init();
 }

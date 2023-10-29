@@ -3,6 +3,11 @@
 
 #include "defines.h"
 
+#define DEVICE_NAME "HeadTracker_ESP32"
+#define DEVICE_NAME_LEN (sizeof(DEVICE_NAME) - 1)
+#define BT_HEADTRACKER_UUID_VALUE 0x4EF0
+#define BT_PWM_UUID_VALUE 0x4EF1
+
 #define BT_THREAD_PRIORITY_SET      BT_THREAD_PRIORITY  //thread priority
 #define BT_THREAD_STACK_SIZE_SET    BT_THREAD_STACK_SIZE  //thread stack size
 

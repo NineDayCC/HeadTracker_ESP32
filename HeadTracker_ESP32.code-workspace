@@ -44,7 +44,8 @@
 			"imu.h": "c",
 			"receiver.h": "c",
 			"ht.h": "c",
-			"bt.h": "c"
+			"bt.h": "c",
+			"esp_gatt_defs.h": "c"
 		}
 	}
 }

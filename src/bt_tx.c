@@ -29,10 +29,6 @@
 //------------------------------------------------------------------------------
 // Defines
 #define GATTS_TAG "BT"
-#define DEVICE_NAME "HeadTracker_ESP32"
-#define DEVICE_NAME_LEN (sizeof(DEVICE_NAME) - 1)
-#define BT_HEADTRACKER_UUID_VALUE 0x4EF0
-#define BT_PWM_UUID_VALUE 0x4EF1
 
 #define BT_MIN_CONN_INTER 10   // Minimum Connection Interval (N * 1.25 ms)
 #define BT_MAX_CONN_INTER 10   // Maximum Connection Interval (N * 1.25 ms)
