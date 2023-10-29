@@ -5,7 +5,7 @@
 
 
 void bt_Thread();
-void bt_init();
+void bt_ht_init();
 
 /**
  * @brief Build channel data for Bluetooth to sent

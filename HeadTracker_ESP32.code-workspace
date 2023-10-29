@@ -29,7 +29,19 @@
 			"string.h": "c",
 			"ppm.h": "c",
 			"*.tcc": "c",
-			"streambuf": "c"
+			"streambuf": "c",
+			"esp_gattc_api.h": "c",
+			"esp_gatt_common_api.h": "c",
+			"esp_gatts_api.h": "c",
+			"esp_bt_defs.h": "c",
+			"esp_bt_main.h": "c",
+			"esp_gap_ble_api.h": "c",
+			"esp_err.h": "c",
+			"defines.h": "c",
+			"esp_bt.h": "c",
+			"esp_system.h": "c",
+			"nvs_flash.h": "c",
+			"imu.h": "c"
 		}
 	}
 }

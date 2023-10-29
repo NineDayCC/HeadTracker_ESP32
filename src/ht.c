@@ -7,6 +7,7 @@
 
 #include "ht.h"
 #include "io.h"
+#include "bt.h"
 #include "imu.h"
 #include "ppm.h"
 
@@ -15,4 +16,5 @@ void headtracker_start(void)
     io_Init();
     PPMinit();
     imu_Init();
+    bt_ht_init();
 }

@@ -7,6 +7,7 @@
 #include "esp_log.h"
 
 #include "io.h"
+#include "bt.h"
 #include "imu.h"
 #include "ppm.h"
 #include "Fusion.h"
@@ -426,7 +427,7 @@ void calculate_Thread(void *pvParameters)
         // sbusBuildChannels(channel_data);
 
         // // 12) Set the BT Outputs
-        // buildBtChannels(channel_data, BT_CHANNELS);
+        buildBtChannels(channel_data, BT_CHANNELS);
 
         // int elipsed = micros64() - timestamp;
         // printf("[%f]:\n", deltaTime);
