@@ -230,8 +230,15 @@ void calculate_Thread(void *pvParameters)
         FusionVector accelerometer = {{{0.0f}, {0.0f}, {1.0f}}}; // replace this with actual accelerometer data in g
         FusionVector magnetometer = {{{1.0f}, {0.0f}, {0.0f}}};  // replace this with actual magnetometer data in arbitrary units
 
-        memcpy(accelerometer.array, acc.array, sizeof(accelerometer));
-        memcpy(gyroscope.array, gyr.array, sizeof(gyroscope));
+        // Rotate the imu data
+        accelerometer.axis.x = acc.axis.x;
+        accelerometer.axis.y = -acc.axis.z;
+        accelerometer.axis.z = acc.axis.y;
+        gyroscope.axis.x = gyr.axis.x;
+        gyroscope.axis.y = -gyr.axis.z;
+        gyroscope.axis.z = gyr.axis.y;
+        // memcpy(accelerometer.array, acc.array, sizeof(accelerometer));
+        // memcpy(gyroscope.array, gyr.array, sizeof(gyroscope));
 
         if (isUsingMagn())
         {
