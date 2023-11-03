@@ -43,6 +43,7 @@ void io_Init(void)
     #endif
     gpio_config(&io_conf);
 
+#ifdef HEADTRAKCER
     //config led io
     io_conf.intr_type = GPIO_INTR_DISABLE;  //disable interrupt
     io_conf.mode = GPIO_MODE_OUTPUT;         //set as output mode
@@ -60,7 +61,7 @@ void io_Init(void)
     io_conf.pull_up_en = GPIO_PULLUP_ENABLE;       //enable pull-up mode
     gpio_config(&io_conf);
     gpio_set_level(GPIO_BT_STATUS_SET, !GPIO_BT_STATUS_SET_ACTIVE_LEVEL); //set led off
-
+#endif
     //create semaphore if not already created
     if (btn1_single_click_sem == NULL)
     {
@@ -167,6 +168,9 @@ void io_Thread(void *pvParameters)
     }
 }
 
+
+#ifdef HEADTRAKCER
+
 /**
  * @brief set bt led status on or off
  * @param status 0 = off, 1 = on
@@ -178,3 +182,5 @@ void led_bt_ctrl(uint8_t status)
     else
         gpio_set_level(GPIO_BT_STATUS_SET, !GPIO_BT_STATUS_SET_ACTIVE_LEVEL); //set led off
 }
+
+#endif

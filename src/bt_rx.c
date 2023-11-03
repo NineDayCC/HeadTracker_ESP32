@@ -315,6 +315,10 @@ static void gattc_profile_event_handler(esp_gattc_cb_event_t event, esp_gatt_if_
         connect = false;
         get_server = false;
         ESP_LOGI(GATTC_TAG, "ESP_GATTC_DISCONNECT_EVT, reason = %d", p_data->disconnect.reason);
+        scan_ret = esp_ble_gap_set_scan_params(&ble_scan_params);
+        if (scan_ret){
+            ESP_LOGE(GATTC_TAG, "set scan params error, error code = %x", scan_ret);
+        }
         break;
     default:
         break;
