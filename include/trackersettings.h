@@ -4,6 +4,37 @@
 #include <stdint.h>
 #include <stdbool.h>
 
+#define FLOAT_MIN -1000000
+#define FLOAT_MAX 1000000
+#define MIN_PWM 980
+#define MAX_PWM 2020
+#define DEF_MIN_PWM 988
+#define DEF_MAX_PWM 2012
+#define PPM_CENTER 1500
+#define MIN_GAIN 0.01
+#define MAX_GAIN 35
+#define MINMAX_RNG 487
+#define MIN_TO_CENTER 25
+#define MIN_CNT (((MAX_PWM - MIN_PWM) / 2) + MIN_PWM - MINMAX_RNG)
+#define MAX_CNT (((MAX_PWM - MIN_PWM) / 2) + MIN_PWM + MINMAX_RNG)
+#define BT_CHANNELS 8
+#define MAX_CHANNELS 16
+#define AUX_FUNCTIONS 7
+#define SBUS_CENTER 992
+#define SBUS_SCALE 1.6
+#define RESET_ON_TILT_TIME 1.5
+#define RESET_ON_TILT_AFTER 1
+#define RECENTER_PULSE_DURATION 0.5
+#define UART_ACTIVE_TIME 0.1
+#define PPM_MIN_FRAMESYNC 3000
+#define PPM_MIN_SYNC 500
+#define PPM_MIN_FRAME 6666
+#define PPM_MAX_FRAME 40000
+#define UART_MODE_OFF 0
+#define UART_MODE_SBUS 1
+#define UART_MODE_CRSFIN 2
+#define UART_MODE_CRSFOUT 3
+
 typedef union
 {
     uint8_t array[80];
@@ -94,35 +125,33 @@ inline uint8_t getPPMchcnt(void) { return trkset.v.ppmchcnt; }
 
 inline uint8_t getBtMode(void) { return trkset.v.btmode; }
 
-#define FLOAT_MIN -1000000
-#define FLOAT_MAX 1000000
-#define MIN_PWM 980
-#define MAX_PWM 2020
-#define DEF_MIN_PWM 988
-#define DEF_MAX_PWM 2012
-#define PPM_CENTER 1500
-#define MIN_GAIN 0.01
-#define MAX_GAIN 35
-#define MINMAX_RNG 487
-#define MIN_TO_CENTER 25
-#define MIN_CNT (((MAX_PWM - MIN_PWM) / 2) + MIN_PWM - MINMAX_RNG)
-#define MAX_CNT (((MAX_PWM - MIN_PWM) / 2) + MIN_PWM + MINMAX_RNG)
-#define BT_CHANNELS 8
-#define MAX_CHANNELS 16
-#define AUX_FUNCTIONS 7
-#define SBUS_CENTER 992
-#define SBUS_SCALE 1.6
-#define RESET_ON_TILT_TIME 1.5
-#define RESET_ON_TILT_AFTER 1
-#define RECENTER_PULSE_DURATION 0.5
-#define UART_ACTIVE_TIME 0.1
-#define PPM_MIN_FRAMESYNC 3000
-#define PPM_MIN_SYNC 500
-#define PPM_MIN_FRAME 6666
-#define PPM_MAX_FRAME 40000
-#define UART_MODE_OFF 0
-#define UART_MODE_SBUS 1
-#define UART_MODE_CRSFIN 2
-#define UART_MODE_CRSFOUT 3
+bool setRll_Max(uint16_t val);
+bool setRll_Min(uint16_t val);
+bool setTiltMax(uint16_t val);
+bool setTiltMin(uint16_t val);
+bool setPanMax(uint16_t val);
+bool setPanMin(uint16_t val);
+
+bool setRollGain(uint16_t val);
+bool setTiltGain(uint16_t val);
+bool setPanGain(uint16_t val);
+
+bool setRollCnt(uint16_t val);
+bool setTiltCnt(uint16_t val);
+bool setPanCnt(uint16_t val);
+
+bool setRollChl(uint16_t val);
+bool setTiltChl(uint16_t val);
+bool setPanChl(uint16_t val);
+
+bool setAccOffset(uint16_t val);
+bool setGyrOffset(uint16_t val);
+
+bool setPPMframe(uint16_t val);
+bool setPPMsync(uint16_t val);
+bool setPPMchcnt(uint16_t val);
+
+bool setBtMode(uint16_t val);
+
 
 #endif

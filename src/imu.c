@@ -182,11 +182,11 @@ void imu_Thread(void *pvParameters)
 void calculate_Thread(void *pvParameters)
 {
     // Define calibration (replace with actual calibration data if available)
-    const FusionMatrix gyroscopeMisalignment = {{{1.0f, 0.0f, 0.0f}, {0.0f, 1.0f, 0.0f}, {0.0f, 0.0f, 1.0f}}};
+    const FusionMatrix gyroscopeMisalignment = {{{-0.99999275f, 0.00380770854f, 0.0f}, {-0.00380770854f, -0.99999275f, 0.0f}, {0.0f, 0.0f, 1.0f}}};
     const FusionVector gyroscopeSensitivity = {{1.0f, 1.0f, 1.0f}};
-    const FusionMatrix accelerometerMisalignment = {{{1.0f, 0.0f, 0.0f}, {0.0f, 1.0f, 0.0f}, {0.0f, 0.0f, 1.0f}}};
+    const FusionMatrix accelerometerMisalignment = {{{-0.99999275f, 0.00380770854f, 0.0f}, {-0.00380770854f, -0.99999275f, 0.0f}, {0.0f, 0.0f, 1.0f}}};
     const FusionVector accelerometerSensitivity = {{1.0f, 1.0f, 1.0f}};
-    const FusionMatrix softIronMatrix = {{{1.0f, 0.0f, 0.0f}, {0.0f, 1.0f, 0.0f}, {0.0f, 0.0f, 1.0f}}};
+    const FusionMatrix softIronMatrix = {{{-0.99999275f, 0.00380770854f, 0.0f}, {-0.00380770854f, -0.99999275f, 0.0f}, {0.0f, 0.0f, 1.0f}}};
     const FusionVector hardIronOffset = {{0.0f, 0.0f, 0.0f}};
 
     FusionVector gyroscopeOffset;
@@ -231,12 +231,12 @@ void calculate_Thread(void *pvParameters)
         FusionVector magnetometer = {{{1.0f}, {0.0f}, {0.0f}}};  // replace this with actual magnetometer data in arbitrary units
 
         // Rotate the imu data
-        accelerometer.axis.x = acc.axis.x;
-        accelerometer.axis.y = -acc.axis.z;
-        accelerometer.axis.z = acc.axis.y;
-        gyroscope.axis.x = gyr.axis.x;
-        gyroscope.axis.y = -gyr.axis.z;
-        gyroscope.axis.z = gyr.axis.y;
+        // accelerometer.axis.x = -acc.axis.y;
+        // accelerometer.axis.y = -acc.axis.z;
+        // accelerometer.axis.z = acc.axis.x;
+        // gyroscope.axis.x = -gyr.axis.y;
+        // gyroscope.axis.y = -gyr.axis.z;
+        // gyroscope.axis.z = gyr.axis.x;
         // memcpy(accelerometer.array, acc.array, sizeof(accelerometer));
         // memcpy(gyroscope.array, gyr.array, sizeof(gyroscope));
 

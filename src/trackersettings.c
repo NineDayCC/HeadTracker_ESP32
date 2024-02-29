@@ -42,3 +42,24 @@ TrackerSettings trkset = {
 
     .v.btmode = 1,      //0:off 1:output mode
 };
+
+
+bool setRll_Max(uint16_t val)
+{
+    if(val >= MIN_PWM && val <= MAX_PWM)
+    {
+        trkset.v.rollMax = val;
+        return true;
+    }
+    return false;
+}
+
+bool setRll_Min(uint16_t val)
+{
+    if(val >= MIN_PWM && val <= MAX_PWM)
+    {
+        trkset.v.rollMin = val;
+        return true;
+    }
+    return false;
+}
