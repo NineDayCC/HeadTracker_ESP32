@@ -4,6 +4,7 @@
         "esp_log.h": "c",
         "spi_common.h": "c",
         "spi_master.h": "c",
-        "ht.h": "c"
+        "ht.h": "c",
+        "cmath": "c"
     }
 }

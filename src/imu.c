@@ -22,6 +22,7 @@
 #define IMU_HOLD 1
 #define IMU_RECOVER 0
 
+#define IMU_SPI_SPEED_SET 24000000
 //------------------------------------------------------------------------------
 // Values
 
@@ -31,6 +32,13 @@ static spi_device_handle_t imu_dev;
 #else
 static spi_device_handle_t imu_dev;
 #endif
+
+// Install angle rotation
+const float R[3][3] = {
+    {0.99999275f, -0.00380770854f, 0},
+    {0.00380770854f, 0.99999275f, 0},
+    {0, 0, 1}
+};
 
 static FusionVector racc = {0}; // Raw values in g
 static FusionVector rgyr = {0}; // Raw values in d/s
@@ -182,11 +190,11 @@ void imu_Thread(void *pvParameters)
 void calculate_Thread(void *pvParameters)
 {
     // Define calibration (replace with actual calibration data if available)
-    const FusionMatrix gyroscopeMisalignment = {{{-0.99999275f, 0.00380770854f, 0.0f}, {-0.00380770854f, -0.99999275f, 0.0f}, {0.0f, 0.0f, 1.0f}}};
+    const FusionMatrix gyroscopeMisalignment = {{{1.0f, 0.0f, 0.0f}, {0.0f, 1.0f, 0.0f}, {0.0f, 0.0f, 1.0f}}};
     const FusionVector gyroscopeSensitivity = {{1.0f, 1.0f, 1.0f}};
-    const FusionMatrix accelerometerMisalignment = {{{-0.99999275f, 0.00380770854f, 0.0f}, {-0.00380770854f, -0.99999275f, 0.0f}, {0.0f, 0.0f, 1.0f}}};
+    const FusionMatrix accelerometerMisalignment = {{{1.0f, 0.0f, 0.0f}, {0.0f, 1.0f, 0.0f}, {0.0f, 0.0f, 1.0f}}};
     const FusionVector accelerometerSensitivity = {{1.0f, 1.0f, 1.0f}};
-    const FusionMatrix softIronMatrix = {{{-0.99999275f, 0.00380770854f, 0.0f}, {-0.00380770854f, -0.99999275f, 0.0f}, {0.0f, 0.0f, 1.0f}}};
+    const FusionMatrix softIronMatrix = {{{1.0f, 0.0f, 0.0f}, {0.0f, 1.0f, 0.0f}, {0.0f, 0.0f, 1.0f}}};
     const FusionVector hardIronOffset = {{0.0f, 0.0f, 0.0f}};
 
     FusionVector gyroscopeOffset;
@@ -230,13 +238,14 @@ void calculate_Thread(void *pvParameters)
         FusionVector accelerometer = {{{0.0f}, {0.0f}, {1.0f}}}; // replace this with actual accelerometer data in g
         FusionVector magnetometer = {{{1.0f}, {0.0f}, {0.0f}}};  // replace this with actual magnetometer data in arbitrary units
 
+
         // Rotate the imu data
-        // accelerometer.axis.x = -acc.axis.y;
-        // accelerometer.axis.y = -acc.axis.z;
-        // accelerometer.axis.z = acc.axis.x;
-        // gyroscope.axis.x = -gyr.axis.y;
-        // gyroscope.axis.y = -gyr.axis.z;
-        // gyroscope.axis.z = gyr.axis.x;
+        accelerometer.axis.x = (R[0][0] * acc.axis.x + R[0][1] * acc.axis.y + R[0][2] * acc.axis.z);
+        accelerometer.axis.y = -(R[1][0] * acc.axis.x + R[1][1] * acc.axis.y + R[1][2] * acc.axis.z);
+        accelerometer.axis.z = (R[2][0] * acc.axis.x + R[2][1] * acc.axis.y + R[2][2] * acc.axis.z);
+        gyroscope.axis.x = (R[0][0] * gyr.axis.x + R[0][1] * gyr.axis.y + R[0][2] * gyr.axis.z);
+        gyroscope.axis.y = -(R[1][0] * gyr.axis.x + R[1][1] * gyr.axis.y + R[1][2] * gyr.axis.z);
+        gyroscope.axis.z = (R[2][0] * gyr.axis.x + R[2][1] * gyr.axis.y + R[2][2] * gyr.axis.z);
         // memcpy(accelerometer.array, acc.array, sizeof(accelerometer));
         // memcpy(gyroscope.array, gyr.array, sizeof(gyroscope));
 
