@@ -16,9 +16,11 @@
 void headtracker_start(void)
 {
     io_Init();
-    PPMinit();
     imu_Init();
+#ifdef HT_LITE
+    PPMinit();
     bt_tx_init();
+#endif
 }
 
 #endif
