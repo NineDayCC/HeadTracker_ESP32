@@ -6,6 +6,7 @@
 
 #include "io.h"
 #include "multi_button.h"
+#include "touch.h"
 
 //------------------------------------------------------------------------------
 // Defines
@@ -26,8 +27,20 @@ SemaphoreHandle_t btn1_long_start_sem = NULL;
 
 void io_Init(void)
 {
-    //config center button io
+
+#ifdef HEADTRAKCER
     gpio_config_t io_conf = {};
+
+    //config led io
+    io_conf.intr_type = GPIO_INTR_DISABLE;  //disable interrupt
+    io_conf.mode = GPIO_MODE_OUTPUT;         //set as output mode
+    io_conf.pin_bit_mask = (1ULL<<GPIO_LED_STATUS_SET);
+    io_conf.pull_down_en = GPIO_PULLDOWN_DISABLE;
+    io_conf.pull_up_en = GPIO_PULLUP_ENABLE;       //enable pull-up mode
+    gpio_config(&io_conf);
+    gpio_set_level(GPIO_LED_STATUS_SET, GPIO_LED_STATUS_SET_ACTIVE_LEVEL); //set led on
+#ifdef HT_LITE
+    //config center button io
     io_conf.intr_type = GPIO_INTR_DISABLE;  //disable interrupt
     io_conf.mode = GPIO_MODE_INPUT;         //set as input mode
     io_conf.pin_bit_mask = (1ULL<<GPIO_CENTER_BUTTON_SET);  //center button
@@ -43,16 +56,6 @@ void io_Init(void)
     #endif
     gpio_config(&io_conf);
 
-#ifdef HEADTRAKCER
-    //config led io
-    io_conf.intr_type = GPIO_INTR_DISABLE;  //disable interrupt
-    io_conf.mode = GPIO_MODE_OUTPUT;         //set as output mode
-    io_conf.pin_bit_mask = (1ULL<<GPIO_LED_STATUS_SET);
-    io_conf.pull_down_en = GPIO_PULLDOWN_DISABLE;
-    io_conf.pull_up_en = GPIO_PULLUP_ENABLE;       //enable pull-up mode
-    gpio_config(&io_conf);
-    gpio_set_level(GPIO_LED_STATUS_SET, GPIO_LED_STATUS_SET_ACTIVE_LEVEL); //set led on
-#ifdef HT_LITE
     //config bluetooth led io
     io_conf.intr_type = GPIO_INTR_DISABLE;  //disable interrupt
     io_conf.mode = GPIO_MODE_OUTPUT;         //set as output mode
@@ -94,14 +97,20 @@ void io_Init(void)
 
 uint8_t read_button_GPIO(uint8_t button_id)
 {
+    uint16_t touch_value;
     // you can share the GPIO read function with multiple Buttons
     switch (button_id)
     {
     case btn1_id:
-        #if (GPIO_CENTER_BUTTON_ACTIVE_LEVEL == ACTIVE_LOW)
-        return (gpio_get_level(GPIO_CENTER_BUTTON) ? 0 : 1);
+        #ifdef HT_NANO
+        touch_pad_read_filtered(PIN_TOUCH, &touch_value);
+        return (touch_value <= TOUCH_TRESHOULD ? 1 : 0);
         #else
-        return gpio_get_level(GPIO_CENTER_BUTTON);
+            #if (GPIO_CENTER_BUTTON_ACTIVE_LEVEL == ACTIVE_LOW)
+            return (gpio_get_level(GPIO_CENTER_BUTTON) ? 0 : 1);
+            #else
+            return gpio_get_level(GPIO_CENTER_BUTTON);
+            #endif
         #endif
     default:
         return 0;

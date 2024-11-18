@@ -26,7 +26,7 @@
 #endif
 
 // IMU speed
-#define IMU_SPI_SPEED_HZ    (8 * 1000 * 1000)  //Clock out at 8 MHz
+#define IMU_SPI_SPEED_HZ    (1 * 1000 * 1000)  //Clock out at 8 MHz
 
 
 
