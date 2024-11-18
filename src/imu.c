@@ -7,6 +7,7 @@
 #include "driver/spi_master.h"
 #include "driver/uart.h"
 #include "esp_log.h"
+#include "defines.h"
 
 #include "io.h"
 #include "bt.h"
@@ -22,7 +23,6 @@
 #define IMU_HOLD 1
 #define IMU_RECOVER 0
 
-#define IMU_SPI_SPEED_SET 24000000
 //------------------------------------------------------------------------------
 // Values
 
@@ -431,6 +431,7 @@ void calculate_Thread(void *pvParameters)
         if (panch > 0)
             channel_data[panch - 1] = isPanEn() == true ? panout_ui : getPanCnt();
 
+#ifdef HT_LITE
         // 10) Set the PPM Outputs
         for (uint8_t i = 0; i < PpmOut_getChnCount(); i++)
         {
@@ -446,7 +447,7 @@ void calculate_Thread(void *pvParameters)
 
         // // 12) Set the BT Outputs
         buildBtChannels(channel_data, BT_CHANNELS);
-
+#endif
         // int elipsed = micros64() - timestamp;
         // printf("[%f]:\n", deltaTime);
 

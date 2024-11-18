@@ -1,4 +1,5 @@
-#include "PPM.h"
+#ifndef HT_NANO
+#include "ppm.h"
 
 #include "freertos/FreeRTOS.h"
 #include "driver/gpio.h"
@@ -227,3 +228,5 @@ void printPPMdata(void)
     }
     printf("\n");
 }
+
+#endif

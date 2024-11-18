@@ -39,3 +39,6 @@
 
 #define millis64()  esp_log_timestamp()
 #define micros64()  esp_timer_get_time()
+
+#define MIN(i, j) (((i) < (j)) ? (i) : (j))
+#define MAX(i, j) (((i) > (j)) ? (i) : (j))

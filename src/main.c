@@ -8,11 +8,11 @@ static const char* MODE_TAG = "MODE";
 
 void app_main()
 {
-    #ifdef HT_LITE
-    ESP_LOGI(MODE_TAG, "HeadTracker Lite");
+    #ifdef HEADTRAKCER
+    ESP_LOGI(MODE_TAG, "HeadTracker");
     headtracker_start();
-    #elif defined RECEIVER_LAUT
-    ESP_LOGI(MODE_TAG, "Receiver Luat board");
+    #elif defined RECEIVER
+    ESP_LOGI(MODE_TAG, "Receiver");
     receiver_start();
     #endif
 }
