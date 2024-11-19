@@ -63,7 +63,31 @@ void io_Init(void)
     io_conf.pull_down_en = GPIO_PULLDOWN_DISABLE;
     io_conf.pull_up_en = GPIO_PULLUP_ENABLE;       //enable pull-up mode
     gpio_config(&io_conf);
-    gpio_set_level(GPIO_BT_STATUS_SET, !GPIO_BT_STATUS_SET_ACTIVE_LEVEL); //set led off
+    gpio_set_level(GPIO_BT_STATUS_SET, !GPIO_BT_STATUS_SET_ACTIVE_LEVEL); //set led 
+#elif HT_NANO
+    io_conf.intr_type = GPIO_INTR_DISABLE;  //disable interrupt
+    io_conf.mode = GPIO_MODE_OUTPUT;         //set as output mode
+    io_conf.pin_bit_mask = (1ULL<<GPIO_BUZZER_SET);
+    io_conf.pull_down_en = GPIO_PULLDOWN_DISABLE;
+    io_conf.pull_up_en = GPIO_PULLUP_ENABLE;       //enable pull-up mode
+    gpio_config(&io_conf);
+    gpio_set_level(GPIO_BUZZER_SET, !GPIO_BUZZER_ACTIVE_LEVEL); //set buzzer
+
+    //config ota button io
+    io_conf.intr_type = GPIO_INTR_DISABLE;  //disable interrupt
+    io_conf.mode = GPIO_MODE_INPUT;         //set as input mode
+    io_conf.pin_bit_mask = (1ULL<<GPIO_OTA_BUTTON_SET);  //OTA button
+    #if (GPIO_OTA_BUTTON_ACTIVE_LEVEL == ACTIVE_LOW)
+    io_conf.pull_down_en = GPIO_PULLDOWN_DISABLE;
+    io_conf.pull_up_en = GPIO_PULLUP_ENABLE;       //enable pull-up mode
+    #elif (GPIO_OTA_BUTTON_ACTIVE_LEVEL == ACTIVE_HIGH)
+    io_conf.pull_down_en = GPIO_PULLDOWN_ENABLE;   //enable pull-up mode
+    io_conf.pull_up_en = GPIO_PULLUP_DISABLE;
+    #else
+    io_conf.pull_down_en = GPIO_PULLDOWN_DISABLE;
+    io_conf.pull_up_en = GPIO_PULLUP_DISABLE;
+    #endif
+    gpio_config(&io_conf);
 #endif
 #endif
     //create semaphore if not already created
