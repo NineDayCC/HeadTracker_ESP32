@@ -32,7 +32,7 @@ TrackerSettings trkset = {
     .v.panChl = 8,  // Pan channel
 
     .v.accOffset = {0.0f, 0.0f, 0.0f}, // in g
-    .v.gyrOffset = {0.1659f, 0.5922f, 0.4395f}, // in degress
+    .v.gyrOffset = {-1.58f, 0.52f, -0.984f}, // in degress
     // .v.gyrOffset = {0.1192821793f, 0.512078988f, 0.4421201354f}, // in degress
     // .v.gyrOffset = {0.0f, 0.0f, 0.0f}, // in degress
 

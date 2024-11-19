@@ -20,13 +20,14 @@
 #define PIN_NUM_CLK         GPIO_NUM_2
 #define PIN_NUM_CS          GPIO_NUM_0
 #define GPIO_CENTER_BUTTON  GPIO_NUM_27
-// #define GPIO_PPM_OUT        GPIO_NUM_10
 #define GPIO_LED_STATUS     GPIO_NUM_14
-// #define GPIO_BT_STATUS      GPIO_NUM_13
+#define GPIO_OTA_BUTTON     GPIO_NUM_20
+#define GPIO_BUZZER         GPIO_NUM_25
+
 #endif
 
 // IMU speed
-#define IMU_SPI_SPEED_HZ    (1 * 1000 * 1000)  //Clock out at 8 MHz
+#define IMU_SPI_SPEED_HZ    (8 * 1000 * 1000)  //Clock out at 8 MHz
 
 
 

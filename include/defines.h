@@ -31,8 +31,8 @@
 #define BT_THREAD_STACK_SIZE    configMINIMAL_STACK_SIZE*10  //thread stack size
 
 // Thread period in milisecond
-#define IMU_THREAD_PERIOD   15
-#define CAL_THREAD_PERIOD   15
+#define IMU_THREAD_PERIOD   10
+#define CAL_THREAD_PERIOD   10
 #define BT_THREAD_PERIOD    8
 
 #define SAMPLE_RATE (int)(1000 / IMU_THREAD_PERIOD) // IMU sample rate, replace this with actual sample rate(Hz)
