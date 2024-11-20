@@ -13,10 +13,12 @@
 #include "imu.h"
 #include "ppm.h"
 #include "touch.h"
+#include "buzzer.h"
 
 void headtracker_start(void)
 {
     touch_Init();
+    buzzer_init();
     io_Init();
     imu_Init();
 #ifdef HT_LITE

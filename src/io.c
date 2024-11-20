@@ -7,6 +7,7 @@
 #include "io.h"
 #include "multi_button.h"
 #include "touch.h"
+#include "buzzer.h"
 
 //------------------------------------------------------------------------------
 // Defines
@@ -65,14 +66,6 @@ void io_Init(void)
     gpio_config(&io_conf);
     gpio_set_level(GPIO_BT_STATUS_SET, !GPIO_BT_STATUS_SET_ACTIVE_LEVEL); //set led 
 #elif HT_NANO
-    io_conf.intr_type = GPIO_INTR_DISABLE;  //disable interrupt
-    io_conf.mode = GPIO_MODE_OUTPUT;         //set as output mode
-    io_conf.pin_bit_mask = (1ULL<<GPIO_BUZZER_SET);
-    io_conf.pull_down_en = GPIO_PULLDOWN_DISABLE;
-    io_conf.pull_up_en = GPIO_PULLUP_ENABLE;       //enable pull-up mode
-    gpio_config(&io_conf);
-    gpio_set_level(GPIO_BUZZER_SET, !GPIO_BUZZER_ACTIVE_LEVEL); //set buzzer
-
     //config ota button io
     io_conf.intr_type = GPIO_INTR_DISABLE;  //disable interrupt
     io_conf.mode = GPIO_MODE_INPUT;         //set as input mode
@@ -145,6 +138,7 @@ void BTN1_SINGLE_Click_Handler(void* btn)
 {
     if (btn1_single_click_sem != NULL)
     {
+        set_buzzer_ms(BUZZER_SINGLE_CLICK_MS, TICKS_INTERVAL);
         xSemaphoreGive(btn1_single_click_sem);
     }
 }
@@ -190,6 +184,7 @@ void io_Thread(void *pvParameters)
     for (;;)
     {
         button_ticks(); // read button status
+        buzzer_loop();
         // if (isSingleClick())
         // {
         //     ESP_LOGI(IO_TAG, "SingleClicked");
