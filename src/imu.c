@@ -35,8 +35,8 @@ static spi_device_handle_t imu_dev;
 
 // Install angle rotation
 const float R[3][3] = {
-    {0.99999275f, -0.00380770854f, 0},
-    {0.00380770854f, 0.99999275f, 0},
+    {1, 0, 0},
+    {0, 1, 0},
     {0, 0, 1}
 };
 
