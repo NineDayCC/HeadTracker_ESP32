@@ -1,5 +1,5 @@
 #ifdef HEADTRAKCER
-
+#ifdef HT_LITE
 #include "bt.h"
 
 #include <stdio.h>
@@ -626,4 +626,5 @@ void buildBtChannels(uint16_t *channelData, uint8_t channels)
 //     printf("\r\n");
 // }
 
+#endif
 #endif

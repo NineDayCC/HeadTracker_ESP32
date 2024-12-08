@@ -11,24 +11,24 @@
   Read values sensed at all available touch pads.
  Print out values in a loop on a serial monitor.
  */
-static void tp_example_read_task(void *pvParameter)
-{
-    uint16_t touch_value;
-    uint16_t touch_filter_value;
-    while (1) {
-#if TOUCH_FILTER_MODE_EN
-        // If open the filter mode, please use this API to get the touch pad count.
-        touch_pad_read_raw_data(PIN_TOUCH, &touch_value);
-        touch_pad_read_filtered(PIN_TOUCH, &touch_filter_value);
-        printf("%d,%d", touch_value, touch_filter_value);
-#else
-        touch_pad_read(i, &touch_value);
-        printf("[%4"PRIu16"] ", touch_value);
-#endif
-        printf("\n");
-        vTaskDelay(10 / portTICK_PERIOD_MS);
-    }
-}
+// static void tp_example_read_task(void *pvParameter)
+// {
+//     uint16_t touch_value;
+//     uint16_t touch_filter_value;
+//     while (1) {
+// #if TOUCH_FILTER_MODE_EN
+//         // If open the filter mode, please use this API to get the touch pad count.
+//         touch_pad_read_raw_data(PIN_TOUCH, &touch_value);
+//         touch_pad_read_filtered(PIN_TOUCH, &touch_filter_value);
+//         printf("%d,%d", touch_value, touch_filter_value);
+// #else
+//         touch_pad_read(i, &touch_value);
+//         printf("[%4"PRIu16"] ", touch_value);
+// #endif
+//         printf("\n");
+//         vTaskDelay(10 / portTICK_PERIOD_MS);
+//     }
+// }
 
 void tp_example_touch_pad_init(void)
 {
