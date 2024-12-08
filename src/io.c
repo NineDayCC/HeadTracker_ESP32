@@ -66,6 +66,9 @@ void io_Init(void)
     gpio_config(&io_conf);
     gpio_set_level(GPIO_BT_STATUS_SET, !GPIO_BT_STATUS_SET_ACTIVE_LEVEL); //set led 
 #elif HT_NANO
+    touch_Init();
+    buzzer_init();
+
     //config ota button io
     io_conf.intr_type = GPIO_INTR_DISABLE;  //disable interrupt
     io_conf.mode = GPIO_MODE_INPUT;         //set as input mode
@@ -109,7 +112,7 @@ void io_Init(void)
     button_start(&btn1);
 
     //create io task thread
-    xTaskCreate(io_Thread, "io_Thread", IO_THREAD_STACK_SIZE_SET, NULL, IO_THREAD_PRIORITY_SET, NULL);
+    xTaskCreatePinnedToCore(io_Thread, "io_Thread", IO_THREAD_STACK_SIZE_SET, NULL, IO_THREAD_PRIORITY_SET, NULL, 1);  // run on core1
 }
 
 uint8_t read_button_GPIO(uint8_t button_id)
@@ -185,14 +188,6 @@ void io_Thread(void *pvParameters)
     {
         button_ticks(); // read button status
         buzzer_loop();
-        // if (isSingleClick())
-        // {
-        //     ESP_LOGI(IO_TAG, "SingleClicked");
-        // }
-        // if (isLongStart())
-        // {
-        //     ESP_LOGI(IO_TAG, "LongStart");
-        // }
         vTaskDelay(pdMS_TO_TICKS(TICKS_INTERVAL));
     }
 }

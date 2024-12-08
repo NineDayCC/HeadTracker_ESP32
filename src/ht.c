@@ -14,13 +14,13 @@
 #include "ppm.h"
 #include "touch.h"
 #include "buzzer.h"
+#include "espnow.h"
 
 void headtracker_start(void)
 {
-    touch_Init();
-    buzzer_init();
     io_Init();
     imu_Init();
+    ht_espnow_init();
 #ifdef HT_LITE
     PPMinit();
     bt_tx_init();

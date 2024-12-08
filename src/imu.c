@@ -109,8 +109,8 @@ int imu_Init(void)
 
     //create task thread
     ESP_LOGI(IMU_TAG, "xTaskCreate");
-    xTaskCreate(imu_Thread, "imu_Thread", IMU_THREAD_STACK_SIZE_SET, NULL, IMU_THREAD_PRIORITY_SET, NULL);
-    xTaskCreate(calculate_Thread, "calculate_Thread", CAL_THREAD_STACK_SIZE_SET, NULL, CAL_THREAD_PRIORITY_SET, NULL);
+    xTaskCreatePinnedToCore(imu_Thread, "imu_Thread", IMU_THREAD_STACK_SIZE_SET, NULL, IMU_THREAD_PRIORITY_SET, NULL, 1);               // run on core1
+    xTaskCreatePinnedToCore(calculate_Thread, "calculate_Thread", CAL_THREAD_STACK_SIZE_SET, NULL, CAL_THREAD_PRIORITY_SET, NULL, 1);   // run on core1
     // for (;;)
     // {
     //     // acc data size(2 bytes * 3) + gyro data size(2 bytes * 3)
@@ -451,14 +451,19 @@ void calculate_Thread(void *pvParameters)
         // int elipsed = micros64() - timestamp;
         // printf("[%f]:\n", deltaTime);
 
-        printf("%f,%f,%f\n", tilt - tiltoffset,
-               roll - rolloffset,
-               pan - panoffset); // test
+        // printf("%f,%f,%f\n", tilt - tiltoffset,
+        //        roll - rolloffset,
+        //        pan - panoffset); // test
+
+        // FusionAhrsFlags test_flags;
+        // test_flags =FusionAhrsGetFlags(&ahrs);
+        // printf("%d,%d,%d,%d\n",test_flags.initialising, test_flags.angularRateRecovery, test_flags.accelerationRecovery,test_flags.magneticRecovery);
 
         // printf("%f,%f,%f\n", racc.axis.x, racc.axis.y, racc.axis.z); // test
         // printf("%f,%f,%f\n", gyr.axis.x, gyr.axis.y, gyr.axis.z); // test
         // printf("%f,%f,%f\n", gyroscope.axis.x, gyroscope.axis.y, gyroscope.axis.z); // test
         // printf("%f,%f,%f\n", accelerometer.axis.x, accelerometer.axis.y, accelerometer.axis.z); // test
+        // printf("%f,%f,%f,%f,%f,%f\r\n", gyroscope.array[0], gyroscope.array[1], gyroscope.array[2], accelerometer.array[0], accelerometer.array[1], accelerometer.array[2]); // test
 
         // printPPMdata(); // test
 
