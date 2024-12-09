@@ -19,6 +19,8 @@
 void headtracker_start(void)
 {
     io_Init();
+    // is bind button is active when start, enter bind mode.
+    set_binding_mode(io_check_bind_trigger());
     imu_Init();
     ht_espnow_init();
 #ifdef HT_LITE

@@ -182,6 +182,12 @@ bool isLongStart(void)
     return false;
 }
 
+// Check is bind button(same as ota button) is active
+bool io_check_bind_trigger(void)
+{
+    return (gpio_get_level(GPIO_OTA_BUTTON) == GPIO_OTA_BUTTON_ACTIVE_LEVEL? true : false);
+}
+
 void io_Thread(void *pvParameters)
 {
     for (;;)

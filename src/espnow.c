@@ -28,7 +28,12 @@ static const char *BIND_MSG_TX = "TXTXTX"; // size of payload is 6
 // static const char *BIND_MSG_rX = "RXRXRX"; // size of payload is 6
 
 static QueueHandle_t espnow_queue;
-static bool is_binding_mode = true;
+static bool is_binding_mode = false;
+
+void set_binding_mode(bool true_or_false)
+{
+    is_binding_mode = true_or_false;
+}
 
 static const uint8_t broadcast_mac[ESP_NOW_ETH_ALEN] = {0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF};
 static uint8_t local_mac[ESP_NOW_ETH_ALEN] = {};
@@ -215,8 +220,10 @@ static void espnow_bind_task()
     }
 }
 
-// static void espnow_task()
-// {
+static void espnow_task()
+{
+    ESP_LOGI(TAG, "Running espnow_task.");
+    vTaskDelete(NULL);
 //     espnow_event_recv_cb_t recv_cb;
 
 //     uint8_t recv_state = 0;
@@ -349,7 +356,7 @@ static void espnow_bind_task()
 //             break;
 //         }
 //     }
-// }
+}
 
 static esp_err_t espnow_init(void)
 {
@@ -389,10 +396,10 @@ static esp_err_t espnow_init(void)
 
         xTaskCreate(espnow_bind_task, "espnow_bind_task", 2048, NULL, PRIORITY_HIGH, NULL);
     }
-    // else
-    // {
-    //     xTaskCreate(espnow_task, "espnow_task", 2048, NULL, PRIORITY_HIGH, NULL);
-    // }
+    else
+    {
+        xTaskCreate(espnow_task, "espnow_task", 2048, NULL, PRIORITY_HIGH, NULL);
+    }
     return ESP_OK;
 }
 
