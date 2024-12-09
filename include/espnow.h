@@ -1,12 +1,3 @@
-/* ESPNOW Example
-
-   This example code is in the Public Domain (or CC0 licensed, at your option.)
-
-   Unless required by applicable law or agreed to in writing, this
-   software is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR
-   CONDITIONS OF ANY KIND, either express or implied.
-*/
-
 #ifndef ESPNOW_H
 #define ESPNOW_H
 
@@ -30,7 +21,7 @@ typedef enum {
     ESPNOW_FUNCTION_GET_DATA,
 } espnow_frame_function_t;
 
-
+void set_binding_mode(bool true_or_false);
 
 
 
