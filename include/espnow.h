@@ -22,7 +22,7 @@ typedef enum {
 } espnow_frame_function_t;
 
 void set_binding_mode(bool true_or_false);
-
+void espnow_data_prepare(uint16_t chanl_till, uint16_t chanl_roll, uint16_t chanl_pan);
 
 
 // typedef enum {

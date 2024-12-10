@@ -11,6 +11,7 @@
 
 #include "io.h"
 #include "bt.h"
+#include "espnow.h"
 #include "imu.h"
 #include "ppm.h"
 #include "Fusion.h"
@@ -431,7 +432,7 @@ void calculate_Thread(void *pvParameters)
         if (panch > 0)
             channel_data[panch - 1] = isPanEn() == true ? panout_ui : getPanCnt();
 
-#ifdef HT_LITE
+        #ifdef HT_LITE
         // 10) Set the PPM Outputs
         for (uint8_t i = 0; i < PpmOut_getChnCount(); i++)
         {
@@ -447,7 +448,11 @@ void calculate_Thread(void *pvParameters)
 
         // // 12) Set the BT Outputs
         buildBtChannels(channel_data, BT_CHANNELS);
-#endif
+        
+        #elif HT_NANO
+        // Send channel data to esp now task.
+        espnow_data_prepare(channel_data[tltch - 1], channel_data[rllch - 1], channel_data[panch - 1]);
+        #endif
         // int elipsed = micros64() - timestamp;
         // printf("[%f]:\n", deltaTime);
 

@@ -34,6 +34,7 @@
 #define IMU_THREAD_PERIOD   10
 #define CAL_THREAD_PERIOD   10
 #define BT_THREAD_PERIOD    8
+#define ESPNOW_SEND_PERIOD  10
 
 #define SAMPLE_RATE (int)(1000 / IMU_THREAD_PERIOD) // IMU sample rate, replace this with actual sample rate(Hz)
 
