@@ -58,14 +58,14 @@ static void wifi_init(void)
 
 static void espnow_send_cb(const uint8_t *mac_addr, esp_now_send_status_t status)
 {
-    if (status != ESP_NOW_SEND_SUCCESS)
-    {
-        ESP_LOGE(TAG, "Send error");
-    }
-    else
-    {
-        ESP_LOGI(TAG, "Send success");
-    }
+    // if (status != ESP_NOW_SEND_SUCCESS)
+    // {
+    //     ESP_LOGE(TAG, "Send error");
+    // }
+    // else
+    // {
+    //     ESP_LOGI(TAG, "Send success");
+    // }
 }
 
 static void espnow_recv_cb(const esp_now_recv_info_t *recv_info, const uint8_t *data, int len)
@@ -74,13 +74,9 @@ static void espnow_recv_cb(const esp_now_recv_info_t *recv_info, const uint8_t *
     if (memcmp(recv_info->des_addr, local_mac, ESP_NOW_ETH_ALEN))
     {
         // If in binding mode, receive broadcast data.
-        if (is_binding_mode && !memcmp(recv_info->des_addr, broadcast_mac, ESP_NOW_ETH_ALEN))
+        if (!is_binding_mode || memcmp(recv_info->des_addr, broadcast_mac, ESP_NOW_ETH_ALEN))
         {
-            /* In binding mode, do not return */
-        }
-        else
-        {
-            ESP_LOGI(TAG, "Message MAC address does not match");
+            // Ignore unicast message if in bind mode.
             return;
         }
     }
@@ -100,7 +96,7 @@ static void espnow_recv_cb(const esp_now_recv_info_t *recv_info, const uint8_t *
     // send received data to queue
     if (xQueueSend(espnow_re_queue, &recv_cb, 0) != pdTRUE)
     {
-        ESP_LOGW(TAG, "Send receive queue fail");
+        // ESP_LOGW(TAG, "Send receive queue fail");
         free(recv_cb.data);
     }
 }
@@ -164,24 +160,107 @@ void espnow_data_prepare(uint16_t chanl_till, uint16_t chanl_roll, uint16_t chan
     chanl_data[2] = chanl_pan;
 }
 
+#define ESPNOW_NVS_NAMESPACE "esp_now"
+#define ESPNOW_NVS_PEER_KEY "peer_mac"
+
+// Save the ESP-NOW peer information in NVS
+esp_err_t esp_now_save_peer(esp_now_peer_info_t *peer)
+{
+    nvs_handle_t nvs_handle;
+    esp_err_t err = nvs_open(ESPNOW_NVS_NAMESPACE, NVS_READWRITE, &nvs_handle);
+    if (err != ESP_OK)
+    {
+        ESP_LOGE(TAG, "Failed to open NVS");
+        return err;
+    }
+
+    err = nvs_set_blob(nvs_handle, ESPNOW_NVS_PEER_KEY, peer, sizeof(esp_now_peer_info_t));
+    if (err != ESP_OK)
+    {
+        ESP_LOGE(TAG, "Failed to write peer info into NVS");
+        return err;
+    }
+
+    // Commit
+    err = nvs_commit(nvs_handle);
+    if (err != ESP_OK)
+    {
+        ESP_LOGI(TAG, "Successfully write peer info into NVS");
+        return err;
+    }
+
+    // Close
+    nvs_close(nvs_handle);
+    return ESP_OK;
+}
+
+/**
+ * @brief Recover ESP-NOW peer fome NVS
+ * @return peer_addr: the peer address recovered from nvs
+ */
+uint8_t *esp_now_restore_peer(void)
+{
+    uint8_t *addr_ret;
+    nvs_handle_t nvs_handle;
+    esp_err_t ret = nvs_open(ESPNOW_NVS_NAMESPACE, NVS_READONLY, &nvs_handle);
+    if (ret != ESP_OK)
+    {
+        ESP_LOGE(TAG, "Failed to open NVS");
+        return NULL;
+    }
+
+    esp_now_peer_info_t *peer_info;
+    size_t peer_size = sizeof(esp_now_peer_info_t);
+    peer_info = malloc(sizeof(esp_now_peer_info_t));
+    // read peer from nvs.
+    ret = nvs_get_blob(nvs_handle, ESPNOW_NVS_PEER_KEY, peer_info, &peer_size);
+    if (ret != ESP_OK)
+    {
+        ESP_LOGE(TAG, "Failed to read peer from NVS");
+    }
+    else
+    {
+        // recover peer information
+        if (!esp_now_is_peer_exist(peer_info->peer_addr))
+        {
+            // add peer if not in ram yet.
+            ret = esp_now_add_peer(peer_info);
+            if (ret != ESP_OK)
+            {
+                ESP_LOGE(TAG, "Failed to add peer");
+            }
+            else
+            {
+                ESP_LOGI(TAG, "Restored peer: " MACSTR "", MAC2STR(peer_info->peer_addr));
+            }
+        }
+    }
+
+    // copy the mac address to be return.
+    addr_ret = malloc(ESP_NOW_ETH_ALEN);
+    memcpy(addr_ret, peer_info->peer_addr, ESP_NOW_ETH_ALEN);
+
+    free(peer_info);
+    nvs_close(nvs_handle);
+
+    return addr_ret;
+}
+
 static void espnow_task()
 {
-    espnow_frame_t frame;
-    esp_now_peer_info_t peer;
-    esp_now_peer_num_t peer_num;
+    uint8_t *peer_addr;
     esp_err_t err;
+    espnow_frame_t frame;
     TickType_t xLastWakeTime;
 
     // Initialise the xLastWakeTime variable with the current time.
     xLastWakeTime = xTaskGetTickCount();
 
     // Get peer information.
-    esp_now_get_peer_num(&peer_num);
-    ESP_LOGI(TAG, "%d peers in the list.", peer_num.total_num);
-    err = esp_now_fetch_peer(true, &peer);
-    if (err)
+    peer_addr = esp_now_restore_peer();
+    if (peer_addr == NULL)
     {
-        ESP_LOGE(TAG, "ESPNOW peer not found %d.", err);
+        ESP_LOGE(TAG, "ESPNOW peer not found.");
         vTaskDelete(NULL);
     }
 
@@ -192,11 +271,11 @@ static void espnow_task()
         frame.function = ESPNOW_FUNCTION_GET_DATA;
         frame.crc_8 = espnow_crc(&frame);
 
-        err = esp_now_send(peer.peer_addr, (uint8_t *)&frame, sizeof(frame));
-        if (err)
-        {
-            ESP_LOGE(TAG, "ESPNOW send failed %d.", err);
-        }
+        err = esp_now_send(peer_addr, (uint8_t *)&frame, sizeof(frame));
+        // if (err)
+        // {
+        //     ESP_LOGE(TAG, "ESPNOW send failed %d.", err);
+        // }
         xTaskDelayUntil(&xLastWakeTime, ESPNOW_SEND_PERIOD);
     }
 }
@@ -249,9 +328,8 @@ static void espnow_bind_task()
                     ESP_ERROR_CHECK(esp_now_add_peer(&peer));
                     success_flag = true;
                     ESP_LOGI(TAG, "Pair " MACSTR " success.", MAC2STR(peer.peer_addr));
-                    esp_now_peer_num_t peer_num;
-                    esp_now_get_peer_num(&peer_num);
-                    ESP_LOGI(TAG, "%d peers in the list.", peer_num.total_num);
+                    // save peer info into nvs.
+                    esp_now_save_peer(&peer);
                 }
             }
             free(recv_cb.data);
@@ -262,7 +340,7 @@ static void espnow_bind_task()
             xTaskCreate(espnow_task, "espnow_task", 2048, NULL, PRIORITY_HIGH, NULL);
             vTaskDelete(NULL);
         }
-        
+
         vTaskDelay(pdMS_TO_TICKS(100));
     }
 }
@@ -319,7 +397,7 @@ void ht_espnow_init(void)
     if (ret == ESP_ERR_NVS_NO_FREE_PAGES || ret == ESP_ERR_NVS_NEW_VERSION_FOUND)
     {
         ESP_LOGE(TAG, "nvs_flash_init failed.");
-        ESP_ERROR_CHECK(nvs_flash_erase());
+        // ESP_ERROR_CHECK(nvs_flash_erase());
         ret = nvs_flash_init();
     }
     ESP_ERROR_CHECK(ret);
