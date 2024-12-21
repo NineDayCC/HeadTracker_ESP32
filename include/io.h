@@ -26,9 +26,4 @@ bool isLongStart(void);
 void io_Init(void);
 void io_Thread(void *pvParameters);
 
-void BTN1_SINGLE_Click_Handler(void* btn);
-void BTN1_LONG_PRESS_START_Handler(void* btn);
-uint8_t read_button_GPIO(uint8_t button_id);
-bool io_check_bind_trigger(void);
-
 void led_bt_ctrl(uint8_t status);

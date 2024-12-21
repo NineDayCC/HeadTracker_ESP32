@@ -23,19 +23,8 @@ typedef enum {
 
 void set_binding_mode(bool true_or_false);
 void espnow_data_prepare(uint16_t chanl_till, uint16_t chanl_roll, uint16_t chanl_pan);
-
-
-// typedef enum {
-//     EXAMPLE_ESPNOW_SEND_CB,
-//     EXAMPLE_ESPNOW_RECV_CB,
-// } example_espnow_event_id_t;
-
-// typedef struct {
-//     uint8_t mac_addr[ESP_NOW_ETH_ALEN];
-//     esp_now_send_status_t status;
-// } example_espnow_event_send_cb_t;
-
-
+void ht_espnow_init(void);
+bool isBinding(void);
 
 // typedef union {
 //     example_espnow_event_send_cb_t send_cb;
@@ -65,5 +54,4 @@ void espnow_data_prepare(uint16_t chanl_till, uint16_t chanl_roll, uint16_t chan
 // } __attribute__((packed)) example_espnow_data_t;
 
 
-void ht_espnow_init(void);
 #endif
