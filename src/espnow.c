@@ -17,8 +17,9 @@
 #include "espnow.h"
 
 #include "defines.h"
+#include "buzzer.h"
 
-#define ESPNOW_QUEUE_SIZE 3
+#define ESPNOW_QUEUE_SIZE 1
 #define ESPNOW_CHANNEL 1 // range 0 to 14
 #define ESPNOW_ENABLE_LONG_RANGE false
 
@@ -27,17 +28,18 @@ static const char *TAG = "espnow";
 static const char *BIND_MSG_TX = "TXTXTX"; // size of payload is 6
 // static const char *BIND_MSG_rX = "RXRXRX"; // size of payload is 6
 
+static TaskHandle_t Handle_espnow_send_task;
 static QueueHandle_t espnow_re_queue;
 static bool is_binding_mode = false;
 static uint16_t chanl_data[6];
 
-void set_binding_mode(bool true_or_false)
-{
-    is_binding_mode = true_or_false;
-}
-
 static const uint8_t broadcast_mac[ESP_NOW_ETH_ALEN] = {0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF};
 static uint8_t local_mac[ESP_NOW_ETH_ALEN] = {};
+
+bool isBinding(void)
+{
+    return is_binding_mode;
+}
 
 /* WiFi should start before using ESPNOW */
 static void wifi_init(void)
@@ -246,7 +248,7 @@ uint8_t *esp_now_restore_peer(void)
     return addr_ret;
 }
 
-static void espnow_task()
+static void espnow_send_task()
 {
     uint8_t *peer_addr;
     esp_err_t err;
@@ -261,6 +263,7 @@ static void espnow_task()
     if (peer_addr == NULL)
     {
         ESP_LOGE(TAG, "ESPNOW peer not found.");
+        Handle_espnow_send_task = NULL;
         vTaskDelete(NULL);
     }
 
@@ -286,16 +289,50 @@ static void espnow_bind_task()
     espnow_frame_t frame;
     bool success_flag = false;
 
+    if (!is_binding_mode)
+    {
+        vTaskDelete(NULL);
+    }
+
+    // Delete send task before running bind task.
+    if (Handle_espnow_send_task != NULL)
+    {
+        vTaskDelete(Handle_espnow_send_task);
+        Handle_espnow_send_task = NULL;
+    }
+
+    // Add broadcast peer information to peer list if in binding mode.
+    esp_now_peer_info_t *peer = malloc(sizeof(esp_now_peer_info_t));
+    /* Add broadcast peer information to peer list. */
+    if (peer == NULL)
+    {
+        ESP_LOGE(TAG, "Malloc peer information fail");
+        vSemaphoreDelete(espnow_re_queue);
+        esp_now_deinit();
+        return;
+    }
+    memset(peer, 0, sizeof(esp_now_peer_info_t));
+    peer->channel = ESPNOW_CHANNEL;
+    peer->ifidx = WIFI_IF_STA;
+    peer->encrypt = false;
+    memcpy(peer->peer_addr, broadcast_mac, ESP_NOW_ETH_ALEN);
+    // Delete the old broadcast peer info before adding.
+    esp_now_del_peer(broadcast_mac);
+    ESP_ERROR_CHECK(esp_now_add_peer(peer));
+    free(peer);
+
     // Fill binding message.
     frame.framing_char = FRAMING_CHAR;
     frame.function = ESPNOW_FUNCTION_BIND;
     memcpy(frame.payload, BIND_MSG_TX, sizeof(frame.payload));
     frame.crc_8 = espnow_crc(&frame);
 
+    ESP_LOGI(TAG, "Start binding.");
+
     for (;;)
     {
         // Send binding message.
-        ESP_ERROR_CHECK(esp_now_send(broadcast_mac, (uint8_t *)&frame, sizeof(espnow_frame_t)));
+        esp_now_send(broadcast_mac, (uint8_t *)&frame, sizeof(espnow_frame_t));
         // Waiting for the other device's binding message.
         memset(&recv_cb, 0, sizeof(espnow_frame_t));
         // Do not bind again after success.
@@ -337,12 +374,25 @@ static void espnow_bind_task()
         if (success_flag)
         {
             is_binding_mode = false;
-            xTaskCreate(espnow_task, "espnow_task", 2048, NULL, PRIORITY_HIGH, NULL);
+            buzzer_set_state(BUZZER_SINGLE, 1000, 0);
+            ESP_LOGI(TAG, "End binding, start sending channal data.");
+            xTaskCreate(espnow_send_task, "espnow_send_task", 2048, NULL, PRIORITY_HIGH, &Handle_espnow_send_task);
             vTaskDelete(NULL);
         }
 
         vTaskDelay(pdMS_TO_TICKS(100));
     }
+}
+
+void set_binding_mode(bool true_or_false)
+{
+    // Only create task once if already in binding mode.
+    if (true_or_false && !is_binding_mode)
+    {
+        is_binding_mode = true_or_false;
+        xTaskCreate(espnow_bind_task, "espnow_bind_task", 2048, NULL, PRIORITY_HIGH, NULL);
+    }
+    is_binding_mode = true_or_false;
 }
 
 static esp_err_t espnow_init(void)
@@ -359,34 +409,7 @@ static esp_err_t espnow_init(void)
     ESP_ERROR_CHECK(esp_now_register_send_cb(espnow_send_cb));
     ESP_ERROR_CHECK(esp_now_register_recv_cb(espnow_recv_cb));
 
-    // Add broadcast peer information to peer list if in binding mode.
-    if (is_binding_mode)
-    {
-        esp_now_peer_info_t *peer = malloc(sizeof(esp_now_peer_info_t));
-        /* Add broadcast peer information to peer list. */
-        if (peer == NULL)
-        {
-            ESP_LOGE(TAG, "Malloc peer information fail");
-            vSemaphoreDelete(espnow_re_queue);
-            esp_now_deinit();
-            return ESP_FAIL;
-        }
-        memset(peer, 0, sizeof(esp_now_peer_info_t));
-        peer->channel = ESPNOW_CHANNEL;
-        peer->ifidx = WIFI_IF_STA;
-        peer->encrypt = false;
-        memcpy(peer->peer_addr, broadcast_mac, ESP_NOW_ETH_ALEN);
-        // Delete the old broadcast peer info before adding.
-        esp_now_del_peer(broadcast_mac);
-        ESP_ERROR_CHECK(esp_now_add_peer(peer));
-        free(peer);
-
-        xTaskCreate(espnow_bind_task, "espnow_bind_task", 2048, NULL, PRIORITY_HIGH, NULL);
-    }
-    else
-    {
-        xTaskCreate(espnow_task, "espnow_task", 2048, NULL, PRIORITY_HIGH, NULL);
-    }
+    xTaskCreate(espnow_send_task, "espnow_send_task", 2048, NULL, PRIORITY_HIGH, &Handle_espnow_send_task);
     return ESP_OK;
 }
 
