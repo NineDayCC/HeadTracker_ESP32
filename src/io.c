@@ -1,3 +1,5 @@
+#ifndef FRAMEWORK_ARDUINO
+
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
 #include "freertos/semphr.h"
@@ -271,4 +273,5 @@ void led_bt_ctrl(uint8_t status)
         gpio_set_level(GPIO_BT_STATUS_SET, !GPIO_BT_STATUS_SET_ACTIVE_LEVEL); // set led off
 }
 
+#endif
 #endif

@@ -1,3 +1,4 @@
+#ifndef FRAMEWORK_ARDUINO
 #include <stdlib.h>
 #include <time.h>
 #include <string.h>
@@ -430,3 +431,5 @@ void ht_espnow_init(void)
     wifi_init();
     espnow_init();
 }
+
+#endif

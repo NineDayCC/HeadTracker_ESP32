@@ -1,4 +1,6 @@
 #ifdef RECEIVER
+#ifndef FRAMEWORK_ARDUINO
+
 #include <stdio.h>
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
@@ -17,5 +19,6 @@ void receiver_start(void)
     PPMinit();
     bt_rx_init();
 }
+#endif
 
 #endif

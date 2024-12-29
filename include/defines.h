@@ -5,11 +5,13 @@
 #include <stdbool.h>
 #include <stdio.h>
 
+#ifndef FRAMEWORK_ARDUINO
 #include "driver/gpio.h"
 #include "esp_system.h"
 #include "esp_timer.h"
 #include "esp_log.h"
 #include "sdkconfig.h"
+#endif
 
 // Thread Priority Definitions
 #define PRIORITY_LOW 5
@@ -38,8 +40,10 @@
 
 #define SAMPLE_RATE (int)(1000 / IMU_THREAD_PERIOD) // IMU sample rate, replace this with actual sample rate(Hz)
 
+#ifndef FRAMEWORK_ARDUINO
 #define millis64()  esp_log_timestamp()
 #define micros64()  esp_timer_get_time()
+#endif
 
 #define MIN(i, j) (((i) < (j)) ? (i) : (j))
 #define MAX(i, j) (((i) > (j)) ? (i) : (j))

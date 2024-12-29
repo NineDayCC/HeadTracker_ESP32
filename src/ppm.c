@@ -1,4 +1,4 @@
-#ifndef HT_NANO
+#ifdef RECEIVER_LAUT
 #include "ppm.h"
 
 #include "freertos/FreeRTOS.h"

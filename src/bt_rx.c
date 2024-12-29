@@ -1,4 +1,4 @@
-#ifdef RECEIVER
+#ifdef RECEIVER_LAUT
 #include "bt.h"
 
 #include <stdint.h>
