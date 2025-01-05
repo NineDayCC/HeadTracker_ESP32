@@ -15,10 +15,11 @@
 #include "esp_mac.h"
 #include "esp_now.h"
 #include "esp_crc.h"
-#include "espnow.h"
+#include "app_espnow.h"
 
 #include "defines.h"
 #include "buzzer.h"
+#include "crc8.h"
 
 #define ESPNOW_QUEUE_SIZE 1
 #define ESPNOW_CHANNEL 1 // range 0 to 14
@@ -109,7 +110,7 @@ static inline uint8_t espnow_crc(espnow_frame_t *pvFrame)
 {
     // initial number: 0
     // calculate all data in frame except crc byte itself.
-    return esp_crc8_le(0, (uint8_t *)pvFrame, sizeof(espnow_frame_t) - 1);
+    return crc8_calculate((uint8_t *)pvFrame, sizeof(espnow_frame_t) - 1);
 }
 
 // Unpair all peers.

@@ -71,6 +71,7 @@ void IRAM_ATTR ppm_counter_interrupt_fn(void)
         if (!buildingdata)
             memcpy(isrchsteps, chsteps, sizeof(chsteps));
         curstep = 0;
+        buildChannels();
     }
 
     // Set next alarm
@@ -147,6 +148,9 @@ void PpmOut_setChannel(int chan, uint16_t val)
     }
 }
 
-int PpmOut_getChnCount() { return ch_count; }
+uint16_t PpmOut_getChannel(uint16_t chan)
+{
+    return ch_values[chan];
+}
 
 #endif
