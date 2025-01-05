@@ -13,6 +13,7 @@
 #elif RECEIVER_PPM
 #define GPIO_LED_STATUS     4
 #define GPIO_PPM_OUT        12
+#define GPIO_BIND_BUTTON    13
 #endif
 
 
