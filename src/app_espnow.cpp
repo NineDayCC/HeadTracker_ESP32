@@ -206,7 +206,7 @@ void rx_espnow_loop(void)
                     PpmOut_setChannel(getTiltChl(), chanl_till);
                     PpmOut_setChannel(getRollChl(), chanl_roll);
                     PpmOut_setChannel(getPanChl(), chanl_pan);
-                    Serial.printf("%d %d %d\n", PpmOut_getChannel(getTiltChl()), PpmOut_getChannel(getRollChl()), PpmOut_getChannel(getPanChl()));
+                    Serial.printf("%d,%d,%d\n", PpmOut_getChannel(getTiltChl()), PpmOut_getChannel(getRollChl()), PpmOut_getChannel(getPanChl()));
                 }
             }
             is_recv_cb_data = false;
