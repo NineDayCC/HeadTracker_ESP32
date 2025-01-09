@@ -221,9 +221,9 @@ static const float ascale[4] = {
 //------------------------------------------------------------------------
 // -----------------Set acc/gryo full scale and odr Here------------------
 static const enum icm42688_accel_fs acc_fs = ICM42688_ACCEL_FS_2G;
-static const enum icm42688_gyro_fs gyr_fs = ICM42688_GYRO_FS_2000;
-static const enum icm42688_accel_odr acc_odr = ICM42688_ACCEL_ODR_1000;
-static const enum icm42688_gyro_odr gyr_odr = ICM42688_GYRO_ODR_1000;
+static const enum icm42688_gyro_fs gyr_fs = ICM42688_GYRO_FS_1000;
+static const enum icm42688_accel_odr acc_odr = ICM42688_ACCEL_ODR_200;
+static const enum icm42688_gyro_odr gyr_odr = ICM42688_GYRO_ODR_200;
 
 // Write one register value
 static int spi_write_register(spi_device_handle_t dev, uint8_t reg, uint8_t data)

@@ -32,16 +32,16 @@ TrackerSettings trkset = {
     .v.panChl = 8,  // Pan channel
 
     .v.accOffset = {0.0f, 0.0f, 0.0f}, // in g
-    .v.gyrOffset = {-1.58f, 0.52f, -0.984f}, // in degress
+    .v.gyrOffset = {-1.69f, -0.75f, 0.699f}, // in degress
     // .v.gyrOffset = {0.1192821793f, 0.512078988f, 0.4421201354f}, // in degress
     // .v.gyrOffset = {0.0f, 0.0f, 0.0f}, // in degress
 
-    .v.ppmininvert = true,
+    .v.ppmininvert = false,
     .v.ppmframe = 20000, // PPM Frame Length (us)
     .v.ppmsync = 300,    // PPM Sync Pulse Length (us)
     .v.ppmchcnt = 8,     // PPM channels to output
 
-    .v.btmode = 1,      //0:off 1:output mode
+    .v.btmode = 0,      //0:off 1:output mode
 };
 
 

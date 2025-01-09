@@ -36,9 +36,9 @@ static spi_device_handle_t imu_dev;
 
 // Install angle rotation
 const float R[3][3] = {
-    {1, 0, 0},
-    {0, 1, 0},
-    {0, 0, 1}
+    {0.9816272, -0.1736482, 0.0868241},
+    {0.1736482, 0.9848078,  0.0},
+    {-0.0871557,    0.0,    0.9961947}
 };
 
 static FusionVector racc = {0}; // Raw values in g
@@ -221,7 +221,7 @@ void calculate_Thread(void *pvParameters)
     const FusionAhrsSettings settings = {
         .convention = FusionConventionNwu,
         .gain = 0.5f,
-        .gyroscopeRange = 2000.0f, /* replace this with actual gyroscope range in degrees/s */
+        .gyroscopeRange = 1000.0f, /* replace this with actual gyroscope range in degrees/s */
         .accelerationRejection = 10.0f,
         .magneticRejection = 10.0f,
         .recoveryTriggerPeriod = 5 * SAMPLE_RATE, /* 5 seconds */
@@ -242,10 +242,10 @@ void calculate_Thread(void *pvParameters)
 
         // Rotate the imu data
         accelerometer.axis.x = (R[0][0] * acc.axis.x + R[0][1] * acc.axis.y + R[0][2] * acc.axis.z);
-        accelerometer.axis.y = -(R[1][0] * acc.axis.x + R[1][1] * acc.axis.y + R[1][2] * acc.axis.z);
+        accelerometer.axis.y = (R[1][0] * acc.axis.x + R[1][1] * acc.axis.y + R[1][2] * acc.axis.z);
         accelerometer.axis.z = (R[2][0] * acc.axis.x + R[2][1] * acc.axis.y + R[2][2] * acc.axis.z);
         gyroscope.axis.x = (R[0][0] * gyr.axis.x + R[0][1] * gyr.axis.y + R[0][2] * gyr.axis.z);
-        gyroscope.axis.y = -(R[1][0] * gyr.axis.x + R[1][1] * gyr.axis.y + R[1][2] * gyr.axis.z);
+        gyroscope.axis.y = (R[1][0] * gyr.axis.x + R[1][1] * gyr.axis.y + R[1][2] * gyr.axis.z);
         gyroscope.axis.z = (R[2][0] * gyr.axis.x + R[2][1] * gyr.axis.y + R[2][2] * gyr.axis.z);
         // memcpy(accelerometer.array, acc.array, sizeof(accelerometer));
         // memcpy(gyroscope.array, gyr.array, sizeof(gyroscope));
@@ -254,12 +254,12 @@ void calculate_Thread(void *pvParameters)
         {
             memcpy(magnetometer.array, mag.array, sizeof(magnetometer));
             magnetometer = FusionCalibrationMagnetic(magnetometer, softIronMatrix, hardIronOffset);
+            magnetometer = FusionCalibrationMagnetic(magnetometer, softIronMatrix, hardIronOffset);
         }
 
         // Apply calibration
         gyroscope = FusionCalibrationInertial(gyroscope, gyroscopeMisalignment, gyroscopeSensitivity, gyroscopeOffset);
         accelerometer = FusionCalibrationInertial(accelerometer, accelerometerMisalignment, accelerometerSensitivity, accelerometerOffset);
-        magnetometer = FusionCalibrationMagnetic(magnetometer, softIronMatrix, hardIronOffset);
 
         // Update gyroscope offset correction algorithm
         gyroscope = FusionOffsetUpdate(&offset, gyroscope);
@@ -456,9 +456,9 @@ void calculate_Thread(void *pvParameters)
         // int elipsed = micros64() - timestamp;
         // printf("[%f]:\n", deltaTime);
 
-        // printf("%f,%f,%f\n", tilt - tiltoffset,
-        //        roll - rolloffset,
-        //        pan - panoffset); // test
+        printf("%f,%f,%f\n", tilt - tiltoffset,
+               roll - rolloffset,
+               pan - panoffset); // test
 
         // FusionAhrsFlags test_flags;
         // test_flags =FusionAhrsGetFlags(&ahrs);
