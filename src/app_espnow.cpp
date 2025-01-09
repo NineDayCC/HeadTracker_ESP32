@@ -199,12 +199,12 @@ void rx_espnow_loop(void)
                 if (recv_cb_data.function == ESPNOW_FUNCTION_GET_DATA)
                 {
                     // Prase channel data.
-                    uint16_t chanl_till = (recv_cb_data.payload[1] << 8) | recv_cb_data.payload[0];
-                    uint16_t chanl_roll = (recv_cb_data.payload[3] << 8) | recv_cb_data.payload[2];
+                    uint16_t chanl_roll = (recv_cb_data.payload[1] << 8) | recv_cb_data.payload[0];
+                    uint16_t chanl_till = (recv_cb_data.payload[3] << 8) | recv_cb_data.payload[2];
                     uint16_t chanl_pan = (recv_cb_data.payload[5] << 8) | recv_cb_data.payload[4];
                     // Send channel data to ppm.
-                    PpmOut_setChannel(getTiltChl(), chanl_till);
                     PpmOut_setChannel(getRollChl(), chanl_roll);
+                    PpmOut_setChannel(getTiltChl(), chanl_till);
                     PpmOut_setChannel(getPanChl(), chanl_pan);
                     Serial.printf("%d,%d,%d\n", PpmOut_getChannel(getTiltChl()), PpmOut_getChannel(getRollChl()), PpmOut_getChannel(getPanChl()));
                 }

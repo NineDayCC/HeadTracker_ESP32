@@ -157,10 +157,10 @@ static void espnow_unpairAll(void)
  * @param chanl_roll: Roll pwm data range 0-2500
  * @param chanl_pan: Pan pwm data range 0-2500
  */
-void espnow_data_prepare(uint16_t chanl_till, uint16_t chanl_roll, uint16_t chanl_pan)
+void espnow_data_prepare(uint16_t chanl_roll, uint16_t chanl_till, uint16_t chanl_pan)
 {
-    chanl_data[0] = chanl_till;
-    chanl_data[1] = chanl_roll;
+    chanl_data[0] = chanl_roll;
+    chanl_data[1] = chanl_till;
     chanl_data[2] = chanl_pan;
 }
 
