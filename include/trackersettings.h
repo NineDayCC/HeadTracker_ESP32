@@ -111,9 +111,9 @@ inline uint16_t getRollCnt(void) { return trkset.v.rollCnt; }
 inline uint16_t getTiltCnt(void) { return trkset.v.tiltCnt; }
 inline uint16_t getPanCnt(void) { return trkset.v.panCnt; }
 
-inline uint8_t getRollChl(void) { return trkset.v.rollChl; }
-inline uint8_t getTiltChl(void) { return trkset.v.tiltChl; }
-inline uint8_t getPanChl(void) { return trkset.v.panChl; }
+inline uint8_t getRollChl(void) { return trkset.v.rollChl-1; }
+inline uint8_t getTiltChl(void) { return trkset.v.tiltChl-1; }
+inline uint8_t getPanChl(void) { return trkset.v.panChl-1; }
 
 inline float getAccOffset(uint8_t xyz) { return trkset.v.accOffset[xyz]; }
 inline float getGyrOffset(uint8_t xyz) { return trkset.v.gyrOffset[xyz]; }

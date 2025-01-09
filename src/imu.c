@@ -456,9 +456,9 @@ void calculate_Thread(void *pvParameters)
         // int elipsed = micros64() - timestamp;
         // printf("[%f]:\n", deltaTime);
 
-        printf("%f,%f,%f\n", tilt - tiltoffset,
-               roll - rolloffset,
-               pan - panoffset); // test
+        // printf("%f,%f,%f\n", tilt - tiltoffset,
+        //        roll - rolloffset,
+        //        pan - panoffset); // test
 
         // FusionAhrsFlags test_flags;
         // test_flags =FusionAhrsGetFlags(&ahrs);
