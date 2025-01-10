@@ -20,6 +20,7 @@
 // Defines
 #define PPM_PIN GPIO_PPM_OUT_SET // shorter macro name
 #define PPM_INIT_DELAY 500000    // ppm start delay in us
+#define PPM_COMPENSATE 3        // Compensate for interrupt latency
 
 //------------------------------------------------------------------------------
 
@@ -75,7 +76,7 @@ void IRAM_ATTR ppm_counter_interrupt_fn(void)
     }
 
     // Set next alarm
-    ITimer.setInterval(isrchsteps[curstep], ppm_counter_interrupt_fn);
+    ITimer.setInterval(isrchsteps[curstep] - PPM_COMPENSATE, ppm_counter_interrupt_fn);
     curstep++;
 }
 
