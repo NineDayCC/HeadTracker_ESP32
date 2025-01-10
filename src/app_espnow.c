@@ -33,6 +33,7 @@ static const char *BIND_MSG_TX = "TXTXTX"; // size of payload is 6
 static TaskHandle_t Handle_espnow_send_task;
 static QueueHandle_t espnow_re_queue;
 static bool is_binding_mode = false;
+static bool is_send_failed = false;
 static uint16_t chanl_data[6];
 
 static const uint8_t broadcast_mac[ESP_NOW_ETH_ALEN] = {0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF};
@@ -54,6 +55,7 @@ static void wifi_init(void)
     ESP_ERROR_CHECK(esp_wifi_set_mode(WIFI_MODE_STA));
     ESP_ERROR_CHECK(esp_wifi_start());
     ESP_ERROR_CHECK(esp_wifi_set_channel(ESPNOW_CHANNEL, WIFI_SECOND_CHAN_NONE));
+    ESP_ERROR_CHECK(esp_wifi_set_max_tx_power(44)); // 11dbm
 
 #if ESPNOW_ENABLE_LONG_RANGE
     ESP_ERROR_CHECK(esp_wifi_set_protocol(ESPNOW_WIFI_IF, WIFI_PROTOCOL_11B | WIFI_PROTOCOL_11G | WIFI_PROTOCOL_11N | WIFI_PROTOCOL_LR));
@@ -62,14 +64,10 @@ static void wifi_init(void)
 
 static void espnow_send_cb(const uint8_t *mac_addr, esp_now_send_status_t status)
 {
-    // if (status != ESP_NOW_SEND_SUCCESS)
-    // {
-    //     ESP_LOGE(TAG, "Send error");
-    // }
-    // else
-    // {
-    //     ESP_LOGI(TAG, "Send success");
-    // }
+    if (status)
+    {
+        is_send_failed = true;
+    }
 }
 
 static void espnow_recv_cb(const esp_now_recv_info_t *recv_info, const uint8_t *data, int len)
@@ -253,7 +251,6 @@ uint8_t *esp_now_restore_peer(void)
 static void espnow_send_task()
 {
     uint8_t *peer_addr;
-    esp_err_t err;
     espnow_frame_t frame;
     TickType_t xLastWakeTime;
 
@@ -276,12 +273,17 @@ static void espnow_send_task()
         frame.function = ESPNOW_FUNCTION_GET_DATA;
         frame.crc_8 = espnow_crc(&frame);
 
-        err = esp_now_send(peer_addr, (uint8_t *)&frame, sizeof(frame));
-        // if (err)
-        // {
-        //     ESP_LOGE(TAG, "ESPNOW send failed %d.", err);
-        // }
-        xTaskDelayUntil(&xLastWakeTime, ESPNOW_SEND_PERIOD);
+        esp_now_send(peer_addr, (uint8_t *)&frame, sizeof(frame));
+        if (is_send_failed)
+        {
+            // If send failed, delay 20 times of the period to reduce power consumption.
+            xTaskDelayUntil(&xLastWakeTime, ESPNOW_SEND_PERIOD * 20);
+            is_send_failed = false;
+        }
+        else
+        {
+            xTaskDelayUntil(&xLastWakeTime, ESPNOW_SEND_PERIOD);
+        }
     }
 }
 
