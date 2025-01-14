@@ -55,7 +55,7 @@ static void wifi_init(void)
     ESP_ERROR_CHECK(esp_wifi_set_mode(WIFI_MODE_STA));
     ESP_ERROR_CHECK(esp_wifi_start());
     ESP_ERROR_CHECK(esp_wifi_set_channel(ESPNOW_CHANNEL, WIFI_SECOND_CHAN_NONE));
-    ESP_ERROR_CHECK(esp_wifi_set_max_tx_power(44)); // 11dbm
+    ESP_ERROR_CHECK(esp_wifi_set_max_tx_power(80)); // 20dbm
 
 #if ESPNOW_ENABLE_LONG_RANGE
     ESP_ERROR_CHECK(esp_wifi_set_protocol(ESPNOW_WIFI_IF, WIFI_PROTOCOL_11B | WIFI_PROTOCOL_11G | WIFI_PROTOCOL_11N | WIFI_PROTOCOL_LR));
@@ -277,8 +277,9 @@ static void espnow_send_task()
         if (is_send_failed)
         {
             // If send failed, delay 20 times of the period to reduce power consumption.
-            xTaskDelayUntil(&xLastWakeTime, ESPNOW_SEND_PERIOD * 20);
+            ESP_LOGE(TAG, "Send failed.");
             is_send_failed = false;
+            xTaskDelayUntil(&xLastWakeTime, ESPNOW_SEND_PERIOD * 20);
         }
         else
         {
