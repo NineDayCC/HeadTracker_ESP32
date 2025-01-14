@@ -20,7 +20,7 @@
 // Defines
 #define PPM_PIN GPIO_PPM_OUT_SET // shorter macro name
 #define PPM_INIT_DELAY 500000    // ppm start delay in us
-#define PPM_COMPENSATE 3        // Compensate for interrupt latency
+#define PPM_COMPENSATE 14        // Compensate for interrupt latency
 
 //------------------------------------------------------------------------------
 
