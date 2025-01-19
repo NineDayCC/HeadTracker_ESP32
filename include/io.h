@@ -22,6 +22,7 @@
 
 bool isSingleClick(void);
 bool isLongStart(void);
+bool is_OTA_Mode(void);
 
 void io_Init(void);
 void io_Thread(void *pvParameters);

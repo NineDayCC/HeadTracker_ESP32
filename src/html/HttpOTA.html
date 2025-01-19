@@ -1,0 +1,246 @@
+<style>
+   body{
+      background-color: #21242d;
+      color: #132c33;
+      height: 100%;
+      padding: 0;
+      margin: 0;
+      border: 0;
+   }
+   span{
+      font-size: 10px;
+   }
+   #divborder{
+      position: absolute;
+      left: 50%;
+      margin-left: -200px;  /*此处的负值是宽度的一半*/
+      top: 20%;
+      left: 50%;
+      width: 400px;
+      height: 400px;
+      border-radius: 5%;
+      border: 2px solid;
+      background-color: #f7f4ed;
+      text-align: center;
+   }
+   table{
+      margin: 20px 50px 20px 50px;
+   }
+   button{
+      width: 100%;
+      height: 30px;
+      border: none;
+      border-radius: 10px;
+      padding: 0;
+   }
+   button:active{
+	   border: 0.0625rem solid #f7f4ed;
+   }
+   #upload{
+      color: #f7f4ed;
+      background-color: #2c9678;
+   }
+   #Stop{
+      color: #f7f4ed;
+      background-color: #ed5126;
+   }
+#fileTd{
+   width:200px; 
+   height: 50px; 
+   position:relative;
+}
+#newfile{
+   position: absolute;
+   z-index: 1;
+   opacity: 0;
+}
+#fileButton{
+   z-index: 0;
+   color: #f7f4ed;
+   background-color: #5779c3;
+}
+#prgp{
+   margin-bottom: 5px;
+   border: 0;
+   border: 2px solid #2c9678;
+   border-radius: 10px;
+   width:300px; 
+   height:15px;
+}
+#prgp::-webkit-progress-bar {
+   background: #f7f4ed;
+   border-radius: 10px;
+}
+#prgp::-webkit-progress-value {
+   background: #2c9678;
+}
+
+</style>
+<div id="divborder">
+   <div style="padding-top: 10px;">
+      <span style="font-size: 20px;">Firmware update</span><br>
+   </div>
+   <hr>
+
+   <div>
+      <span style="font-size: 10px;">Running partition:</span><br>
+      <span id="Running" style="color: #2c9678;"></span>
+   </div>
+   
+   <table style="width: 300px;">
+      <tr>
+          <td id="fileTd" colspan="3">
+               <input id="newfile" type="file" style="width:100%;" onchange="setpath()" >
+                  <label for="newfile">
+                     <button id="fileButton" type="button">Choose a firmware</button>
+                  </label>
+          </td>
+      </tr>
+      <tr>
+         <td colspan="2"  style="width:200px;">
+              <button id="upload" type="button" onclick="upload()">Upload</button>
+         </td>
+         <td style="width:100px;">
+            <button id="Stop" type="button" onclick="StopUpload()">Stop</button>
+         </td>
+      </tr>
+   </table>
+   <progress id='prgp' value= '0'  max= '100'></progress>
+   <div id='prg' style="font-size: 10px;">progress: 0%</div><div id="time" style="font-size: 10px;">0k/s</div>
+   <hr>
+   <div>
+      <span style="font-size: 10px;">Response message:</span><br>
+      <span id="message"></span>
+   </div>
+</div>
+ 
+ <script>
+   var Running = document.getElementById("Running");
+   window.onload = function(){
+      fetch('/Now')
+      .then(response => {
+         if (response.status == 200) {
+            response.json()
+            .then(function(data){
+               Running.innerHTML = "OTA" + data.OTAsubtype + " offset: 0x" + data.address.toString(16) +
+               "<br>Ver: " + data.version +
+               "<br>Time: " + data.date + " " + data.time;
+            });
+         }else{
+            Running.innerHTML = "status: " + response.status;
+         }
+      })
+   }
+
+    function setpath(){
+      var default_path = document.getElementById("newfile").files[0].name;
+      document.getElementById("fileButton").innerHTML = default_path;
+    }
+
+
+   var xhr;
+   var ot;
+   var oloaded;
+   //上传文件方法
+   function upload() {
+      var fileInput = document.getElementById("newfile").files;
+      var message = document.getElementById("message");
+      message.innerHTML = "";
+      if (fileInput.length <= 0) {
+         message.innerHTML = "Unselected file!";
+         message.style.color = "#ED5126";
+      }else if(fileInput[0].size > 1000*1024){
+         message.innerHTML = "The file size must be less than 1000KB!";
+         message.style.color = "#ED5126";
+      }else{
+         var fileObj = fileInput[0]; // js 获取文件对象
+         var url = "/upload"; // 接收上传文件的后台地址
+         xhr = new XMLHttpRequest();  // XMLHttpRequest 对象
+         xhr.open("post", url, true); //post方式，url为服务器请求地址，true 该参数规定请求是否异步处理。
+         xhr.onload = uploadComplete; //请求完成
+         xhr.onerror =  uploadFailed; //请求失败
+         xhr.upload.onprogress = progressFunction;//【上传进度调用方法实现】
+         xhr.upload.onloadstart = function(){//上传开始执行方法
+               ot = new Date().getTime();   //设置上传开始时间
+               oloaded = 0;//设置上传开始时，以上传的文件大小为0
+         };
+         xhr.send(fileObj); //开始上传，发送form数据
+      }
+   }
+   //上传进度实现方法，上传过程中会频繁调用该方法
+   function progressFunction(evt) {
+      
+         var progressBar = document.getElementById("prgp");
+         var percentageDiv = document.getElementById("prg");
+         // event.total是需要传输的总字节，event.loaded是已经传输的字节。如果event.lengthComputable不为真，则event.total等于0
+         if (evt.lengthComputable) {//
+            progressBar.max = evt.total;
+            progressBar.value = evt.loaded;
+            percentageDiv.innerHTML = 'progress: ' + Math.round(evt.loaded / evt.total * 100) + "%";
+         }
+      
+      var time = document.getElementById("time");
+      var nt = new Date().getTime();//获取当前时间
+      var pertime = (nt-ot)/1000; //计算出上次调用该方法时到现在的时间差，单位为s
+      ot = new Date().getTime(); //重新赋值时间，用于下次计算
+      
+      var perload = evt.loaded - oloaded; //计算该分段上传的文件大小，单位b       
+      oloaded = evt.loaded;//重新赋值已上传文件大小，用以下次计算
+
+      //上传速度计算
+      var speed = perload/pertime;//单位b/s
+      var bspeed = speed;
+      var units = 'b/s';//单位名称
+      if(speed/1024>1){
+            speed = speed/1024;
+            units = 'k/s';
+      }
+      if(speed/1024>1){
+            speed = speed/1024;
+            units = 'M/s';
+      }
+      speed = speed.toFixed(1);
+      //剩余时间
+      var resttime = ((evt.total-evt.loaded)/bspeed).toFixed(1);
+      time.innerHTML = 'Speed: '+speed+units+', Remaining time: '+resttime+'s';
+         if(bspeed==0)
+            time.innerHTML = 'Upload cancelled!';
+            message.style.color = "#ED5126";
+   }
+   //上传成功响应
+   function uploadComplete(x) {
+      //服务断接收完文件返回的结果
+      if (xhr.status == 200) {   //发送成功
+         Running.innerHTML = "";
+         message.innerHTML = "File uploaded successfully<br>" + xhr.responseText + "<br>Waiting for the device to restart<br>waiting";
+         message.style.color = "#2C9678";
+         setInterval(function(){
+            fetch('/Now')
+            .then(response => {
+               if (response.status == 200) {
+                  location.reload(true);
+               }
+            })
+            message.innerHTML = message.innerHTML + " .";
+         },1000);
+      }else{
+         var errorMess = "status: " + xhr.status
+         + "<br>responseText: " + xhr.responseText
+         message.innerHTML = errorMess;
+         message.style.color ="#ED5126";
+      }
+   }
+   //上传失败响应
+   function uploadFailed(x) {
+      message.innerHTML = "Upload error!";
+      message.style.color ="#ED5126";
+   }
+   //终止上传
+   function StopUpload(){
+      xhr.abort();
+      message.innerHTML = "Upload terminated!";
+      message.style.color ="#ED5126";
+   }
+
+
+ </script>

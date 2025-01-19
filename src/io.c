@@ -5,6 +5,7 @@
 #include "freertos/semphr.h"
 #include "driver/gpio.h"
 #include "esp_log.h"
+#include "esp_rom_sys.h"
 
 #include "io.h"
 #include "multi_button.h"
@@ -23,6 +24,7 @@ static const uint8_t btn_touch_id = 0;
 static const uint8_t btn_func_id = 1;
 static struct Button btn_touch;
 static struct Button btn_func;
+static bool OTA_Mode_flag = false;
 
 SemaphoreHandle_t btn_touch_single_click_sem = NULL;
 SemaphoreHandle_t btn_touch_long_start_sem = NULL;
@@ -98,7 +100,7 @@ static void BTN_FUNC_SINGLE_Click_Handler(void *btn)
 
 static void BTN_FUNC_LONG_PRESS_START_Handler(void *btn)
 {
-    if (btn_func_long_start_sem != NULL)
+    if (btn_func_long_start_sem != NULL && !OTA_Mode_flag)
     {
         xSemaphoreGive(btn_func_long_start_sem);
         set_binding_mode(true);
@@ -259,6 +261,22 @@ void io_Init(void)
     xTaskCreatePinnedToCore(io_Thread, "io_Thread", IO_THREAD_STACK_SIZE_SET, NULL, IO_THREAD_PRIORITY_SET, NULL, 1); // run on core1
 }
 
+bool is_OTA_Mode(void)
+{
+    if (gpio_get_level(GPIO_OTA_BUTTON) == GPIO_OTA_BUTTON_ACTIVE_LEVEL)
+    {
+        esp_rom_delay_us(20000);
+        if (gpio_get_level(GPIO_OTA_BUTTON) == GPIO_OTA_BUTTON_ACTIVE_LEVEL)
+        {
+            OTA_Mode_flag = true;
+        }
+    }
+    else
+    {
+        OTA_Mode_flag = false;
+    }
+    return OTA_Mode_flag;
+}
 #ifdef HT_LITE
 
 /**
