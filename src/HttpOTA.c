@@ -1,3 +1,4 @@
+#ifdef HT_NANO
 #include "ota.h"
 
 #define WIFI_SSID "HeadTracker_OTA"
@@ -354,3 +355,4 @@ void HttpOTA_server_init()
     }
 }
 
+#endif

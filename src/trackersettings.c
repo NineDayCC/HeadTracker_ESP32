@@ -32,9 +32,8 @@ TrackerSettings trkset = {
     .v.panChl = 8,  // Pan channel
 
     .v.accOffset = {0.0f, 0.0f, 0.0f}, // in g
-    .v.gyrOffset = {-1.69f, -0.75f, 0.699f}, // in degress
-    // .v.gyrOffset = {0.1192821793f, 0.512078988f, 0.4421201354f}, // in degress
-    // .v.gyrOffset = {0.0f, 0.0f, 0.0f}, // in degress
+    // .v.gyrOffset = {-1.69f, -0.75f, 0.699f}, // in degress
+    .v.gyrOffset = {0.0f, 0.0f, 0.0f}, // in degress
 
     .v.ppmininvert = false,
     .v.ppmframe = 20000, // PPM Frame Length (us)
