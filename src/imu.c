@@ -34,12 +34,24 @@ static spi_device_handle_t imu_dev;
 static spi_device_handle_t imu_dev;
 #endif
 
+#define GOGGLE_G2 0
+#define GOGGLE_N3 1
+#define IMU_GOGGLE_PRESET   GOGGLE_G2
 // Install angle rotation
+#if IMU_GOGGLE_PRESET == GOGGLE_G2
 const float R[3][3] = {
     {0.9816272, -0.1736482, 0.0868241},
     {0.1736482, 0.9848078,  0.0},
     {-0.0871557,    0.0,    0.9961947}
 };
+#elif IMU_GOGGLE_PRESET == GOGGLE_N3
+const float R[3][3] = {
+    {0, 0, -1},
+    {1, 0, 0},
+    {0, -1, 0}
+};
+
+#endif
 
 static FusionVector racc = {0}; // Raw values in g
 static FusionVector rgyr = {0}; // Raw values in d/s
