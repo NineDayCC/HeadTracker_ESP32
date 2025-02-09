@@ -1,5 +1,5 @@
 # HeadTracker_ESP32
-This is a wireless headtracker based on https://github.com/dlktdr/HeadTracker. It runs on esp32-c3 which is a cheap but powerful chip.
+This is a wireless headtracker based on https://github.com/dlktdr/HeadTracker. It runs on esp32 which is a cheap but powerful chip.
 The purpose of this project is to make headtracker affordable for everyone.
 
 ## Feature
