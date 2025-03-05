@@ -23,7 +23,7 @@ html_theme_options['icon_links'] = [
             "icon": "fa-brands fa-github",
             # The type of image to be used (see below for details)
             "type": "fontawesome",
-        }
+        },
         {
             "name": "English",
             "url": "https://docs.nineday.cc/projects/headtracker-esp32/en/latest/index.html#",
