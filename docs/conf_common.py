@@ -53,6 +53,7 @@ html_theme_options = {
     "use_issues_button": True,
     "show_navbar_depth": 2,
     "show_toc_level": 2,
+    "navbar_end": ["language.html"]
 }
 
 tippy_skip_anchor_classes = ("headerlink", "sd-stretched-link", "sd-rounded-pill")
