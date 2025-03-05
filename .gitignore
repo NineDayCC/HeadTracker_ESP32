@@ -21,3 +21,7 @@ venv.bak/
 
 # Translations
 *.mo
+
+# python
+__pycache__
+_build
