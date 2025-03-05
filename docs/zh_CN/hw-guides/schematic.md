@@ -1,6 +1,8 @@
 # 原理图
 
+:::{note}
 获取工程文件，请跳转至[立创开源广场](http://oshwhub.com/nineday/headtracker_esp32-nano-wu-xian-tou-zhui)
+:::
 
 ## Nano 发射端
 
@@ -32,6 +34,10 @@
 | GPIO20 | 27 | BUTTON | 微动开关输入 |
 | U0RXD | 40 | RX | 烧录串口RX |
 | U0TXD | 41 | TX | 烧录串口TX |
+:::
+
+:::{note}
+ESP32/ESP8266通过串口进行烧录时，需要将烧录短接口与GND短接。
 :::
 
 ## Nano 接收端

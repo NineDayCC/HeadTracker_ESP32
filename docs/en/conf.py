@@ -25,7 +25,7 @@ html_theme_options['icon_links'] = [
             "type": "fontawesome",
         },
         {
-            "name": "English",
+            "name": "中文",
             "url": "https://docs.nineday.cc/projects/headtracker-esp32/zh_CN/latest/index.html#",
             "icon": "fa-solid fa-language",
             "type": "fontawesome",
