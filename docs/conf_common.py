@@ -53,18 +53,6 @@ html_theme_options = {
     "use_issues_button": True,
     "show_navbar_depth": 2,
     "show_toc_level": 2,
-    "icon_links": [
-        {
-            # Label for this link
-            "name": "GitHub",
-            # URL where the link will redirect
-            "url": "https://github.com/NineDayCC/HeadTracker_ESP32",  # required
-            # Icon class (if "type": "fontawesome"), or path to local image (if "type": "local")
-            "icon": "fa-brands fa-square-github",
-            # The type of image to be used (see below for details)
-            "type": "fontawesome",
-        }
-   ]
 }
 
 tippy_skip_anchor_classes = ("headerlink", "sd-stretched-link", "sd-rounded-pill")
