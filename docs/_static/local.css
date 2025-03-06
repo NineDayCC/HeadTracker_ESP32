@@ -3,3 +3,8 @@
     color:var(--pst-color-text-base);
     border: 1px solid var(--pst-color-border);
 }
+
+.inline-image {
+    display: inline-block;
+    margin-right: 5%;
+  }
