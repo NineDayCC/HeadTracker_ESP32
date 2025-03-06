@@ -22,7 +22,7 @@ html_theme_options['icon_links'] = [
         },
         {
             "name": "中文",
-            "url": "https://docs.nineday.cc/projects/headtracker-esp32/zh_CN/latest/index.html",
+            "url": "https://docs.nineday.cc/projects/headtracker-esp32/zh-cn/latest/index.html",
             "icon": "fa-solid fa-language",
             "type": "fontawesome",
             "attributes": {
