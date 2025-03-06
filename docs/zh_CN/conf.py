@@ -15,13 +15,9 @@ html_theme_options['path_to_docs'] = "docs/zh_CN"
 
 html_theme_options['icon_links'] = [
             {
-            # Label for this link
             "name": "GitHub",
-            # URL where the link will redirect
             "url": "https://github.com/NineDayCC/HeadTracker_ESP32",  # required
-            # Icon class (if "type": "fontawesome"), or path to local image (if "type": "local")
             "icon": "fa-brands fa-github",
-            # The type of image to be used (see below for details)
             "type": "fontawesome",
         },
         {
@@ -29,6 +25,9 @@ html_theme_options['icon_links'] = [
             "url": "https://docs.nineday.cc/projects/headtracker-esp32/en/latest/index.html#",
             "icon": "fa-solid fa-language",
             "type": "fontawesome",
+            "attributes": {
+               "target" : "_self",
+            }
         }
    ]
 
