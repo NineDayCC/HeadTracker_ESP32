@@ -6,6 +6,8 @@ sd_hide_title: true
 
 # HeadTracker_ESP32 文档
 
+> Click [{fas}`language`](https://docs.nineday.cc/projects/headtracker-esp32/en/latest/index.html) in the left sidebar to switch to English.
+
 (welcome)=
 ## 欢迎使用本项目文档
 
@@ -70,7 +72,7 @@ sd_hide_title: true
 
 本项目从以下的项目中汲取灵感，在此特别感谢：
 
-1. [dlktdr/HeadTracker](https://github.com/dlktdr/HeadTracker)
+1. [{fab}`github` dlktdr/HeadTracker](https://github.com/dlktdr/HeadTracker)
 
 
 ```{toctree}
