@@ -6,7 +6,7 @@ sd_hide_title: true
 
 # HeadTracker_ESP32 Documentation
 
-> 点击左侧边栏的 [{fas}`language`](https://docs.nineday.cc/projects/headtracker-esp32/zh_CN/latest/index.html) 以切换至中文.
+> 点击左侧边栏的 [{fas}`language`](https://docs.nineday.cc/projects/headtracker-esp32/zh-cn/latest/index.html) 以切换至中文.
 
 (welcome)=
 ## Welcome to the project
