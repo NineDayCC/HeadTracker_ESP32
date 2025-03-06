@@ -66,6 +66,12 @@ sd_hide_title: true
 - 可共用遥控器上的 2s 电池进行供电，通过平衡头取电。
 - PPM 信号输出。
 
+## 鸣谢
+
+本项目从以下的项目中汲取灵感，在此特别感谢：
+
+1. [dlktdr/HeadTracker](https://github.com/dlktdr/HeadTracker)
+
 
 ```{toctree}
 :hidden:

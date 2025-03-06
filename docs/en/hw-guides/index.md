@@ -1,5 +1,6 @@
 # Hardware Guides
-## Sub heading 1
-### Sub heading 1
-## Sub heading 3
-### Sub heading 4
+
+```{toctree}
+schematic.md
+PCBA.md
+```
