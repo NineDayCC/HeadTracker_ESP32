@@ -33,6 +33,8 @@ myst_enable_extensions = [
     "tasklist",
 ]
 
+myst_enable_checkboxes = True
+
 languages = {
     'zh_CN': '中文',
     'en': 'English'
