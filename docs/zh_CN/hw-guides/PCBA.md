@@ -12,9 +12,15 @@
 
 ### 2D 图概览
 
-| ![2D_HT_nano_top](../../_static/2D_HT_nano_top.png) | ![2D_HT_nano_bottom](../../_static/2D_HT_nano_bottom.png) |
-|------------------------------|------------------------------|
+::::{grid} 2
 
+:::{grid-item}
+![2D_HT_nano_top](../../_static/2D_HT_nano_top.png)
+:::
+:::{grid-item}
+![2D_HT_nano_bottom](../../_static/2D_HT_nano_bottom.png)
+:::
+::::
 
 
 (BOM)=
@@ -49,8 +55,14 @@ PCB由三块小板拼接而成，第一步要先将他们分开。
 
 **使用剪钳从拼接处剪开，然后用锉刀修整边缘。**
 
-| ![Cut]( ../../_static/PCB_cut.png){.bg-primary w=300px align=center} | ![Polish]( ../../_static/PCB_polish.png){.bg-primary w=300px align=center} |
-|------------------------------|------------------------------|
+::::{grid} 1 2 2 2
+:::{grid-item}
+![Cut]( ../../_static/PCB_cut.png){.bg-primary w=300px align=center}
+:::
+:::{grid-item}
+![Polish]( ../../_static/PCB_polish.png){.bg-primary w=300px align=center}
+:::
+::::
 
 ### 2. 焊接主控
 
