@@ -17,7 +17,9 @@
 
 ### 引脚
 
+
 :::{table} 引脚连接表
+:name: io-list
 :width: 450px
 :widths: auto
 :align: center
