@@ -1,5 +1,7 @@
 # PCBA
 
+本页面会指导您完成头追硬件的制作。
+
 :::{note}
 获取工程文件，请跳转至[立创开源广场](http://oshwhub.com/nineday/headtracker_esp32-nano-wu-xian-tou-zhui)
 :::
@@ -112,10 +114,58 @@ PCB由三块小板拼接而成，第一步要先将他们分开。
 
 将主控板上的其他元器件焊接好。可以通过回流焊将 IMU、LDO、电阻电容等元器件焊接到位。
 
+同时，将蜂鸣器所在的板子一起回流焊。此块板子焊接难度较低，也可选择手焊。
+
+::::{grid} 1 2 2 2
+
 :::{grid-item}
-Images...
+![board1]( ../../_static/PCB_board1.png){.bg-primary w=300px align=center}
+:::
+
+:::{grid-item}
+![board3]( ../../_static/PCB_board3.png){.bg-primary w=300px align=center}
+:::
+
 ::::
 
+:::::{important}
+::::{grid} 1 2 2 2
+
+:::{grid-item}
+主控板上的 LDO 有一个 0 Ω 的短接电阻，如果遗漏会导致没有 3.3 V 供电。
+:::
+
+:::{grid-item}
+![bridge]( ../../_static/PCB_bridge.png){.bg-primary align=center}
+:::
+
+::::
+:::::
+
+接下来焊接 Type-C 板。需要使用锡膏，给引脚上锡后，将 Type-C 公头和母头分别插入板槽内，然后使用热吹风进行焊接。
+
+:::::{grid} 1 2 3 3
+
+::::{grid-item}
+:::{tip}
+Type-C 引脚处**锡膏量不宜过多**，否则容易连锡。
+
+锡膏建议涂在**远离针脚根部一端**，焊接时锡会自动爬到针脚上。  
+锡膏涂在根部容易连锡。
+:::
+::::
+
+:::{grid-item}
+![board2_solder]( ../../_static/PCB_board2_solder.png){.bg-primary align=center}
+:::
+
+:::{grid-item}
+![board2]( ../../_static/PCB_board2.png){.bg-primary align=center}
+:::
+
+:::::
+
+![3boards]( ../../_static/PCB_3boards.png){.bg-primary align=center}
 
 ### 4. 烧录初始固件
 
