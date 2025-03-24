@@ -169,6 +169,24 @@ Type-C 引脚处**锡膏量不宜过多**，否则容易连锡。
 
 ### 4. 烧录初始固件
 
+在进行组装前，需要给主控烧录初始固件。
+
+首先将 **VBUS**、**GND**、**TX**、**RX** 和**下载使能**引脚，用飞线连接出来。
+
+::::{grid} 1 2 2 2
+
+:::{grid-item}
+![jump_wire_2D]( ../../_static/PCB_jump_2D.png){.bg-primary w=300px align=center}
+:::
+
+:::{grid-item}
+![jump_wire]( ../../_static/PCB_jump_wire.png){.bg-primary w=300px align=center}
+:::
+
+::::
+
+
+
 ### 5. 组装
 
 ### 6. 测试
