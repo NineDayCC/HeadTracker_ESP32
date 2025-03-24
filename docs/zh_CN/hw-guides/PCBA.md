@@ -1,6 +1,6 @@
 # PCBA
 
-本页面会指导您完成头追硬件的制作。
+本页面会指导您完成头追硬件的制作，包括发射端和接收端。
 
 :::{note}
 获取工程文件，请跳转至[立创开源广场](http://oshwhub.com/nineday/headtracker_esp32-nano-wu-xian-tou-zhui)
@@ -24,9 +24,29 @@
 :::
 ::::
 
+:::{note}
+PCB 下单时，成品板厚选择 **0.8**，焊盘喷镀选择**沉金**，阻抗选择**JLC0416H-3313**。
+
+嘉立创每个月可领取一张免费沉金打样券，可以使用此券来免费打样。
+:::
 
 (BOM)=
 ## 物料清单
+
+详细物料清单(BOM)，点击下载BOM。[BOM_HT_nano.xlsx](../../_static/BOM_HT_nano.xlsx)
+
+:::{dropdown} 预览物料清单（点击收起）
+:open:
+:icon: table
+:animate: fade-in-slide-down 
+
+```{csv-table}
+:file: ../../_static/BOM_HT_nano.csv
+:delim: tab
+:header-rows: 2
+
+```
+:::
 
 ## 焊接组装
 
