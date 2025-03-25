@@ -245,7 +245,7 @@ Type-C 引脚处**锡膏量不宜过多**，否则容易连锡。
 
 首先在电脑（Windows 系统）上下载 [{octicon}`download`Flash 下载工具](https://dl.espressif.com/public/flash_download_tool.zip)
 
-打开 Flash 下载工具，双击 `.exe` 文件后进入工具主界面，如下图所示，`ChipType` 选择 `ESP32`，`WorkMode` 选择 `Develop`。然后点击 `ok` 进入配置界面。
+打开 Flash 下载工具，双击 `.exe` 文件后进入工具主界面，如下图所示，`ChipType` 选择 `ESP32`，`WorkMode` 选择 `Develop`，`LoadMode` 选择 `UART`。然后点击 `ok` 进入配置界面。
 
 ![ChipType]( ../../_static/Flash_ChipType.jpg){.bg-primary w=300px align=center}
 
