@@ -209,7 +209,9 @@ Type-C 引脚处**锡膏量不宜过多**，否则容易连锡。
 
 在进行组装前，需要给主控烧录初始固件。
 
-首先将 **VBUS**、**GND**、**TX**、**RX** 和**下载使能**引脚，用飞线连接出来。
+:::::{card}
+
+首先将 **`VBUS`**、**`GND`**、**`TX`**、**`RX`** 和 **`下载使能`** 引脚，用飞线连接出来。
 
 ::::{grid} 1 2 2 2
 
@@ -223,7 +225,69 @@ Type-C 引脚处**锡膏量不宜过多**，否则容易连锡。
 
 ::::
 
+接着按照以下线序，将主控板与 USB 转 TTL （CH340）模块相连接。
 
+| 主控板 | CH340 |
+| :---: | :---: |
+| VBUS | 5 V |
+| GND | GND |
+| TX | RX |
+| RX | TX |
+| 烧录使能 | GND |
+
+![wire]( ../../_static/PCB_wire.jpg){.bg-primary align=center}
+
+连接好线后，将 CH340 模块插入电脑中，开始准备烧录。
+
+:::::
+
+:::::{card}
+
+首先在电脑（Windows 系统）上下载 [{octicon}`download`Flash 下载工具](https://dl.espressif.com/public/flash_download_tool.zip)
+
+打开 Flash 下载工具，双击 `.exe` 文件后进入工具主界面，如下图所示，`ChipType` 选择 `ESP32`，`WorkMode` 选择 `Develop`。然后点击 `ok` 进入配置界面。
+
+![ChipType]( ../../_static/Flash_ChipType.jpg){.bg-primary w=300px align=center}
+
+进入配置界面后，按照以下红框所示顺序进行烧录，同时确保绿框内的参数一致。
+
+::::{grid} 1 2 2 2
+
+:::{grid-item-card}
+1. 点击 `...`，在弹出的窗口选择要烧录的文件 `merged.bin`。
+2. 勾选固件。
+3. 设置烧录地址为 `0`。
+4. 选择 CH340 模块对应的 COM 口。
+5. 点击 `START` 开始烧录。
+:::
+
+:::{grid-item}
+![Flash_setup]( ../../_static/Flash_setup.jpg){.bg-primary align=center}
+:::
+
+::::
+
+烧录完成后会显示以下界面。
+
+![Flash_finish]( ../../_static/Flash_finish.jpg){.bg-primary align=center}
+
+:::{tip}
+烧录完成后，检查一下程序是否能正常运行。
+
+将`下载使能`与 `GND` 断开连接，重新给主控板上电，观察主控板上的LED是否亮起。
+
+**绿灯亮起代表烧录成功**，程序正常工作。
+:::
+
+:::{note}
+初始固件为包含了 Bootloader 和分区信息的的固件，与 OTA 所用固件不同。**请勿选择 OTA 的固件来烧录**，否则无法工作。
+:::
+
+:::::
+
+:::{seealso}
+关于此 Flash 下载工具的更多使用指南，可查看 [Espressif 官方用户指南](https://docs.espressif.com/projects/esp-test-tools/zh_CN/latest/esp32/production_stage/tools/flash_download_tool.html)。
+:::
 
 ### 5. 组装
 
