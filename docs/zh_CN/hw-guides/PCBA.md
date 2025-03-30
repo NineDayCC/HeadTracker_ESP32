@@ -1,6 +1,6 @@
 # PCBA
 
-本页面会指导您完成头追硬件的制作，包括发射端和接收端。
+本页面会指导您完成头追硬件的制作，包括**发射端**和**接收端**。
 
 :::{note}
 获取工程文件，请跳转至[立创开源广场](http://oshwhub.com/nineday/headtracker_esp32-nano-wu-xian-tou-zhui)
@@ -30,15 +30,15 @@ PCB 下单时，成品板厚选择 **0.8**，焊盘喷镀选择**沉金**，阻�
 嘉立创每个月可领取一张免费沉金打样券，可以使用此券来免费打样。
 :::
 
-(BOM)=
+(HT_nano_BOM)=
 ## 物料清单
 
 详细物料清单(BOM)，点击下载BOM。[BOM_HT_nano.xlsx](../../_static/BOM_HT_nano.xlsx)
 
-:::{dropdown} 预览物料清单（点击收起）
-:open:
+:::{dropdown} 预览物料清单（Nano TX）
 :icon: table
 :animate: fade-in-slide-down 
+<!-- :open: -->
 
 ```{csv-table}
 :file: ../../_static/BOM_HT_nano.csv
@@ -269,7 +269,6 @@ Type-C 引脚处**锡膏量不宜过多**，否则容易连锡。
 
 烧录完成后会显示以下界面。
 
-
 ![Flash_finish]( ../../_static/Flash_finish.jpg){.bg-primary align=center}
 
 :::{tip}
@@ -347,3 +346,140 @@ Type-C 引脚处**锡膏量不宜过多**，否则容易连锡。
 
 
 # Nano 接收端
+
+## PCB
+
+### 2D 图概览
+
+::::{grid} 1 2 2 2
+
+:::{grid-item}
+![2D_RE_PPM_top](../../_static/2D_RE_PPM_top.jpg)
+:::
+:::{grid-item}
+![2D_RE_PPM_bottom](../../_static/2D_RE_PPM_bottom.jpg)
+:::
+::::
+
+:::{note}
+PCB 下单时，成品板厚选择 **1.0**，焊盘喷镀选择**有铅喷锡**或**无铅喷锡**（不能免费）。
+
+嘉立创每个月可领取一张2至4层板免费打样券，可以使用此券来免费打样。
+:::
+
+(RE_PPM_BOM)=
+## 物料清单
+
+详细物料清单(BOM)，点击下载BOM。[BOM_Receiver_ppm.xlsx](../../_static/BOM_Receiver_ppm.xlsx)
+
+:::{dropdown} 预览物料清单（Nano RX）
+:icon: table
+:animate: fade-in-slide-down 
+<!-- :open: -->
+
+```{csv-table}
+:file: ../../_static/BOM_Receiver_ppm.csv
+:delim: tab
+:header-rows: 2
+
+```
+:::
+
+
+## 焊接组装
+
+接收端的焊接比较简单，此处只做简单的流程说明。焊接过程不做过多叙述。
+
+### 1. 焊接
+
+::::{grid} 1 2 2 2
+
+:::{grid-item-card}
+先焊接 **ESP-07S** 模块。
+
+注意**底部的地焊盘**最好使用锡膏焊接上，可以提高导热，提供更好的电流回流路径。
+
+然后焊接剩余的器件。
+
+注意 XH2.54-3P 端子的方向。
+:::
+
+:::{grid-item}
+![PCB_RX_top](../../_static/PCB_RX_top.jpg)
+![PCB_RX_bottom](../../_static/PCB_RX_bottom.jpg)
+:::
+
+::::
+
+### 2. 烧录固件
+
+::::{grid} 1 2 2 2
+
+:::{grid-item-card}
+板子底部预留了烧录串口焊盘。按照以下顺序与 USB 转 TTL 模块（CH340）连接。
+
+| 接收端 | CH340 |
+| :---: | :---: |
+| 3.3 V | 3.3 V |
+| GND | GND |
+| TX | RX |
+| RX | TX |
+:::
+
+:::{grid-item}
+![Flash_RX_pin](../../_static/Flash_RX_pin.png)
+:::
+
+::::
+
+:::{card}
+给 CH340 通电前，用**镊子夹住**底部 **`SHORT`** 的两个焊盘，**短接**这两个引脚，进入 FLASH 烧录模式。
+
+**保持短接**，将 CH340 插到电脑 USB 口**通电后即可松开**，准备开始烧录。
+:::
+
+::::{grid} 1 2 2 2
+
+:::{grid-item-card}
+**打开 Flash 下载工具**，双击 `.exe` 文件后进入工具主界面，如下图所示，`ChipType` 选择 `ESP8266`，`WorkMode` 选择 `Develop`，`LoadMode` 选择 `UART`。然后点击 `ok` 进入配置界面。
+:::
+
+:::{grid-item}
+![Flash_RX_ChipType](../../_static/Flash_RX_ChipType.jpg)
+:::
+
+::::
+
+进入配置界面后，按照以下红框所示顺序进行烧录，同时确保绿框内的参数一致。
+
+::::{grid} 1 2 2 2
+
+:::{grid-item-card}
+1. 点击 `...`，在弹出的窗口选择要烧录的文件 `RX-firmware.bin`。
+2. 勾选固件。
+3. 设置烧录地址为 `0`。
+4. 选择 CH340 模块对应的 COM 口。
+5. 点击 `START` 开始烧录。
+:::
+
+:::{grid-item}
+![Flash_RX_setup]( ../../_static/Flash_RX_setup.jpg){.bg-primary align=center}
+:::
+
+::::
+
+烧录完成后会显示以下界面。
+
+![Flash_RX_finish]( ../../_static/Flash_RX_finish.jpg){.bg-primary align=center}
+
+
+### 3. 测试
+
+制作完成后推荐进行以下的基本功能测试：
+
+1. **LED** 测试。  
+    在电池接口处插入一个 **2S 电池**，通电程序运行后 LED 会自动亮起。
+3. 与发射端**配对**测试。  
+    按照[配对绑定](../getting-started/binding.md)的方法测试是否能正常配对。
+4. **PPM** 输出测试。  
+    使用一根 3.5 mm 的耳机线，将接收端与遥控器教练口连接到一起。在遥控器端配置教练口，测试是否有信号输出。
