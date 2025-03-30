@@ -9,68 +9,70 @@ sd_hide_title: true
 > 点击左侧边栏的 [{fas}`language`](https://docs.nineday.cc/projects/headtracker-esp32/zh-cn/latest/index.html) 以切换至中文.
 
 (welcome)=
-## Welcome to the project
+## Welcome to the Project
 
-Thank you for your interest in the HeadTracker_ESP32 project! This documentation aims to help you quickly learn how to use the head tracker supported by the HeadTracker_ESP32 project and how to make the hardware yourself.
+Thank you for your interest in the HeadTracker_ESP32 project! This documentation is designed to help you quickly learn how to use the head tracker supported by the HeadTracker_ESP32 project and how to build the corresponding hardware yourself.
 
 :::{note}
-The documentation is still being improved, feel free to [urge updates](support/contact.md)🕊️.
+The documentation is still being improved. Feel free to [request updates](support/contact.md)🕊️.
 :::
 
 :::{attention}
-This project is still in the testing phase, and many uncertain issues may occur. Please pay attention to safety when using it!
+This project is still in the testing phase, and many uncertainties may arise. Please use it with caution!
 :::
-
-<!-- (intention)=
-## Project Intention
-
-**Have you ever experienced such flying moments?**  
->When the fingertips gently push the joystick, the world in the FPV goggles suddenly tilts—  
->When flying through the treetops, the edge of the canopy flows with molten gold-like sunset glow;  
->During high-speed rolls, the wingtip tears through the clouds, turning the entire earth into a rotating canvas;  
->When diving to land, the runway rapidly expands in the field of vision, and you can even hear the faint sound of the landing gear brushing against the grass...
-
-This is the charm of first-person model flying, and a head tracker can unlock a more extreme dimension for you, allowing you to truly unlock a full range of immersion.
-
-There are already various open-source head tracker solutions contributed by predecessors on the internet, some of which are even so old that they are inaccessible. Each has its own advantages and limitations. Some are cheap but have limited functionality, while others are the opposite.
-
-:::{admonition} Main Purpose
-:class: tip
-This project aims to achieve some newer features at a lower cost, such as wireless connectivity. At the same time, the hardware and structure strive for plug-and-play, trying to eliminate various wiring and installation troubles, **improving the head tracker usage experience**, and **lowering the threshold for using head trackers**.
-::: -->
 
 (features)=
 ## Features
 
 :::{note}
-Currently, only the Nano version hardware is available, and it will continue to be optimized in the future. Friends who are interested are also welcome to join the development!
+Currently, only the Nano version hardware is available. Future optimizations are planned. Developers and enthusiasts are welcome to join the discussion and development!
 :::
 
 (nano-board)=
 ### Nano Version
-![Nano Tx]( ../_static/HT_Nano_front.jpg){.bg-warning w=300px align=center}  
+
+::::{grid} 1 2 2 2
+
+:::{grid-item}
+```{figure} ../_static/HT_Nano_side.png
+:figwidth: 80 %
+:alt: Nano Tx
+
+Nano Transmitter
+```
+:::
+
+:::{grid-item}
+```{figure} ../_static/PCB_RX_top.jpg
+:alt: Nano Receiver
+
+Nano Receiver
+```
+:::
+
+::::
 
 **Transmitter**
-- Size is only 15 mm * 15 mm * 8 mm (excluding the protruding Type-C head).
-- **Plug and play**, no battery required, no need to pre-install Velcro (requires video goggles with Type-C power output capability, such as DJI G2, otherwise additional power supply is needed).
-- **Dual Type-C** heads, using the head tracker does not affect the connection between the phone and the goggles, you can still watch the video transmission through the phone (DJI series).
-- Uses [esp-now](https://www.espressif.com/en/solutions/low-power-solutions/esp-now) protocol for pure wireless connection with the receiver.
-- Buzzer sound prompts.
-- Capacitive touch button.
-- Short press to center, long press to fix the attitude.
-- OTA firmware upgrade.
+- Compact size: only 15 mm * 15 mm * 8 mm (excluding the protruding Type-C connector).
+- **Plug-and-play**, no battery required, no need to pre-install Velcro (requires video goggles with Type-C power output capability, such as DJI G2; otherwise, external power is needed).
+- **Dual Type-C** design allows simultaneous use of the head tracker and connection between your phone and goggles, enabling you to **view the video feed on your phone** (DJI series).
+- Uses [esp-now](https://www.espressif.com/en/solutions/low-power-solutions/esp-now) protocol for a fully wireless connection with the receiver.
+- Built-in **buzzer** for audio feedback.
+- Capacitive **touch button**.
+- **Short press** to recenter, **long press** to lock the current orientation.
+- **OTA** firmware updates.
 
 ***
 
 **Receiver**
-- Size is only 34 mm * 17 mm * 9 mm (excluding antenna length).
-- Uses a 3.5 mm headphone cable to connect to the trainer port of the remote controller.
-- Can share the 2s battery on the remote controller for power supply, drawing power through the balance head.
-- PPM signal output.
+- Compact size: only 34 mm * 17 mm * 9 mm (excluding antenna length).
+- Connects to the transmitter via a 3.5 mm **audio cable to the trainer port** of the remote controller.
+- Can share power from the remote controller's 2s battery via the balance connector.
+- Outputs **PPM** signal.
 
-## Acknowledgements
+## Acknowledgments
 
-This project draws inspiration from the following projects, with special thanks to:
+This project draws inspiration from the following projects. Special thanks to:
 
 1. [{fab}`github` dlktdr/HeadTracker](https://github.com/dlktdr/HeadTracker)
 

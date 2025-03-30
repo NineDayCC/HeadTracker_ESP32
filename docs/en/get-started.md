@@ -4,26 +4,26 @@
 (preparation)=
 ## 1. Preparation
 
-To use the head tracker supported by this project, you need to prepare the following items:
+To use the head tracker supported by this project, you need the following items:
 
 - **Head Tracker Transmitter**
 - **Head Tracker Receiver**
-- **3.5 mm Headphone Cable/Trainer Cable**
+- **3.5 mm Audio Cable/Trainer Cable**
 
 :::{seealso}
 For specific requirements, please refer to [Hardware Requirements](getting-started/hardware-required.md)
 :::
 
 ::::{note}
-In addition to the items related to the head tracker in this project, you generally need some other accessories to achieve full head tracking functionality. This may vary depending on your equipment. Here are some references:
+In addition to the items related to the head tracker in this project, you may generally need some other accessories to achieve full head tracking functionality. The exact requirements vary depending on your equipment. The following is for reference only:
 
-:::{admonition} Other Accessories Reference
+:::{admonition} Additional Accessories Reference
 :class: tip dropdown
-- **Video Goggles** (e.g., DJI Goggles 2, DJI FPV Goggles V2, etc.)
-- **Camera + Video Transmission** (e.g., DJI O3, DJI O4 Air Unit)
-- **Gimbal** (e.g., Servo Gimbal for mounting the camera)
-- **Remote Controller** (needs to support PPM trainer signal input)
-- **Aircraft** (model aircraft for mounting the gimbal, usually a fixed-wing)
+- **FPV Goggles** (e.g., DJI Goggles 2, DJI FPV Goggles N3, etc.)
+- **Camera + Video Transmission System** (e.g., DJI O3, DJI O4 Air Unit)
+- **Gimbal** (e.g., servo gimbal for mounting the camera)
+- **Remote Controller** (must support PPM trainer signal input)
+- **Aircraft** (a model aircraft, typically a fixed-wing, for mounting the gimbal)
 :::
 
 ::::
@@ -32,88 +32,91 @@ In addition to the items related to the head tracker in this project, you genera
 (update)=
 ## 2. Firmware Update
 
-The head tracker supports [OTA](getting-started/flashing-firmware.md#ota) via WiFi for firmware updates.
+The head tracker supports [OTA](getting-started/flashing-firmware.md#ota) firmware updates via WiFi.  
 
-You need a computer or mobile phone that can connect to WiFi.
-
-By connecting to the hotspot created by the head tracker, you can upload the firmware to the head tracker to update it.
+You need a computer or smartphone with WiFi capability. Connect to the hotspot created by the head tracker, upload the firmware, and the update will be completed.  
 
 :::{attention}
-Ensure that the transmitter and receiver versions are consistent when using the head tracker, otherwise it may not work properly.
+Ensure that the transmitter and receiver are running the same firmware version; otherwise, the head tracker may not function properly.  
 :::
 
 
-(install)=
+(insatll)=
 ## 3. Installation
 
 #### Transmitter
 
-For video goggles with Type-C power output, the head tracker transmitter can be **directly plugged into the Type-C port** to work.
+For FPV goggles with Type-C power output, the head tracker transmitter can be **directly plugged into the Type-C port** to operate.  
 
-```{image} _static/TX_install.jpg
-:alt: TX_install
-:class: bg-primary
-:width: 50%
-:align: center
-```
+::::{grid} 1 2 2 2
+
+:::{grid-item}
+![TX_install]( ../_static/TX_install.jpg){.bg-warning w=300px align=center}  
+:::
+
+:::{grid-item}
+![TX_install2]( ../_static/TX_install2.jpg){.bg-warning w=300px align=center}  
+:::
+
+::::
+
 :::{hint}
-You can use a Type-C to Type-C cable to connect your phone to the video goggles and check if the phone shows charging to determine if there is power output.
+You can use a Type-C to Type-C cable to connect your smartphone to the FPV goggles. If the phone shows it is charging, it indicates the goggles have power output functionality.
 :::
 
 #### Receiver
 
-The installation method for different remote controllers may vary.
+The installation method for the receiver varies depending on the remote controller.  
 
-Some remote controllers can place the receiver **inside the battery compartment**, sharing the 2s battery with the remote controller.  
-
-Remote controllers with insufficient space need to choose other methods such as external mounting and power supply based on their own space.
+Some remote controllers allow the receiver to be **placed inside the battery compartment**, sharing a 2S battery with the controller.  
+For controllers with limited space, you may need to explore external mounting and power supply options based on the available space.  
 
 :::{seealso}
-For more installation methods, please refer to [Installation](getting-started/installing.md)
+For more details on installation methods, please refer to [Installation](getting-started/installing.md)
 :::
 
 
 (binding)=
 ## 4. Binding
 
-The transmitter and receiver only need to be paired once, and no repeated pairing is required afterward (OTA does not affect the original pairing).
+The transmitter and receiver only need to be paired once, and no repeated pairing is required afterward (OTA updates do not affect existing pairings).  
 
-**Pairing method:**  
-**1.** Power on the transmitter and receiver (order does not matter)  
-**2.** Long press the micro switch on the transmitter until the buzzer starts beeping intermittently  
-**3.** Long press the micro switch on the receiver to complete the pairing  
+**Pairing Steps:**  
+**1.** Power on both the transmitter and receiver (order does not matter).  
+**2.** **Press and hold** the **micro switch** on the transmitter until the buzzer starts **beeping intermittently**.  
+**3.** **Press and hold** the **micro switch** on the receiver to complete the pairing.  
 
-After successful pairing, the transmitter will emit a long beep.
+Once paired successfully, the transmitter will emit a **long beep**.
 
 :::{seealso}
-For more information on pairing, please refer to [Binding](getting-started/binding.md)
+For more details on pairing, please refer to [Pairing and Binding](getting-started/binding.md)
 :::
 
 (setup)=
-## 5. Remote Controller Setup
+## 5. Radio Setup
 
-The setup method for each remote controller is different, but generally, you need to set the following points:
-1. Enable PPM input on the remote controller trainer port and set the remote controller to 'Master'
-2. Adjust the remote controller channels, mapping channels 6, 7, and 8 of the trainer channel to the channels you need
+The setup process varies for different remote controllers, but generally, you need to configure the following:
+
+1. Enable PPM input on the trainer port of the remote controller and set the controller to 'Master' mode.  
+2. Adjust the channels on the remote controller to map trainer channels 6, 7, and 8 to the desired channels.
 
 :::{note}
-The axis corresponding to the channel will vary depending on the installation direction of different video goggles. You need to test and set your channels according to the actual movement direction.
+The axis corresponding to each channel may vary depending on the installation orientation of the FPV goggles. Perform a test and adjust the channel mapping based on the actual movement direction.
 :::
 
-## 6. Usage
+## 6. Usage Instructions
 
-After setting up the remote controller configuration, simply plug the head tracker transmitter into the Type-C port of the video goggles to start using it.
+After configuring the remote controller, simply plug the head tracker transmitter into the Type-C port of the FPV goggles to start using it.  
 
 ### Centering
-**Short press** the capacitive touch button area, accompanied by a *short beep*, to center.
+**Tap once** on the capacitive touch button area. A *short beep* will confirm that centering is complete.
 
 ### Locking
-Sometimes you need to *pause motion analysis* and lock the current attitude angle output.  
+Sometimes, you may need to *pause motion tracking* and lock the current attitude angle output.  
+To do this, **press and hold** the capacitive touch area. A *long beep* will confirm that the current angle is locked.  
 
-At this time, you can **long press** the capacitive touch area, accompanied by a *long beep*, to lock the current angle.
-
-To unlock, simply short press to trigger centering, and the lock will be canceled.
+To unlock, simply tap once to trigger centering, which will cancel the lock.
 
 :::{attention}
-After use, do not forget to turn off the receiver power to avoid long-term power consumption of the remote controller.
+After use, do not forget to turn off the receiver's power to avoid draining the remote controller's battery over time.
 :::
