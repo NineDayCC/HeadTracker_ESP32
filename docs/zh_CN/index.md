@@ -48,7 +48,28 @@ sd_hide_title: true
 
 (nano-board)=
 ### Nano版
-![Nano Tx]( ../_static/HT_Nano_front.jpg){.bg-primary w=300px align=center}  
+
+::::{grid} 1 2 2 2
+
+:::{grid-item}
+```{figure} ../_static/HT_Nano_side.png
+:figwidth: 80 %
+:alt: Nano Tx
+
+Nano 发射端
+```
+:::
+
+:::{grid-item}
+```{figure} ../../_static/PCB_RX_top.jpg
+:figwidth: 100 %
+:alt: Nano 接收端
+
+Nano 接收端
+```
+:::
+
+::::
 
 **发射端**
 - 大小仅有 15 mm * 15 mm * 8 mm 大小（不包含伸出的 Type-C 头）。
