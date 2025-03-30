@@ -62,7 +62,6 @@ Nano 发射端
 
 :::{grid-item}
 ```{figure} ../../_static/PCB_RX_top.jpg
-:figwidth: 100 %
 :alt: Nano 接收端
 
 Nano 接收端
