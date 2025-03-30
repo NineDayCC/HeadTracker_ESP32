@@ -3,7 +3,7 @@
 (OTA)=
 ## OTA 流程
 
-1. 按住头追侧边的微动开关，上电亮灯后松开，即可进入OTA模式。 
+1. 按住头追**侧边的微动开关**，上电亮灯后松开，即可进入OTA模式。 
 
 ```{image} ../../_static/OTA_entry.png
 :alt: OTA_entry
