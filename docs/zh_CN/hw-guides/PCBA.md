@@ -25,7 +25,7 @@
 ::::
 
 :::{note}
-PCB 下单时，成品板厚选择 **0.8**，焊盘喷镀选择**沉金**，阻抗选择**JLC0416H-3313**。
+PCB 下单时，成品板厚选择 **0.8**，焊盘喷镀选择**沉金**，阻抗选择 **JLC0416H-3313**。
 
 嘉立创每个月可领取一张免费沉金打样券，可以使用此券来免费打样。
 :::
@@ -233,7 +233,7 @@ Type-C 引脚处**锡膏量不宜过多**，否则容易连锡。
 | GND | GND |
 | TX | RX |
 | RX | TX |
-| 烧录使能 | GND |
+| 下载使能 | GND |
 
 ![wire]( ../../_static/PCB_wire.jpg){.bg-primary align=center}
 
@@ -269,6 +269,7 @@ Type-C 引脚处**锡膏量不宜过多**，否则容易连锡。
 
 烧录完成后会显示以下界面。
 
+
 ![Flash_finish]( ../../_static/Flash_finish.jpg){.bg-primary align=center}
 
 :::{tip}
@@ -290,6 +291,46 @@ Type-C 引脚处**锡膏量不宜过多**，否则容易连锡。
 :::
 
 ### 5. 组装
+
+组装需要将螺柱焊接到 Type-C 板上，和将主控板和蜂鸣器板用螺丝固定到螺柱上。
+
+::::{grid} 1 2 2 2
+
+:::{grid-item-card}
+首先将**螺柱与螺丝**锁到主控板和蜂鸣器板上。
+
+然后在 Type-C 板的螺柱连接焊盘和螺柱上都**涂上锡膏**。
+:::
+
+:::{grid-item}
+![PCB_screw]( ../../_static/PCB_screw.png){.bg-primary align=center}
+:::
+
+::::
+
+::::{grid} 1 2 2 2
+
+:::{grid-item-card}
+将蜂鸣器板按方向，对准 Type-C 板的螺柱焊盘放置。
+
+然后使用电烙铁加热螺柱，使锡膏融化。
+
+主控板同理进行焊接。
+
+
+:::
+
+:::{grid-item}
+![PCB_screw_solder]( ../../_static/PCB_screw_solder.png){.bg-primary align=center}
+:::
+
+::::
+
+:::{important}
+**此步骤非常容易虚焊！焊接后务必进行检查！**
+
+如果后续出现灯莫名闪烁，或者经常断联等现象，有可能就是螺柱与 Type-C 板连接处虚焊。
+:::
 
 ### 6. 测试
 
