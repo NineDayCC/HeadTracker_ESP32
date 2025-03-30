@@ -51,11 +51,11 @@
 ::::{grid} 1 2 2 2
 
 :::{grid-item}
-![TX_install]( ../../_static/TX_install.jpg){.bg-warning w=300px align=center}  
+![TX_install]( ../_static/TX_install.jpg){.bg-warning w=300px align=center}  
 :::
 
 :::{grid-item}
-![TX_install2]( ../../_static/TX_install2.jpg){.bg-warning w=300px align=center}  
+![TX_install2]( ../_static/TX_install2.jpg){.bg-warning w=300px align=center}  
 :::
 
 ::::
