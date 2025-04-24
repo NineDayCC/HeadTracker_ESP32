@@ -36,33 +36,41 @@ SemaphoreHandle_t btn_func_long_start_sem = NULL;
 
 static uint8_t read_button_GPIO(uint8_t button_id)
 {
+#ifdef HT_NANO
     uint16_t touch_value;
+#endif
+
     // you can share the GPIO read function with multiple Buttons
     switch (button_id)
     {
-    case btn_touch_id:
+    case btn_touch_id: // Touch pad
 #ifdef HT_NANO
         touch_pad_read_filtered(PIN_TOUCH, &touch_value);
         return (touch_value <= TOUCH_TRESHOULD ? 1 : 0);
-#else
+#endif
+
+#ifdef HT_NANO_V2
 #if (GPIO_CENTER_BUTTON_ACTIVE_LEVEL == IO_ACTIVE_LOW)
         return (!gpio_get_level(GPIO_CENTER_BUTTON));
 #else
         return gpio_get_level(GPIO_CENTER_BUTTON);
 #endif
 #endif
-    case btn_func_id:
-#ifdef HT_NANO
+
+    case btn_func_id: // OTA button
+#if defined HT_NANO || defined HT_NANO_V2
 #if (GPIO_OTA_BUTTON_ACTIVE_LEVEL == IO_ACTIVE_LOW)
         return (!gpio_get_level(GPIO_OTA_BUTTON));
 #else
         return gpio_get_level(GPIO_OTA_BUTTON);
 #endif
 #endif
+
         break;
     default:
         return 0;
     }
+    return 0;
 }
 
 // center button

@@ -1,4 +1,4 @@
-#ifdef HT_NANO
+#if defined HT_NANO || defined HT_NANO_V2
 #include "ota.h"
 
 #define WIFI_SSID "HeadTracker_OTA"
