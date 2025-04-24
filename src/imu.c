@@ -20,14 +20,14 @@
 
 //------------------------------------------------------------------------------
 // Defines
-#define IMU_HOST  SPI2_HOST // only spi2 is suitable on esp32_c3
+#define IMU_HOST SPI2_HOST // only spi2 is suitable on esp32_c3
 #define IMU_HOLD 1
 #define IMU_RECOVER 0
 
 //------------------------------------------------------------------------------
 // Values
 
-static const char* IMU_TAG = "IMU";
+static const char *IMU_TAG = "IMU";
 #ifdef USE_ICM42688
 static spi_device_handle_t imu_dev;
 #else
@@ -36,20 +36,18 @@ static spi_device_handle_t imu_dev;
 
 #define GOGGLE_G2 0
 #define GOGGLE_N3 1
-#define IMU_GOGGLE_PRESET   GOGGLE_G2
+#define IMU_GOGGLE_PRESET GOGGLE_G2
 // Install angle rotation
 #if IMU_GOGGLE_PRESET == GOGGLE_G2
 const float R[3][3] = {
     {0.9816272, -0.1736482, 0.0868241},
-    {0.1736482, 0.9848078,  0.0},
-    {-0.0871557,    0.0,    0.9961947}
-};
+    {0.1736482, 0.9848078, 0.0},
+    {-0.0871557, 0.0, 0.9961947}};
 #elif IMU_GOGGLE_PRESET == GOGGLE_N3
 const float R[3][3] = {
     {0, 0, -1},
     {1, 0, 0},
-    {0, -1, 0}
-};
+    {0, -1, 0}};
 
 #endif
 
@@ -71,7 +69,6 @@ static ImuStatus imuStatus = {
 };
 
 static SemaphoreHandle_t calculateThreadRunSignal = NULL;
-static SemaphoreHandle_t imu_mutex;
 //------------------------------------------------------------------------------
 //--------------------Function Defines--------------------
 
@@ -87,24 +84,24 @@ int imu_Init(void)
         .sclk_io_num = PIN_NUM_CLK_SET,
         .quadwp_io_num = -1,
         .quadhd_io_num = -1,
-        .max_transfer_sz = 1024,  //must be bigger than (SPI_RX_MAX_SIZE + 1), SPI_RX_MAX_SIZE is defined in icm42688.c
+        .max_transfer_sz = 1024, // must be bigger than (SPI_RX_MAX_SIZE + 1), SPI_RX_MAX_SIZE is defined in icm42688.c
     };
     spi_device_interface_config_t devcfg = {
-        .clock_speed_hz = IMU_SPI_SPEED_SET,     // icm42688 support 24MHz Maximum
-        .mode = 0,                              // SPI mode 0
-        .spics_io_num = PIN_NUM_CS_SET,             //CS pin
-        .queue_size = 1,                        //We want to be able to queue 1 transactions at a time
+        .clock_speed_hz = IMU_SPI_SPEED_SET, // icm42688 support 24MHz Maximum
+        .mode = 0,                           // SPI mode 0
+        .spics_io_num = PIN_NUM_CS_SET,      // CS pin
+        .queue_size = 1,                     // We want to be able to queue 1 transactions at a time
     };
-    //Initialize the SPI bus
+    // Initialize the SPI bus
     ret = spi_bus_initialize(IMU_HOST, &buscfg, SPI_DMA_CH_AUTO);
     ESP_ERROR_CHECK(ret);
-    //Attach the IMU to the SPI bus
+    // Attach the IMU to the SPI bus
     ret = spi_bus_add_device(IMU_HOST, &devcfg, &imu_dev);
     ESP_ERROR_CHECK(ret);
-    //Initialize the imu
+    // Initialize the imu
     icm42688_Init(imu_dev);
 
-    //create semaphore
+    // create semaphore
     calculateThreadRunSignal = xSemaphoreCreateBinary();
     if (calculateThreadRunSignal == NULL)
     {
@@ -112,18 +109,15 @@ int imu_Init(void)
         return ESP_FAIL;
     }
 
-    // //create mutex
-    // imu_mutex = xSemaphoreCreateMutex(); // bug if use mutex
-    // if (imu_mutex == NULL)
-    // {
-    //     ESP_LOGW(IMU_TAG, "imu_mutex create FAILED");
-    //     return ESP_FAIL;
-    // }
-
-    //create task thread
+    // create task thread
     ESP_LOGI(IMU_TAG, "xTaskCreate");
-    xTaskCreatePinnedToCore(imu_Thread, "imu_Thread", IMU_THREAD_STACK_SIZE_SET, NULL, IMU_THREAD_PRIORITY_SET, NULL, 1);               // run on core1
-    xTaskCreatePinnedToCore(calculate_Thread, "calculate_Thread", CAL_THREAD_STACK_SIZE_SET, NULL, CAL_THREAD_PRIORITY_SET, NULL, 1);   // run on core1
+#ifdef HT_NANO
+    xTaskCreatePinnedToCore(imu_Thread, "imu_Thread", IMU_THREAD_STACK_SIZE_SET, NULL, IMU_THREAD_PRIORITY_SET, NULL, 1);             // run on core1
+    xTaskCreatePinnedToCore(calculate_Thread, "calculate_Thread", CAL_THREAD_STACK_SIZE_SET, NULL, CAL_THREAD_PRIORITY_SET, NULL, 1); // run on core1
+#elif defined HT_NANO_V2
+    xTaskCreate(imu_Thread, "imu_Thread", IMU_THREAD_STACK_SIZE_SET, NULL, IMU_THREAD_PRIORITY_SET, NULL);             // run on core0
+    xTaskCreate(calculate_Thread, "calculate_Thread", CAL_THREAD_STACK_SIZE_SET, NULL, CAL_THREAD_PRIORITY_SET, NULL); // run on core0
+#endif
     // for (;;)
     // {
     //     // acc data size(2 bytes * 3) + gyro data size(2 bytes * 3)
@@ -155,9 +149,8 @@ void imu_Thread(void *pvParameters)
     // Initialise the xLastWakeTime variable with the current time.
     xLastWakeTime = xTaskGetTickCount();
 
-    for ( ;; )
+    for (;;)
     {
-        // xSemaphoreTake(&imu_mutex, portMAX_DELAY);   // bug if use mutex
 
 #ifdef USE_ICM42688
         // ICM42688--------------------------
@@ -180,8 +173,6 @@ void imu_Thread(void *pvParameters)
         // ICM42688--------------------------
 #endif
 
-        // xSemaphoreGive(&imu_mutex);
-
         // printf("%f,%f,%f\n", rgyr.axis.x, rgyr.axis.y, rgyr.axis.z); // test
 
         // printf("\n\n[%ld]\n", xLastWakeTime);                           // test
@@ -193,7 +184,7 @@ void imu_Thread(void *pvParameters)
         // Start doing the calculations
         xSemaphoreGive(calculateThreadRunSignal);
 
-        xTaskDelayUntil(&xLastWakeTime,IMU_THREAD_PERIOD);
+        xTaskDelayUntil(&xLastWakeTime, IMU_THREAD_PERIOD);
     }
 }
 
@@ -241,16 +232,15 @@ void calculate_Thread(void *pvParameters)
     FusionAhrsSetSettings(&ahrs, &settings);
 
     // This loop should repeat each time new gyroscope data is available
-    for ( ;; )
+    for (;;)
     {
         xSemaphoreTake(calculateThreadRunSignal, portMAX_DELAY);
 
         // Acquire latest sensor data
-        const int64_t timestamp = micros64();            // replace this with actual gyroscope timestamp
+        const int64_t timestamp = micros64();                    // replace this with actual gyroscope timestamp
         FusionVector gyroscope = {{{0.0f}, {0.0f}, {0.0f}}};     // replace this with actual gyroscope data in degrees/s
         FusionVector accelerometer = {{{0.0f}, {0.0f}, {1.0f}}}; // replace this with actual accelerometer data in g
         FusionVector magnetometer = {{{1.0f}, {0.0f}, {0.0f}}};  // replace this with actual magnetometer data in arbitrary units
-
 
         // Rotate the imu data
         accelerometer.axis.x = (R[0][0] * acc.axis.x + R[0][1] * acc.axis.y + R[0][2] * acc.axis.z);
@@ -278,7 +268,7 @@ void calculate_Thread(void *pvParameters)
 
         // Calculate delta time (in seconds) to account for gyroscope sample clock error
         static int64_t previousTimestamp = 0;
-        const float deltaTime = (float)(timestamp - previousTimestamp) / (float)1000000.0;  // (divide ticks per second)
+        const float deltaTime = (float)(timestamp - previousTimestamp) / (float)1000000.0; // (divide ticks per second)
         previousTimestamp = timestamp;
 
         // Update gyroscope AHRS algorithm
@@ -444,7 +434,7 @@ void calculate_Thread(void *pvParameters)
         if (panch > 0)
             channel_data[panch - 1] = isPanEn() == true ? panout_ui : getPanCnt();
 
-        #ifdef HT_LITE
+#ifdef HT_LITE
         // 10) Set the PPM Outputs
         for (uint8_t i = 0; i < PpmOut_getChnCount(); i++)
         {
@@ -460,11 +450,11 @@ void calculate_Thread(void *pvParameters)
 
         // // 12) Set the BT Outputs
         buildBtChannels(channel_data, BT_CHANNELS);
-        
-        #elif HT_NANO
+
+#elif HT_NANO
         // Send channel data to esp now task.
         espnow_data_prepare(channel_data[tltch - 1], channel_data[rllch - 1], channel_data[panch - 1]);
-        #endif
+#endif
         // int elipsed = micros64() - timestamp;
         // printf("[%f]:\n", deltaTime);
 
@@ -483,7 +473,6 @@ void calculate_Thread(void *pvParameters)
         // printf("%f,%f,%f,%f,%f,%f\r\n", gyroscope.array[0], gyroscope.array[1], gyroscope.array[2], accelerometer.array[0], accelerometer.array[1], accelerometer.array[2]); // test
 
         // printPPMdata(); // test
-
     }
 }
 

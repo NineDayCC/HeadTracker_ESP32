@@ -265,8 +265,12 @@ void io_Init(void)
     button_attach(&btn_func, LONG_PRESS_START, BTN_FUNC_LONG_PRESS_START_Handler);
     button_start(&btn_func);
 
-    // create io task thread
+// create io task thread
+#ifdef HT_NANO
     xTaskCreatePinnedToCore(io_Thread, "io_Thread", IO_THREAD_STACK_SIZE_SET, NULL, IO_THREAD_PRIORITY_SET, NULL, 1); // run on core1
+#elif defined HT_NANO_V2
+    xTaskCreate(io_Thread, "io_Thread", IO_THREAD_STACK_SIZE_SET, NULL, IO_THREAD_PRIORITY_SET, NULL); // run on core0
+#endif
 }
 
 bool is_OTA_Mode(void)

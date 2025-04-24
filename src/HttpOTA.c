@@ -102,7 +102,7 @@ void firmware_Sha256()
         }
     }
 
-    const esp_partition_t *configured = esp_ota_get_boot_partition();
+    // const esp_partition_t *configured = esp_ota_get_boot_partition();
     const esp_partition_t *running = esp_ota_get_running_partition();
 
     // if (configured != running) {
