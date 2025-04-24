@@ -5,7 +5,7 @@
 .gcc-flags.json
 .pio
 build/
-.old
+*.old
 
 # VSCode
 .vscode
