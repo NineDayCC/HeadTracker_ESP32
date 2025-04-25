@@ -104,6 +104,11 @@ static void BTN_TOUCH_LONG_PRESS_START_Handler(void *btn)
 // function button
 static void BTN_FUNC_SINGLE_Click_Handler(void *btn)
 {
+    if (btn_func_single_click_sem != NULL)
+    {
+        xSemaphoreGive(btn_func_single_click_sem);
+        buzzer_play_tone_sequence(doremi, 8);   // test
+    }
 }
 
 static void BTN_FUNC_LONG_PRESS_START_Handler(void *btn)

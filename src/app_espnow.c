@@ -240,7 +240,10 @@ uint8_t *esp_now_restore_peer(void)
 
     // copy the mac address to be return.
     addr_ret = malloc(ESP_NOW_ETH_ALEN);
-    memcpy(addr_ret, peer_info->peer_addr, ESP_NOW_ETH_ALEN);
+    if (addr_ret != NULL)
+    {
+        memcpy(addr_ret, peer_info->peer_addr, ESP_NOW_ETH_ALEN);
+    }
 
     free(peer_info);
     nvs_close(nvs_handle);
