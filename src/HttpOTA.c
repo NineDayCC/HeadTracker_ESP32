@@ -21,9 +21,15 @@ httpd_handle_t HttpOTA_httpd = NULL;
 // 创建WiFi热点
 void wifi_init_ap(void)
 {
+    esp_err_t ret;
     ESP_ERROR_CHECK(nvs_flash_init());
     ESP_ERROR_CHECK(esp_netif_init());
-    ESP_ERROR_CHECK(esp_event_loop_create_default());
+    ret = esp_event_loop_create_default();
+    if(ret != ESP_OK && ret != ESP_ERR_INVALID_STATE)
+    {
+        ESP_LOGE(TAG, "Failed to create event loop 0x%x", ret);
+        return;
+    }
 
     esp_netif_t *ap_netif = esp_netif_create_default_wifi_ap();
     assert(ap_netif);

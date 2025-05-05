@@ -12,6 +12,8 @@
 #include "touch.h"
 #include "buzzer.h"
 #include "app_espnow.h"
+#include "ota.h"
+#include "imu.h"
 
 //------------------------------------------------------------------------------
 // Defines
@@ -104,10 +106,9 @@ static void BTN_TOUCH_LONG_PRESS_START_Handler(void *btn)
 // function button
 static void BTN_FUNC_SINGLE_Click_Handler(void *btn)
 {
-    if (btn_func_single_click_sem != NULL)
+    if (btn_func_single_click_sem != NULL && !isBinding() && !OTA_Mode_flag)
     {
         xSemaphoreGive(btn_func_single_click_sem);
-        buzzer_play_tone_sequence(doremi, 8); // test
     }
 }
 
@@ -118,6 +119,41 @@ static void BTN_FUNC_LONG_PRESS_START_Handler(void *btn)
         xSemaphoreGive(btn_func_long_start_sem);
         set_binding_mode(true);
         buzzer_set_state(BUZZER_REPEAT, BUZZER_SINGLE_CLICK_MS, 1000);
+    }
+}
+
+static void OTA_detect(void)
+{
+    static uint8_t cnt = 0;
+    static uint32_t last_time = 0;
+    if (xSemaphoreTake(btn_func_single_click_sem, 0))
+    {
+        if (cnt == 0)
+        {
+            last_time = millis64(); // get time at the first click
+            cnt++;
+        }
+        else
+        {
+            if (millis64() - last_time < 500)
+            {
+                // if the second click is within 500ms
+                // then enter OTA mode
+                if (OTA_Mode_flag == false)
+                {
+                    ESP_LOGI(TAG, "OTA Mode");
+                    imu_Deinit();                         // Delet IMU task and calculation task
+                    ht_espnow_deinit();
+                    HttpOTA_server_init();                // OTA server init
+                    buzzer_play_tone_sequence(doremi, 8); // play a tone sequence
+                    OTA_Mode_flag = true;
+                }
+            }
+            else
+            {
+                cnt = 0;
+            }
+        }
     }
 }
 
@@ -155,6 +191,7 @@ void io_Thread(void *pvParameters)
     {
         button_ticks(); // read button status
         buzzer_update(TICKS_INTERVAL);
+        OTA_detect(); // check if OTA mode
         vTaskDelay(pdMS_TO_TICKS(TICKS_INTERVAL));
     }
 }
@@ -287,19 +324,5 @@ bool is_OTA_Mode(void)
     }
     return OTA_Mode_flag;
 }
-#ifdef HT_LITE
 
-/**
- * @brief set bt led status on or off
- * @param status 0 = off, 1 = on
- */
-void led_bt_ctrl(uint8_t status)
-{
-    if (status == 1)
-        gpio_set_level(GPIO_BT_STATUS_SET, GPIO_BT_STATUS_SET_ACTIVE_LEVEL); // set led off
-    else
-        gpio_set_level(GPIO_BT_STATUS_SET, !GPIO_BT_STATUS_SET_ACTIVE_LEVEL); // set led off
-}
-
-#endif
 #endif

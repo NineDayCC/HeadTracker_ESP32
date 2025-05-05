@@ -51,6 +51,9 @@ const float R[3][3] = {
 
 #endif
 
+static TaskHandle_t imuTaskHandle;
+static TaskHandle_t calculateTaskHandle;
+
 static FusionVector racc = {0}; // Raw values in g
 static FusionVector rgyr = {0}; // Raw values in d/s
 static FusionVector rmag = {0}; // Raw values in guss
@@ -115,8 +118,8 @@ int imu_Init(void)
     xTaskCreatePinnedToCore(imu_Thread, "imu_Thread", IMU_THREAD_STACK_SIZE_SET, NULL, IMU_THREAD_PRIORITY_SET, NULL, 1);             // run on core1
     xTaskCreatePinnedToCore(calculate_Thread, "calculate_Thread", CAL_THREAD_STACK_SIZE_SET, NULL, CAL_THREAD_PRIORITY_SET, NULL, 1); // run on core1
 #elif defined HT_NANO_V2
-    xTaskCreate(imu_Thread, "imu_Thread", IMU_THREAD_STACK_SIZE_SET, NULL, IMU_THREAD_PRIORITY_SET, NULL);             // run on core0
-    xTaskCreate(calculate_Thread, "calculate_Thread", CAL_THREAD_STACK_SIZE_SET, NULL, CAL_THREAD_PRIORITY_SET, NULL); // run on core0
+    xTaskCreate(imu_Thread, "imu_Thread", IMU_THREAD_STACK_SIZE_SET, NULL, IMU_THREAD_PRIORITY_SET, &imuTaskHandle);             // run on core0
+    xTaskCreate(calculate_Thread, "calculate_Thread", CAL_THREAD_STACK_SIZE_SET, NULL, CAL_THREAD_PRIORITY_SET, &calculateTaskHandle); // run on core0
 #endif
     // for (;;)
     // {
@@ -458,9 +461,9 @@ void calculate_Thread(void *pvParameters)
         // int elipsed = micros64() - timestamp;
         // printf("[%f]:\n", deltaTime);
 
-        printf("%f,%f,%f\n", tilt - tiltoffset,
-               roll - rolloffset,
-               pan - panoffset); // test
+        // printf("%f,%f,%f\n", tilt - tiltoffset,
+        //        roll - rolloffset,
+        //        pan - panoffset); // test
 
         // FusionAhrsFlags test_flags;
         // test_flags =FusionAhrsGetFlags(&ahrs);
@@ -492,5 +495,37 @@ void getChannelData(uint16_t *buffer)
 {
     memcpy(buffer, channel_data, sizeof(channel_data));
 }
+
+void imu_Deinit(void)
+{
+    // Delete IMU and calculate tasks
+    if (imuTaskHandle != NULL)
+    {
+        vTaskDelete(imuTaskHandle);
+    }
+
+    if (calculateTaskHandle != NULL)
+    {
+        vTaskDelete(calculateTaskHandle);
+    }
+
+    // Free semaphore
+    if (calculateThreadRunSignal != NULL)
+    {
+        vSemaphoreDelete(calculateThreadRunSignal);
+        calculateThreadRunSignal = NULL;
+    }
+
+    // Remove the IMU device from the SPI bus
+    if (imu_dev != NULL)
+    {
+        spi_bus_remove_device(imu_dev);
+        imu_dev = NULL;
+    }
+
+    // Free any other dynamically allocated resources if applicable
+}
+
+
 
 #endif

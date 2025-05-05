@@ -13,14 +13,14 @@
 #define LEDC_FREQUENCY (4000)           // Frequency in Hertz. Set frequency at 4 kHz
 
 buzzer_tone_t doremi[] = {
-    {1046, 500}, // C4
-    {1175, 500}, // D4
-    {1319, 500}, // E4
-    {1397, 500}, // F4
-    {1568, 500}, // G4
-    {1760, 500}, // A4
-    {1976, 500}, // B4
-    {2093, 500}  // C5
+    {1046, 200}, // C4
+    {1175, 200}, // D4
+    {1319, 200}, // E4
+    {1397, 200}, // F4
+    {1568, 200}, // G4
+    {1760, 200}, // A4
+    {1976, 200}, // B4
+    {2093, 200}  // C5
 };
 
 static buzzer_tone_sequence_t tone_sequence = {0};

@@ -439,4 +439,17 @@ void ht_espnow_init(void)
     espnow_init();
 }
 
+void ht_espnow_deinit(void)
+{
+    if (Handle_espnow_send_task != NULL)
+    {
+        vTaskDelete(Handle_espnow_send_task);
+        Handle_espnow_send_task = NULL;
+    }
+    esp_now_deinit();
+    esp_wifi_stop();
+    esp_wifi_deinit();
+    vSemaphoreDelete(espnow_re_queue);
+}
+
 #endif
