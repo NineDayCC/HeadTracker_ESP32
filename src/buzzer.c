@@ -177,6 +177,8 @@ void buzzer_update(uint32_t delta_time_ms)
             buzzer.elapsed_time_ms = 0; // 重置时间计数
         }
         break;
+    default:
+        break;
     }
 }
 

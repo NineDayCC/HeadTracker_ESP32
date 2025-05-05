@@ -107,7 +107,7 @@ static void BTN_FUNC_SINGLE_Click_Handler(void *btn)
     if (btn_func_single_click_sem != NULL)
     {
         xSemaphoreGive(btn_func_single_click_sem);
-        buzzer_play_tone_sequence(doremi, 8);   // test
+        buzzer_play_tone_sequence(doremi, 8); // test
     }
 }
 
@@ -173,7 +173,7 @@ void io_Init(void)
     io_conf.pull_up_en = GPIO_PULLUP_ENABLE; // enable pull-up mode
     gpio_config(&io_conf);
     gpio_set_level(GPIO_LED_STATUS_SET, GPIO_LED_STATUS_SET_ACTIVE_LEVEL); // set led on
-#ifdef HT_LITE
+#ifdef HT_NANO_V2
     // config center button io
     io_conf.intr_type = GPIO_INTR_DISABLE;                   // disable interrupt
     io_conf.mode = GPIO_MODE_INPUT;                          // set as input mode
@@ -182,23 +182,16 @@ void io_Init(void)
     io_conf.pull_down_en = GPIO_PULLDOWN_DISABLE;
     io_conf.pull_up_en = GPIO_PULLUP_ENABLE; // enable pull-up mode
 #elif (GPIO_CENTER_BUTTON_ACTIVE_LEVEL == IO_ACTIVE_HIGH)
-    io_conf.pull_down_en = GPIO_PULLDOWN_ENABLE; // enable pull-up mode
+    io_conf.pull_down_en = GPIO_PULLUP_DISABLE; // enable pull-up mode
     io_conf.pull_up_en = GPIO_PULLUP_DISABLE;
 #else
     io_conf.pull_down_en = GPIO_PULLDOWN_DISABLE;
     io_conf.pull_up_en = GPIO_PULLUP_DISABLE;
 #endif
     gpio_config(&io_conf);
+#endif
 
-    // config bluetooth led io
-    io_conf.intr_type = GPIO_INTR_DISABLE; // disable interrupt
-    io_conf.mode = GPIO_MODE_OUTPUT;       // set as output mode
-    io_conf.pin_bit_mask = (1ULL << GPIO_BT_STATUS_SET);
-    io_conf.pull_down_en = GPIO_PULLDOWN_DISABLE;
-    io_conf.pull_up_en = GPIO_PULLUP_ENABLE; // enable pull-up mode
-    gpio_config(&io_conf);
-    gpio_set_level(GPIO_BT_STATUS_SET, !GPIO_BT_STATUS_SET_ACTIVE_LEVEL); // set led
-#elif HT_NANO
+#if defined HT_NANO || defined HT_NANO_V2
     touch_Init();
     buzzer_init();
 

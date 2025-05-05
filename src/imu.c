@@ -451,16 +451,16 @@ void calculate_Thread(void *pvParameters)
         // // 12) Set the BT Outputs
         buildBtChannels(channel_data, BT_CHANNELS);
 
-#elif HT_NANO
+#elif defined HT_NANO || defined HT_NANO_V2
         // Send channel data to esp now task.
         espnow_data_prepare(channel_data[tltch - 1], channel_data[rllch - 1], channel_data[panch - 1]);
 #endif
         // int elipsed = micros64() - timestamp;
         // printf("[%f]:\n", deltaTime);
 
-        // printf("%f,%f,%f\n", tilt - tiltoffset,
-        //        roll - rolloffset,
-        //        pan - panoffset); // test
+        printf("%f,%f,%f\n", tilt - tiltoffset,
+               roll - rolloffset,
+               pan - panoffset); // test
 
         // FusionAhrsFlags test_flags;
         // test_flags =FusionAhrsGetFlags(&ahrs);

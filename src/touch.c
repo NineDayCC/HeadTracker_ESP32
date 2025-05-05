@@ -3,9 +3,9 @@
 #include "freertos/task.h"
 #include "driver/touch_pad.h"
 #include "touch.h"
- 
-#define TOUCH_THRESH_NO_USE   (0)
-#define TOUCH_FILTER_MODE_EN  (1)
+
+#define TOUCH_THRESH_NO_USE (0)
+#define TOUCH_FILTER_MODE_EN (1)
 #define TOUCHPAD_FILTER_TOUCH_PERIOD (10)
 /*
   Read values sensed at all available touch pads.
@@ -32,7 +32,7 @@
 
 void tp_example_touch_pad_init(void)
 {
-        touch_pad_config(PIN_TOUCH, TOUCH_THRESH_NO_USE);
+    touch_pad_config(PIN_TOUCH, TOUCH_THRESH_NO_USE);
 }
 
 void touch_Init(void)
@@ -51,6 +51,11 @@ void touch_Init(void)
 #endif
     // Start task to read values sensed by pads
     // xTaskCreatePinnedToCore(&tp_example_read_task, "touch_pad_read_task", 4096, NULL, 5, NULL, 1);
+}
+
+#elif defined HT_NANO_V2
+void touch_Init()
+{
 }
 
 #endif
