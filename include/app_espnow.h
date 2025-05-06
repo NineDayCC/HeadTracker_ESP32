@@ -28,6 +28,7 @@ typedef enum {
 void set_binding_mode(bool true_or_false);
 void espnow_data_prepare(uint16_t chanl_till, uint16_t chanl_roll, uint16_t chanl_pan);
 void ht_espnow_init(void);
+void ht_espnow_deinit(void);
 bool isBinding(void);
 void rx_espnow_init(void);
 void rx_espnow_loop(void);

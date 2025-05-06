@@ -45,5 +45,9 @@
 #define micros64()  esp_timer_get_time()
 #endif
 
+#ifndef MIN
 #define MIN(i, j) (((i) < (j)) ? (i) : (j))
+#endif
+#ifndef MAX
 #define MAX(i, j) (((i) > (j)) ? (i) : (j))
+#endif

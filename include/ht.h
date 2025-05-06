@@ -5,16 +5,16 @@
 
 // Pins set
 
-#ifdef HT_LITE  // Headtracker Lite pin sets
-#define PIN_NUM_MISO        GPIO_NUM_5
-#define PIN_NUM_MOSI        GPIO_NUM_6
-#define PIN_NUM_CLK         GPIO_NUM_7
-#define PIN_NUM_CS          GPIO_NUM_8
-#define GPIO_CENTER_BUTTON  GPIO_NUM_9
-#define GPIO_PPM_OUT        GPIO_NUM_10
-#define GPIO_LED_STATUS     GPIO_NUM_12
-#define GPIO_BT_STATUS      GPIO_NUM_13
-#elif HT_NANO  // Headtracker Lite pin sets
+#ifdef HT_NANO_V2  // Headtracker Lite pin sets
+#define PIN_NUM_MISO        GPIO_NUM_6
+#define PIN_NUM_MOSI        GPIO_NUM_7
+#define PIN_NUM_CLK         GPIO_NUM_4
+#define PIN_NUM_CS          GPIO_NUM_5
+#define GPIO_CENTER_BUTTON  GPIO_NUM_1
+#define GPIO_LED_STATUS     GPIO_NUM_3
+#define GPIO_OTA_BUTTON     GPIO_NUM_9
+#define GPIO_BUZZER         GPIO_NUM_10
+#elif HT_NANO  // Headtracker Nano pin sets
 #define PIN_NUM_MISO        GPIO_NUM_13
 #define PIN_NUM_MOSI        GPIO_NUM_15
 #define PIN_NUM_CLK         GPIO_NUM_2

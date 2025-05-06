@@ -45,5 +45,6 @@ float normalize(const float value, const float start, const float end);
 int imu_Init(void);
 void imu_Thread(void *pvParameters);
 void calculate_Thread(void *pvParameters);
+void imu_Deinit(void);
 
 #endif
