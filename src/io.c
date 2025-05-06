@@ -326,3 +326,4 @@ bool is_OTA_Mode(void)
 }
 
 #endif
+#endif
