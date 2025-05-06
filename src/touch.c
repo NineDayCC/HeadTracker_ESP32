@@ -57,5 +57,4 @@ void touch_Init(void)
 void touch_Init()
 {
 }
-
 #endif

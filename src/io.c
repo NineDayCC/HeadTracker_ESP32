@@ -154,6 +154,7 @@ static void OTA_detect(void)
                 cnt = 0;
             }
         }
+
     }
 }
 
@@ -325,4 +326,5 @@ bool is_OTA_Mode(void)
     return OTA_Mode_flag;
 }
 
+#endif
 #endif

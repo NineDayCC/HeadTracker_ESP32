@@ -24,7 +24,6 @@ buzzer_tone_t doremi[] = {
 };
 
 static buzzer_tone_sequence_t tone_sequence = {0};
-
 static buzzer_t buzzer = {
     .state = BUZZER_OFF,
     .on_time_ms = 0,

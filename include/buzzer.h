@@ -34,9 +34,9 @@ typedef struct
     size_t current_tone;        // Index of the current tone being played
     uint32_t elapsed_time_ms;   // Time elapsed for the current tone
 } buzzer_tone_sequence_t;
-
 extern buzzer_tone_t doremi[];
 void buzzer_init(void);
 void buzzer_update(uint32_t delta_time_ms);
 void buzzer_play_tone_sequence(const buzzer_tone_t *tones, size_t tone_count);
+
 void buzzer_set_state(buzzer_state_t state, uint32_t on_time_ms, uint32_t off_time_ms);
