@@ -1,4 +1,4 @@
-#if defined HT_NANO || defined HT_NANO_V2
+#if defined HT_NANO || defined HT_NANO_V2 || defined HT_SE
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
 #include "buzzer.h"

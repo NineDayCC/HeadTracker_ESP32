@@ -51,7 +51,7 @@ static uint8_t read_button_GPIO(uint8_t button_id)
         return (touch_value <= TOUCH_TRESHOULD ? 1 : 0);
 #endif
 
-#ifdef HT_NANO_V2
+#if defined HT_NANO_V2 || defined HT_SE
 #if (GPIO_CENTER_BUTTON_ACTIVE_LEVEL == IO_ACTIVE_LOW)
         return (!gpio_get_level(GPIO_CENTER_BUTTON));
 #else
@@ -103,6 +103,7 @@ static void BTN_TOUCH_LONG_PRESS_START_Handler(void *btn)
     }
 }
 
+#if defined HT_NANO || defined HT_NANO_V2
 // function button
 static void BTN_FUNC_SINGLE_Click_Handler(void *btn)
 {
@@ -121,6 +122,7 @@ static void BTN_FUNC_LONG_PRESS_START_Handler(void *btn)
         buzzer_set_state(BUZZER_REPEAT, BUZZER_SINGLE_CLICK_MS, 1000);
     }
 }
+#endif
 
 static void OTA_detect(void)
 {
@@ -142,7 +144,7 @@ static void OTA_detect(void)
                 if (OTA_Mode_flag == false)
                 {
                     ESP_LOGI(TAG, "OTA Mode");
-                    imu_Deinit();                         // Delet IMU task and calculation task
+                    imu_Deinit(); // Delet IMU task and calculation task
                     ht_espnow_deinit();
                     HttpOTA_server_init();                // OTA server init
                     buzzer_play_tone_sequence(doremi, 8); // play a tone sequence
@@ -210,7 +212,7 @@ void io_Init(void)
     io_conf.pull_up_en = GPIO_PULLUP_ENABLE; // enable pull-up mode
     gpio_config(&io_conf);
     gpio_set_level(GPIO_LED_STATUS_SET, GPIO_LED_STATUS_SET_ACTIVE_LEVEL); // set led on
-#ifdef HT_NANO_V2
+#if defined HT_NANO_V2 || defined HT_SE
     // config center button io
     io_conf.intr_type = GPIO_INTR_DISABLE;                   // disable interrupt
     io_conf.mode = GPIO_MODE_INPUT;                          // set as input mode
@@ -228,9 +230,10 @@ void io_Init(void)
     gpio_config(&io_conf);
 #endif
 
-#if defined HT_NANO || defined HT_NANO_V2
     touch_Init();
     buzzer_init();
+
+#if defined HT_NANO || defined HT_NANO_V2
 
     // config ota button io
     io_conf.intr_type = GPIO_INTR_DISABLE;                // disable interrupt
@@ -269,6 +272,7 @@ void io_Init(void)
             return;
         }
     }
+#if defined HT_NANO || defined HT_NANO_V2
     // function button
     if (btn_func_single_click_sem == NULL)
     {
@@ -288,41 +292,28 @@ void io_Init(void)
             return;
         }
     }
+#endif
     // initialize button function
     //  center button
     button_init(&btn_touch, read_button_GPIO, 1, btn_touch_id);
     button_attach(&btn_touch, SINGLE_CLICK, BTN_TOUCH_SINGLE_Click_Handler);
     button_attach(&btn_touch, LONG_PRESS_START, BTN_TOUCH_LONG_PRESS_START_Handler);
     button_start(&btn_touch);
+#if defined HT_NANO || defined HT_NANO_V2
     // function button
     button_init(&btn_func, read_button_GPIO, 1, btn_func_id);
     button_attach(&btn_func, SINGLE_CLICK, BTN_FUNC_SINGLE_Click_Handler);
     button_attach(&btn_func, LONG_PRESS_START, BTN_FUNC_LONG_PRESS_START_Handler);
     button_start(&btn_func);
+#endif
 
 // create io task thread
 #ifdef HT_NANO
     xTaskCreatePinnedToCore(io_Thread, "io_Thread", IO_THREAD_STACK_SIZE_SET, NULL, IO_THREAD_PRIORITY_SET, NULL, 1); // run on core1
-#elif defined HT_NANO_V2
+#elif defined HT_NANO_V2 || defined HT_SE
     xTaskCreate(io_Thread, "io_Thread", IO_THREAD_STACK_SIZE_SET, NULL, IO_THREAD_PRIORITY_SET, NULL); // run on core0
 #endif
 }
 
-bool is_OTA_Mode(void)
-{
-    if (gpio_get_level(GPIO_OTA_BUTTON) == GPIO_OTA_BUTTON_ACTIVE_LEVEL)
-    {
-        esp_rom_delay_us(20000);
-        if (gpio_get_level(GPIO_OTA_BUTTON) == GPIO_OTA_BUTTON_ACTIVE_LEVEL)
-        {
-            OTA_Mode_flag = true;
-        }
-    }
-    else
-    {
-        OTA_Mode_flag = false;
-    }
-    return OTA_Mode_flag;
-}
 
 #endif

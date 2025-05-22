@@ -53,7 +53,7 @@ void touch_Init(void)
     // xTaskCreatePinnedToCore(&tp_example_read_task, "touch_pad_read_task", 4096, NULL, 5, NULL, 1);
 }
 
-#elif defined HT_NANO_V2
+#elif defined HT_NANO_V2 || defined HT_SE
 void touch_Init()
 {
 }
