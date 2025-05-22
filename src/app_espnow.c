@@ -34,6 +34,7 @@ static TaskHandle_t Handle_espnow_send_task;
 static QueueHandle_t espnow_re_queue;
 static bool is_binding_mode = false;
 static bool is_send_failed = false;
+static bool is_espnow_connected = false;
 static uint16_t chanl_data[6];
 
 static const uint8_t broadcast_mac[ESP_NOW_ETH_ALEN] = {0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF};
@@ -42,6 +43,11 @@ static uint8_t local_mac[ESP_NOW_ETH_ALEN] = {};
 bool isBinding(void)
 {
     return is_binding_mode;
+}
+
+bool isconnected()
+{
+    return is_espnow_connected;
 }
 
 /* WiFi should start before using ESPNOW */
@@ -282,10 +288,12 @@ static void espnow_send_task()
             // If send failed, delay 20 times of the period to reduce power consumption.
             ESP_LOGE(TAG, "Send failed.");
             is_send_failed = false;
+            is_espnow_connected = false;
             xTaskDelayUntil(&xLastWakeTime, ESPNOW_SEND_PERIOD * 20);
         }
         else
         {
+            is_espnow_connected = true;
             xTaskDelayUntil(&xLastWakeTime, ESPNOW_SEND_PERIOD);
         }
     }
@@ -384,7 +392,7 @@ static void espnow_bind_task()
             is_binding_mode = false;
             buzzer_set_state(BUZZER_SINGLE, 1000, 0);
             ESP_LOGI(TAG, "End binding, start sending channal data.");
-            xTaskCreate(espnow_send_task, "espnow_send_task", 2048, NULL, PRIORITY_HIGH, &Handle_espnow_send_task);
+            xTaskCreate(espnow_send_task, "espnow_send_task", ESPNOW_THREAD_STACK_SIZE_SET, NULL, ESPNOW_THREAD_PRIORITY_SET, &Handle_espnow_send_task);
             vTaskDelete(NULL);
         }
 
@@ -398,7 +406,8 @@ void set_binding_mode(bool true_or_false)
     if (true_or_false && !is_binding_mode)
     {
         is_binding_mode = true_or_false;
-        xTaskCreate(espnow_bind_task, "espnow_bind_task", 2048, NULL, PRIORITY_HIGH, NULL);
+        is_espnow_connected = false;
+        xTaskCreate(espnow_bind_task, "espnow_bind_task", ESPNOW_THREAD_STACK_SIZE_SET, NULL, ESPNOW_THREAD_PRIORITY_SET, NULL);
     }
     is_binding_mode = true_or_false;
 }
@@ -417,7 +426,7 @@ static esp_err_t espnow_init(void)
     ESP_ERROR_CHECK(esp_now_register_send_cb(espnow_send_cb));
     ESP_ERROR_CHECK(esp_now_register_recv_cb(espnow_recv_cb));
 
-    xTaskCreate(espnow_send_task, "espnow_send_task", 2048, NULL, PRIORITY_HIGH, &Handle_espnow_send_task);
+    xTaskCreate(espnow_send_task, "espnow_send_task", ESPNOW_THREAD_STACK_SIZE_SET, NULL, ESPNOW_THREAD_PRIORITY_SET, &Handle_espnow_send_task);
     return ESP_OK;
 }
 

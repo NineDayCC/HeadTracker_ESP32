@@ -1,4 +1,3 @@
-#if defined HT_NANO || defined HT_NANO_V2 || defined HT_SE
 #include "ota.h"
 
 #define WIFI_SSID "HeadTracker_OTA"
@@ -6,6 +5,7 @@
 #define OTA_URL "ota.local"
 
 static const char *TAG = "OTA";
+static bool OTA_Mode_flag = false;
 
 httpd_handle_t HttpOTA_httpd = NULL;
 
@@ -17,6 +17,16 @@ httpd_handle_t HttpOTA_httpd = NULL;
 #define SCRATCH_BUFSIZE  1024
 /* SHA-256 长度 */
 #define HASH_LEN 32
+
+bool get_OTA_Mode(void)
+{
+    return OTA_Mode_flag;
+}
+
+void set_OTA_Mode(bool true_or_false)
+{
+    OTA_Mode_flag = true_or_false;
+}
 
 // 创建WiFi热点
 void wifi_init_ap(void)
@@ -360,5 +370,3 @@ void HttpOTA_server_init()
         httpd_register_uri_handler(HttpOTA_httpd, &file_upload);
     }
 }
-
-#endif

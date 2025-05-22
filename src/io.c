@@ -26,7 +26,6 @@ static const uint8_t btn_touch_id = 0;
 static const uint8_t btn_func_id = 1;
 static struct Button btn_touch;
 static struct Button btn_func;
-static bool OTA_Mode_flag = false;
 
 SemaphoreHandle_t btn_touch_single_click_sem = NULL;
 SemaphoreHandle_t btn_touch_long_start_sem = NULL;
@@ -107,7 +106,7 @@ static void BTN_TOUCH_LONG_PRESS_START_Handler(void *btn)
 // function button
 static void BTN_FUNC_SINGLE_Click_Handler(void *btn)
 {
-    if (btn_func_single_click_sem != NULL && !isBinding() && !OTA_Mode_flag)
+    if (btn_func_single_click_sem != NULL && !isBinding() && !get_OTA_Mode())
     {
         xSemaphoreGive(btn_func_single_click_sem);
     }
@@ -115,7 +114,7 @@ static void BTN_FUNC_SINGLE_Click_Handler(void *btn)
 
 static void BTN_FUNC_LONG_PRESS_START_Handler(void *btn)
 {
-    if (btn_func_long_start_sem != NULL && !OTA_Mode_flag)
+    if (btn_func_long_start_sem != NULL && !get_OTA_Mode())
     {
         xSemaphoreGive(btn_func_long_start_sem);
         set_binding_mode(true);
@@ -141,14 +140,14 @@ static void OTA_detect(void)
             {
                 // if the second click is within 500ms
                 // then enter OTA mode
-                if (OTA_Mode_flag == false)
+                if (get_OTA_Mode() == false)
                 {
                     ESP_LOGI(TAG, "OTA Mode");
                     imu_Deinit(); // Delet IMU task and calculation task
                     ht_espnow_deinit();
                     HttpOTA_server_init();                // OTA server init
                     buzzer_play_tone_sequence(doremi, 8); // play a tone sequence
-                    OTA_Mode_flag = true;
+                    set_OTA_Mode(true);
                 }
             }
             else

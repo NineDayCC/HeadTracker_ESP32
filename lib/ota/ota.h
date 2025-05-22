@@ -32,6 +32,8 @@
 
 void firmware_Sha256();
 void HttpOTA_server_init();
+bool get_OTA_Mode(void);
+void set_OTA_Mode(bool true_or_false);
 
 #endif
 

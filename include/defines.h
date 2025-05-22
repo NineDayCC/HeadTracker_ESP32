@@ -24,6 +24,8 @@
 #define IMU_THREAD_PRIORITY PRIORITY_MED
 #define CAL_THREAD_PRIORITY PRIORITY_HIGH
 #define BT_THREAD_PRIORITY  PRIORITY_RT
+#define MODE_THREAD_PRIORITY PRIORITY_LOW
+#define ESPNOW_THREAD_PRIORITY PRIORITY_HIGH
 
 
 // Thread stack size
@@ -31,12 +33,15 @@
 #define IMU_THREAD_STACK_SIZE   configMINIMAL_STACK_SIZE*5  //thread stack size
 #define CAL_THREAD_STACK_SIZE   configMINIMAL_STACK_SIZE*20  //thread stack size
 #define BT_THREAD_STACK_SIZE    configMINIMAL_STACK_SIZE*10  //thread stack size
+#define MODE_THREAD_STACK_SIZE  configMINIMAL_STACK_SIZE*1
+#define ESPNOW_THREAD_STACK_SIZE configMINIMAL_STACK_SIZE*5
 
 // Thread period in milisecond
 #define IMU_THREAD_PERIOD   10
 #define CAL_THREAD_PERIOD   10
 #define BT_THREAD_PERIOD    8
 #define ESPNOW_SEND_PERIOD  10
+#define MODE_THREAD_PERIOD  50
 
 #define SAMPLE_RATE (int)(1000 / IMU_THREAD_PERIOD) // IMU sample rate, replace this with actual sample rate(Hz)
 
