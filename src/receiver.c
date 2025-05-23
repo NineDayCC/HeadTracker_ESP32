@@ -10,14 +10,18 @@
 
 #include "receiver.h"
 #include "io.h"
-#include "bt.h"
-#include "imu.h"
 #include "ppm.h"
+#ifdef RECEIVER_LAUT
+#include "bt.h"
+#endif
 
 void receiver_start(void)
 {
     PPMinit();
+
+#ifdef RECEIVER_LAUT
     bt_rx_init();
+#endif
 }
 #endif
 
