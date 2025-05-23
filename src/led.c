@@ -20,14 +20,6 @@ const uint8_t LEDSEQ_CONNECTED[] = {0xFF};                          // solid on
 #define SET_LED_OFF() gpio_set_level(GPIO_LED_STATUS_SET, !GPIO_LED_STATUS_SET_ACTIVE_LEVEL)   // set led on
 #define TOGGLE_LED() gpio_set_level(GPIO_LED_STATUS_SET, !gpio_get_level(GPIO_LED_STATUS_SET)) // toggle led
 
-typedef enum
-{
-    connected = 0,
-    disconnected,
-    binding,
-    ota,
-} led_status_t;
-
 typedef struct
 {
     const uint8_t *effect_array;

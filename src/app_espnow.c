@@ -20,6 +20,7 @@
 #include "defines.h"
 #include "buzzer.h"
 #include "crc8.h"
+#include "led.h"
 
 #define ESPNOW_QUEUE_SIZE 1
 #define ESPNOW_CHANNEL 1 // range 0 to 14
@@ -289,11 +290,13 @@ static void espnow_send_task()
             ESP_LOGE(TAG, "Send failed.");
             is_send_failed = false;
             is_espnow_connected = false;
+            led_set_status(disconnected);
             xTaskDelayUntil(&xLastWakeTime, ESPNOW_SEND_PERIOD * 20);
         }
         else
         {
             is_espnow_connected = true;
+            led_set_status(connected);
             xTaskDelayUntil(&xLastWakeTime, ESPNOW_SEND_PERIOD);
         }
     }

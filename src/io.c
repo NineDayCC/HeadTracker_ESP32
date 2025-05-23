@@ -120,6 +120,7 @@ static void BTN_FUNC_LONG_PRESS_START_Handler(void *btn)
     {
         xSemaphoreGive(btn_func_long_start_sem);
         set_binding_mode(true);
+        led_set_status(binding);
         buzzer_set_state(BUZZER_REPEAT, BUZZER_SINGLE_CLICK_MS, 1000);
     }
 }
@@ -152,6 +153,7 @@ static void OTA_detect(void)
                     HttpOTA_server_init();                // OTA server init
                     buzzer_play_tone_sequence(doremi, 8); // play a tone sequence
                     set_OTA_Mode(true);
+                    led_set_status(ota);
                 }
             }
             else
@@ -239,7 +241,6 @@ void io_Init(void)
 
     touch_Init();
     buzzer_init();
-    led_init();
 
 #if defined HT_NANO || defined HT_NANO_V2
 

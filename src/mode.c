@@ -1,3 +1,5 @@
+#ifndef FRAMEWORK_ARDUINO
+
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
 #include "esp_system.h"
@@ -9,6 +11,7 @@
 #include "ota.h"
 #include "imu.h"
 #include "mode.h"
+#include "led.h"
 
 #define MODE_NVS_NAMESPACE "mode"
 #define MODE_NVS_CNT_KEY "cycle_cnt"
@@ -85,6 +88,7 @@ void mode_Thread(void *pvParameters)
     if (power_cycle_cnt == BIND_MODE_COUNT)
     {
         ESP_LOGI(TAG, "Enter binding mode");
+        led_set_status(binding);
         // To do, enter binding mode
         vTaskDelete(NULL); // delete this task
     }
@@ -106,6 +110,7 @@ void mode_Thread(void *pvParameters)
             HttpOTA_server_init();                // OTA server init
             buzzer_play_tone_sequence(doremi, 8); // play a tone sequence
             set_OTA_Mode(true);
+            led_set_status(ota);
         }
         else if (isconnected() || get_OTA_Mode() || isBinding())   // exit if espnow connected
         {
@@ -138,3 +143,5 @@ void mode_init(void)
     // Create a task for power cycle mode
     xTaskCreate(mode_Thread, "mode_Thread", MODE_THREAD_STACK_SIZE_SET, NULL, MODE_THREAD_PRIORITY_SET, NULL); // run on core0
 }
+
+#endif
