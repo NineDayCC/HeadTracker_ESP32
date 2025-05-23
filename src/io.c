@@ -14,6 +14,8 @@
 #include "app_espnow.h"
 #include "ota.h"
 #include "imu.h"
+#include "led.h"
+
 
 //------------------------------------------------------------------------------
 // Defines
@@ -123,6 +125,8 @@ static void BTN_FUNC_LONG_PRESS_START_Handler(void *btn)
 }
 #endif
 
+#if defined HT_NANO || defined HT_NANO_V2
+// Detect OTA button
 static void OTA_detect(void)
 {
     static uint8_t cnt = 0;
@@ -157,6 +161,7 @@ static void OTA_detect(void)
         }
     }
 }
+#endif
 
 /**
  * @brief Did the center button single clicked?
@@ -192,7 +197,10 @@ void io_Thread(void *pvParameters)
     {
         button_ticks(); // read button status
         buzzer_update(TICKS_INTERVAL);
+        led_update();
+        #if defined HT_NANO || defined HT_NANO_V2
         OTA_detect(); // check if OTA mode
+        #endif
         vTaskDelay(pdMS_TO_TICKS(TICKS_INTERVAL));
     }
 }
@@ -231,6 +239,7 @@ void io_Init(void)
 
     touch_Init();
     buzzer_init();
+    led_init();
 
 #if defined HT_NANO || defined HT_NANO_V2
 

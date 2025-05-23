@@ -1,6 +1,8 @@
 #if defined HT_NANO || defined HT_NANO_V2 || defined HT_SE
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
+#include "driver/ledc.h"
+
 #include "buzzer.h"
 #include "ht.h"
 

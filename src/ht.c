@@ -16,11 +16,14 @@
 #include "buzzer.h"
 #include "app_espnow.h"
 #include "ota.h"
+#include "mode.h"
 
 void headtracker_start(void)
 {
-    firmware_Sha256(); // 校验当前固件
+    firmware_Sha256(); // Verify current firmware
+
     io_Init();
+    mode_init();       // Check bind mode and OTA mode
 
     imu_Init();
     ht_espnow_init();
