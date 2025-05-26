@@ -281,6 +281,7 @@ static void espnow_send_task()
         vTaskDelete(NULL);
     }
 
+    set_binding_mode(is_binding_mode);
     for (;;)
     {
         memcpy(frame.payload, chanl_data, sizeof(frame.payload));
@@ -313,33 +314,38 @@ static void espnow_rx_task()
 {
     espnow_event_recv_cb_t recv_cb;
     espnow_frame_t *frame;
-    // Prase channel data and send to ppm.
-    if (xQueueReceive(espnow_re_queue, &recv_cb, 0) == pdTRUE)
+
+    set_binding_mode(is_binding_mode);
+    for (;;)
     {
-        // Check crc.
-        if (recv_cb.data_len != sizeof(espnow_frame_t))
+        // Prase channel data and send to ppm.
+        if (xQueueReceive(espnow_re_queue, &recv_cb, 0) == pdTRUE)
         {
-            ESP_LOGI(TAG, "Binding message length incorrect.");
-        }
-        // Check crc.
-        else if (espnow_crc((espnow_frame_t *)recv_cb.data) != recv_cb.data[sizeof(espnow_frame_t) - 1])
-        {
-            ESP_LOGI(TAG, "Binding message crc incorrect.");
-        }
-        else
-        {
-            frame = (espnow_frame_t *)recv_cb.data;
-            if (frame->function == ESPNOW_FUNCTION_GET_DATA)
+            // Check crc.
+            if (recv_cb.data_len != sizeof(espnow_frame_t))
             {
-                // Prase channel data.
-                uint16_t chanl_roll = (frame->payload[1] << 8) | frame->payload[0];
-                uint16_t chanl_till = (frame->payload[3] << 8) | frame->payload[2];
-                uint16_t chanl_pan = (frame->payload[5] << 8) | frame->payload[4];
-                // Send channel data to ppm.
-                PpmOut_setChannel(getRollChl(), chanl_roll);
-                PpmOut_setChannel(getTiltChl(), chanl_till);
-                PpmOut_setChannel(getPanChl(), chanl_pan);
-                printf("%d,%d,%d\n", PpmOut_getChannel(getTiltChl()), PpmOut_getChannel(getRollChl()), PpmOut_getChannel(getPanChl()));
+                ESP_LOGI(TAG, "Binding message length incorrect.");
+            }
+            // Check crc.
+            else if (espnow_crc((espnow_frame_t *)recv_cb.data) != recv_cb.data[sizeof(espnow_frame_t) - 1])
+            {
+                ESP_LOGI(TAG, "Binding message crc incorrect.");
+            }
+            else
+            {
+                frame = (espnow_frame_t *)recv_cb.data;
+                if (frame->function == ESPNOW_FUNCTION_GET_DATA)
+                {
+                    // Prase channel data.
+                    uint16_t chanl_roll = (frame->payload[1] << 8) | frame->payload[0];
+                    uint16_t chanl_till = (frame->payload[3] << 8) | frame->payload[2];
+                    uint16_t chanl_pan = (frame->payload[5] << 8) | frame->payload[4];
+                    // Send channel data to ppm.
+                    PpmOut_setChannel(getRollChl(), chanl_roll);
+                    PpmOut_setChannel(getTiltChl(), chanl_till);
+                    PpmOut_setChannel(getPanChl(), chanl_pan);
+                    printf("%d,%d,%d\n", PpmOut_getChannel(getTiltChl()), PpmOut_getChannel(getRollChl()), PpmOut_getChannel(getPanChl()));
+                }
             }
         }
     }
@@ -437,8 +443,8 @@ static void espnow_bind_task()
         if (success_flag)
         {
             is_binding_mode = false;
-            buzzer_set_state(BUZZER_SINGLE, 1000, 0);
 #if defined(HEADTRACKER)
+            buzzer_set_state(BUZZER_SINGLE, 1000, 0);
             ESP_LOGI(TAG, "End binding, start sending channal data.");
             xTaskCreate(espnow_send_task, "espnow_send_task", ESPNOW_THREAD_STACK_SIZE_SET, NULL, ESPNOW_THREAD_PRIORITY_SET, &Handle_espnow_task);
 #elif defined(RX_SE)
