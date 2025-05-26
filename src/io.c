@@ -16,7 +16,6 @@
 #include "imu.h"
 #include "led.h"
 
-
 //------------------------------------------------------------------------------
 // Defines
 
@@ -195,16 +194,25 @@ bool isLongStart(void)
 
 void io_Thread(void *pvParameters)
 {
+#ifdef HEADTRAKCER
     for (;;)
     {
         button_ticks(); // read button status
         buzzer_update(TICKS_INTERVAL);
         led_update();
-        #if defined HT_NANO || defined HT_NANO_V2
+#if defined HT_NANO || defined HT_NANO_V2
         OTA_detect(); // check if OTA mode
-        #endif
+#endif
         vTaskDelay(pdMS_TO_TICKS(TICKS_INTERVAL));
     }
+#elif defined RX_SE
+    for (;;)
+    {
+        led_update();
+        vTaskDelay(pdMS_TO_TICKS(5));
+    }
+
+#endif
 }
 
 void io_Init(void)
@@ -259,7 +267,6 @@ void io_Init(void)
     io_conf.pull_up_en = GPIO_PULLUP_DISABLE;
 #endif
     gpio_config(&io_conf);
-#endif
 #endif
     // create semaphore if not already created
     //  center button
@@ -322,7 +329,24 @@ void io_Init(void)
 #elif defined HT_NANO_V2 || defined HT_SE
     xTaskCreate(io_Thread, "io_Thread", IO_THREAD_STACK_SIZE_SET, NULL, IO_THREAD_PRIORITY_SET, NULL); // run on core0
 #endif
-}
+#endif
 
+#ifdef RECEIVER
+#ifdef RX_SE
+    gpio_config_t io_conf = {};
+
+    // config led io
+    io_conf.intr_type = GPIO_INTR_DISABLE; // disable interrupt
+    io_conf.mode = GPIO_MODE_OUTPUT;       // set as output mode
+    io_conf.pin_bit_mask = (1ULL << GPIO_LED_STATUS_SET);
+    io_conf.pull_down_en = GPIO_PULLDOWN_DISABLE;
+    io_conf.pull_up_en = GPIO_PULLUP_ENABLE; // enable pull-up mode
+    gpio_config(&io_conf);
+    gpio_set_level(GPIO_LED_STATUS_SET, GPIO_LED_STATUS_SET_ACTIVE_LEVEL); // set led on
+
+    xTaskCreate(io_Thread, "io_Thread", IO_THREAD_STACK_SIZE_SET, NULL, IO_THREAD_PRIORITY_SET, NULL);
+#endif
+#endif
+}
 
 #endif

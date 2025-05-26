@@ -17,10 +17,14 @@
 #include "esp_crc.h"
 #include "app_espnow.h"
 
+#include "trackersettings.h"
 #include "defines.h"
 #include "buzzer.h"
 #include "crc8.h"
 #include "led.h"
+#ifdef RX_SE
+#include "ppm.h"
+#endif
 
 #define ESPNOW_QUEUE_SIZE 1
 #define ESPNOW_CHANNEL 1 // range 0 to 14
@@ -31,7 +35,7 @@ static const char *TAG = "espnow";
 static const char *BIND_MSG_TX = "TXTXTX"; // size of payload is 6
 // static const char *BIND_MSG_rX = "RXRXRX"; // size of payload is 6
 
-static TaskHandle_t Handle_espnow_send_task;
+static TaskHandle_t Handle_espnow_task;
 static QueueHandle_t espnow_re_queue;
 static bool is_binding_mode = false;
 static bool is_send_failed = false;
@@ -258,6 +262,7 @@ uint8_t *esp_now_restore_peer(void)
     return addr_ret;
 }
 
+#ifdef HEADTRACKER
 static void espnow_send_task()
 {
     uint8_t *peer_addr;
@@ -272,7 +277,7 @@ static void espnow_send_task()
     if (peer_addr == NULL)
     {
         ESP_LOGE(TAG, "ESPNOW peer not found.");
-        Handle_espnow_send_task = NULL;
+        Handle_espnow_task = NULL;
         vTaskDelete(NULL);
     }
 
@@ -301,6 +306,45 @@ static void espnow_send_task()
         }
     }
 }
+#endif
+
+#ifdef RX_SE
+static void espnow_rx_task()
+{
+    espnow_event_recv_cb_t recv_cb;
+    espnow_frame_t *frame;
+    // Prase channel data and send to ppm.
+    if (xQueueReceive(espnow_re_queue, &recv_cb, 0) == pdTRUE)
+    {
+        // Check crc.
+        if (recv_cb.data_len != sizeof(espnow_frame_t))
+        {
+            ESP_LOGI(TAG, "Binding message length incorrect.");
+        }
+        // Check crc.
+        else if (espnow_crc((espnow_frame_t *)recv_cb.data) != recv_cb.data[sizeof(espnow_frame_t) - 1])
+        {
+            ESP_LOGI(TAG, "Binding message crc incorrect.");
+        }
+        else
+        {
+            frame = (espnow_frame_t *)recv_cb.data;
+            if (frame->function == ESPNOW_FUNCTION_GET_DATA)
+            {
+                // Prase channel data.
+                uint16_t chanl_roll = (frame->payload[1] << 8) | frame->payload[0];
+                uint16_t chanl_till = (frame->payload[3] << 8) | frame->payload[2];
+                uint16_t chanl_pan = (frame->payload[5] << 8) | frame->payload[4];
+                // Send channel data to ppm.
+                PpmOut_setChannel(getRollChl(), chanl_roll);
+                PpmOut_setChannel(getTiltChl(), chanl_till);
+                PpmOut_setChannel(getPanChl(), chanl_pan);
+                printf("%d,%d,%d\n", PpmOut_getChannel(getTiltChl()), PpmOut_getChannel(getRollChl()), PpmOut_getChannel(getPanChl()));
+            }
+        }
+    }
+}
+#endif
 
 static void espnow_bind_task()
 {
@@ -314,10 +358,10 @@ static void espnow_bind_task()
     }
 
     // Delete send task before running bind task.
-    if (Handle_espnow_send_task != NULL)
+    if (Handle_espnow_task != NULL)
     {
-        vTaskDelete(Handle_espnow_send_task);
-        Handle_espnow_send_task = NULL;
+        vTaskDelete(Handle_espnow_task);
+        Handle_espnow_task = NULL;
     }
 
     // Add broadcast peer information to peer list if in binding mode.
@@ -394,8 +438,13 @@ static void espnow_bind_task()
         {
             is_binding_mode = false;
             buzzer_set_state(BUZZER_SINGLE, 1000, 0);
+#if defined(HEADTRACKER)
             ESP_LOGI(TAG, "End binding, start sending channal data.");
-            xTaskCreate(espnow_send_task, "espnow_send_task", ESPNOW_THREAD_STACK_SIZE_SET, NULL, ESPNOW_THREAD_PRIORITY_SET, &Handle_espnow_send_task);
+            xTaskCreate(espnow_send_task, "espnow_send_task", ESPNOW_THREAD_STACK_SIZE_SET, NULL, ESPNOW_THREAD_PRIORITY_SET, &Handle_espnow_task);
+#elif defined(RX_SE)
+            ESP_LOGI(TAG, "End binding, start receiving data.");
+            xTaskCreate(espnow_rx_task, "espnow_rx_task", ESPNOW_THREAD_STACK_SIZE_SET, NULL, ESPNOW_THREAD_PRIORITY_SET, &Handle_espnow_task);
+#endif
             vTaskDelete(NULL);
         }
 
@@ -429,10 +478,15 @@ static esp_err_t espnow_init(void)
     ESP_ERROR_CHECK(esp_now_register_send_cb(espnow_send_cb));
     ESP_ERROR_CHECK(esp_now_register_recv_cb(espnow_recv_cb));
 
-    xTaskCreate(espnow_send_task, "espnow_send_task", ESPNOW_THREAD_STACK_SIZE_SET, NULL, ESPNOW_THREAD_PRIORITY_SET, &Handle_espnow_send_task);
+#if defined HEADTRACKER
+    xTaskCreate(espnow_send_task, "espnow_send_task", ESPNOW_THREAD_STACK_SIZE_SET, NULL, ESPNOW_THREAD_PRIORITY_SET, &Handle_espnow_task);
+#elif defined RX_SE
+    xTaskCreate(espnow_rx_task, "espnow_rx_task", ESPNOW_THREAD_STACK_SIZE_SET, NULL, ESPNOW_THREAD_PRIORITY_SET, &Handle_espnow_task);
+#endif
     return ESP_OK;
 }
 
+#ifdef HEADTRAKCER
 void ht_espnow_init(void)
 {
     // Initialize NVS
@@ -453,15 +507,48 @@ void ht_espnow_init(void)
 
 void ht_espnow_deinit(void)
 {
-    if (Handle_espnow_send_task != NULL)
+    if (Handle_espnow_task != NULL)
     {
-        vTaskDelete(Handle_espnow_send_task);
-        Handle_espnow_send_task = NULL;
+        vTaskDelete(Handle_espnow_task);
+        Handle_espnow_task = NULL;
     }
     esp_now_deinit();
     esp_wifi_stop();
     esp_wifi_deinit();
     vSemaphoreDelete(espnow_re_queue);
 }
+#endif
 
+#ifdef RX_SE
+void rx_espnow_init(void)
+{
+    // Initialize NVS
+    esp_err_t ret = nvs_flash_init();
+    if (ret == ESP_ERR_NVS_NO_FREE_PAGES || ret == ESP_ERR_NVS_NEW_VERSION_FOUND)
+    {
+        ESP_LOGE(TAG, "nvs_flash_init failed.");
+        // ESP_ERROR_CHECK(nvs_flash_erase());
+        ret = nvs_flash_init();
+    }
+    ESP_ERROR_CHECK(ret);
+
+    esp_read_mac(local_mac, ESP_MAC_WIFI_STA);
+    ESP_LOGI(TAG, "Local Mac: " MACSTR "", MAC2STR(local_mac));
+    wifi_init();
+    espnow_init();
+}
+
+void rx_espnow_deinit(void)
+{
+    if (Handle_espnow_task != NULL)
+    {
+        vTaskDelete(Handle_espnow_task);
+        Handle_espnow_task = NULL;
+    }
+    esp_now_deinit();
+    esp_wifi_stop();
+    esp_wifi_deinit();
+    vSemaphoreDelete(espnow_re_queue);
+}
+#endif
 #endif

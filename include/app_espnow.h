@@ -36,5 +36,7 @@ void ht_espnow_deinit(void);
 bool isBinding(void);
 bool isconnected(void);
 void rx_espnow_init(void);
+void rx_espnow_deinit(void);
 void rx_espnow_loop(void);
+
 #endif

@@ -107,10 +107,12 @@ void mode_Thread(void *pvParameters)
             ESP_LOGI(TAG, "Enter OTA mode");
             #ifdef HEADTRAKCER
             imu_Deinit(); // Delet IMU task and calculation task
-            #endif
             ht_espnow_deinit();
-            HttpOTA_server_init();                // OTA server init
             buzzer_play_tone_sequence(doremi, 8); // play a tone sequence
+            #elif defined RX_SE
+            rx_espnow_deinit();
+            #endif
+            HttpOTA_server_init();                // OTA server init
             set_OTA_Mode(true);
             led_set_status(ota);
         }

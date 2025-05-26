@@ -1,4 +1,4 @@
-#ifdef RECEIVER_LAUT
+#if defined RECEIVER_LAUT || defined RX_SE
 #include "ppm.h"
 
 #include "freertos/FreeRTOS.h"
@@ -218,6 +218,11 @@ void PpmOut_setChannel(int chan, uint16_t val)
 }
 
 int PpmOut_getChnCount() { return ch_count; }
+
+uint16_t PpmOut_getChannel(uint16_t chan)
+{
+    return ch_values[chan];
+}
 
 // test function
 void printPPMdata(void)

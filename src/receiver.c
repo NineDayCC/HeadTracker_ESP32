@@ -14,11 +14,18 @@
 #ifdef RECEIVER_LAUT
 #include "bt.h"
 #endif
+#ifdef RX_SE
+#include "mode.h"
+#include "app_espnow.h"
+#endif
 
 void receiver_start(void)
 {
-    PPMinit();
+    io_Init();
+    mode_init();
 
+    PPMinit();
+    rx_espnow_init();
 #ifdef RECEIVER_LAUT
     bt_rx_init();
 #endif
