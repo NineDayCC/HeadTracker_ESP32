@@ -54,7 +54,11 @@ void buzzer_init(void)
         .intr_type = LEDC_INTR_DISABLE,
         .gpio_num = LEDC_OUTPUT_IO,
         .duty = 0, // Set duty to 0%
-        .hpoint = 0};
+        .hpoint = 0,
+#if defined HT_SE
+        .flags.output_invert = 1, // HT_SE is connected to a blue led.
+#endif
+    };
     ESP_ERROR_CHECK(ledc_channel_config(&ledc_channel));
 }
 

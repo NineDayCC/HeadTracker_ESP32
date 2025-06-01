@@ -194,7 +194,7 @@ bool isLongStart(void)
 
 void io_Thread(void *pvParameters)
 {
-#ifdef HEADTRAKCER
+#ifdef HEADTRACKER
     for (;;)
     {
         button_ticks(); // read button status
@@ -218,7 +218,7 @@ void io_Thread(void *pvParameters)
 void io_Init(void)
 {
 
-#ifdef HEADTRAKCER
+#ifdef HEADTRACKER
     gpio_config_t io_conf = {};
 
     // config led io

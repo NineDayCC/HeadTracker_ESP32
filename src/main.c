@@ -10,7 +10,7 @@ static const char *MODE_TAG = "MODE";
 
 void app_main()
 {
-#ifdef HEADTRAKCER
+#ifdef HEADTRACKER
     ESP_LOGI(MODE_TAG, "HeadTracker");
     headtracker_start();
 #elif defined RECEIVER

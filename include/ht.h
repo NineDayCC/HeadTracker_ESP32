@@ -1,5 +1,5 @@
 #pragma once
-#ifdef HEADTRAKCER
+#ifdef HEADTRACKER
 
 #include "defines.h"
 

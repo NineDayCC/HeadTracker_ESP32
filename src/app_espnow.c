@@ -492,7 +492,7 @@ static esp_err_t espnow_init(void)
     return ESP_OK;
 }
 
-#ifdef HEADTRAKCER
+#ifdef HEADTRACKER
 void ht_espnow_init(void)
 {
     // Initialize NVS

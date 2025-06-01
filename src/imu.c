@@ -1,4 +1,4 @@
-#ifdef HEADTRAKCER
+#ifdef HEADTRACKER
 
 #include <string.h>
 #include "freertos/FreeRTOS.h"

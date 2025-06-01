@@ -105,7 +105,7 @@ void mode_Thread(void *pvParameters)
         if (!isconnected() && !isBinding() && !get_OTA_Mode() && esp_timer_get_time() > OTA_WAIT_US)
         {
             ESP_LOGI(TAG, "Enter OTA mode");
-            #ifdef HEADTRAKCER
+            #ifdef HEADTRACKER
             imu_Deinit(); // Delet IMU task and calculation task
             ht_espnow_deinit();
             buzzer_play_tone_sequence(doremi, 8); // play a tone sequence
