@@ -28,7 +28,7 @@ typedef struct
 } led_effect_t;
 
 static led_status_t led_status = disconnected;
-static led_effect_t led_effect = {NULL, 0, 0};
+static led_effect_t led_effect = {LEDSEQ_DISCONNECTED, 0, 0};
 
 void led_set_status(led_status_t status)
 {
@@ -78,6 +78,12 @@ void led_update(void)
     if (led_effect.effect_array_index >= led_effect.effect_array_size) // check if effect array index is out of range
     {
         led_effect.effect_array_index = 0; // reset effect array index
+    }
+
+    if (led_effect.effect_array == NULL)
+    {
+        ESP_LOGE("LED", "Effect array is NULL, please set led status first.");
+        return; // effect array is not set, return
     }
 
     if (effect_cnt >= led_effect.effect_array[led_effect.effect_array_index])
