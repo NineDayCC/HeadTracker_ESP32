@@ -9,16 +9,10 @@
 
 #define LED_UPDATE_PERIOD 5 // 5ms
 
-#define T(x) (x / LED_UPDATE_PERIOD) // convert ms to LED update times
-
-const uint8_t LEDSEQ_DISCONNECTED[] = {1, T(500), T(500)};          // 500ms off, 500ms on.
-const uint8_t LEDSEQ_WIFI_UPDATE[] = {T(20), T(30)};                // 20ms on, 30ms off
-const uint8_t LEDSEQ_BINDING[] = {T(100), T(100), T(100), T(1000)}; // 2x 100ms blink, 1s pause
-const uint8_t LEDSEQ_CONNECTED[] = {0xFF};                          // solid on
-
-#define SET_LED_ON() gpio_set_level(GPIO_LED_STATUS_SET, GPIO_LED_STATUS_SET_ACTIVE_LEVEL)     // set led on
-#define SET_LED_OFF() gpio_set_level(GPIO_LED_STATUS_SET, !GPIO_LED_STATUS_SET_ACTIVE_LEVEL)   // set led on
-#define TOGGLE_LED() gpio_set_level(GPIO_LED_STATUS_SET, !gpio_get_level(GPIO_LED_STATUS_SET)) // toggle led
+const uint8_t LEDSEQ_DISCONNECTED[] = {50, 50};     // 500ms off, 500ms on.
+const uint8_t LEDSEQ_WIFI_UPDATE[] = {2, 3};        // 20ms on, 30ms off
+const uint8_t LEDSEQ_BINDING[] = {10, 10, 10, 100}; // 2x 100ms blink, 1s pause
+const uint8_t LEDSEQ_CONNECTED[] = {0xFF};          // solid on
 
 typedef struct
 {
@@ -27,8 +21,33 @@ typedef struct
     uint8_t effect_array_index;
 } led_effect_t;
 
+static bool is_led_on = false; // led status, true means led is on, false means led is off
 static led_status_t led_status = disconnected;
-static led_effect_t led_effect = {LEDSEQ_DISCONNECTED, 0, 0};
+static led_effect_t led_effect = {LEDSEQ_DISCONNECTED, sizeof(LEDSEQ_DISCONNECTED), 0};
+
+inline void set_led_on(void)
+{
+    gpio_set_level(GPIO_LED_STATUS_SET, GPIO_LED_STATUS_SET_ACTIVE_LEVEL); // set led on
+    is_led_on = true;                                                      // update led status
+}
+
+inline void set_led_off(void)
+{
+    gpio_set_level(GPIO_LED_STATUS_SET, !GPIO_LED_STATUS_SET_ACTIVE_LEVEL); // set led off
+    is_led_on = false;                                                      // update led status
+}
+
+inline void TOGGLE_LED(void)
+{
+    if (is_led_on)
+    {
+        set_led_off(); // turn off led
+    }
+    else
+    {
+        set_led_on(); // turn on led
+    }
+}
 
 void led_set_status(led_status_t status)
 {
@@ -39,10 +58,25 @@ void led_update(void)
 {
     static led_status_t last_led_status = disconnected;
     static uint8_t effect_cnt = 0;
+    static bool skip_flg = false; // double the period. 5ms * 2 = 10ms
+
+    skip_flg = !skip_flg; // skip every other update to reduce flicker
+    if (skip_flg)
+    {
+        return; // skip this update
+    }
 
     if (led_status != last_led_status)
     {
-        SET_LED_ON(); // reset led status first
+        if (led_status == disconnected)
+        {
+            set_led_off(); // turn off led first if disconnected. So it would be easier to find disconnection issue.
+        }
+        else
+        {
+            set_led_on(); // reset led status first
+        }
+
         last_led_status = led_status;
         led_effect.effect_array_index = 0; // reset effect array index
         effect_cnt = 0;                    // reset effect count
