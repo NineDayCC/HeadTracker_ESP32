@@ -359,6 +359,7 @@ static void espnow_rx_task()
                     printf("%d,%d,%d\n", PpmOut_getChannel(getTiltChl()), PpmOut_getChannel(getRollChl()), PpmOut_getChannel(getPanChl()));
                 }
             }
+            free(recv_cb.data);
         }
 
         if (is_connected)
