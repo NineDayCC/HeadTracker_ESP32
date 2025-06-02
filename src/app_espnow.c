@@ -29,6 +29,7 @@
 #define ESPNOW_QUEUE_SIZE 1
 #define ESPNOW_CHANNEL 1 // range 0 to 14
 #define ESPNOW_ENABLE_LONG_RANGE false
+#define RECEIVE_OVERTIME_MS 500 // 500ms, if no data received in this time, led status will be set to disconnected
 
 #define FRAMING_CHAR '$'
 static const char *TAG = "espnow";
@@ -321,12 +322,15 @@ static void espnow_rx_task()
 {
     espnow_event_recv_cb_t recv_cb;
     espnow_frame_t *frame;
+    bool is_connected = false;
 
     set_binding_mode(binding_flag);
     for (;;)
     {
+        is_connected = false;
+
         // Prase channel data and send to ppm.
-        if (xQueueReceive(espnow_re_queue, &recv_cb, portMAX_DELAY) == pdTRUE)
+        if (xQueueReceive(espnow_re_queue, &recv_cb, pdTICKS_TO_MS(RECEIVE_OVERTIME_MS)) == pdTRUE)
         {
             // Check crc.
             if (recv_cb.data_len != sizeof(espnow_frame_t))
@@ -351,9 +355,21 @@ static void espnow_rx_task()
                     PpmOut_setChannel(getRollChl(), chanl_roll);
                     PpmOut_setChannel(getTiltChl(), chanl_till);
                     PpmOut_setChannel(getPanChl(), chanl_pan);
+                    is_connected = true;
                     printf("%d,%d,%d\n", PpmOut_getChannel(getTiltChl()), PpmOut_getChannel(getRollChl()), PpmOut_getChannel(getPanChl()));
                 }
             }
+        }
+
+        if (is_connected)
+        {
+            is_espnow_connected = true;
+            led_set_status(connected);
+        }
+        else
+        {
+            is_espnow_connected = false;
+            led_set_status(disconnected);
         }
     }
 }
@@ -443,6 +459,7 @@ static void espnow_bind_task()
                     ESP_LOGI(TAG, "Pair " MACSTR " success.", MAC2STR(peer.peer_addr));
                     // save peer info into nvs.
                     esp_now_save_peer(&peer);
+                    set_binding_flag(false); // must clear flag, so it will not enter binding mode again.
                 }
             }
             free(recv_cb.data);
