@@ -376,7 +376,7 @@ static void espnow_bind_task()
     if (peer == NULL)
     {
         ESP_LOGE(TAG, "Malloc peer information fail");
-        vSemaphoreDelete(espnow_re_queue);
+        vQueueDelete(espnow_re_queue);
         esp_now_deinit();
         return;
     }
@@ -513,15 +513,26 @@ void ht_espnow_init(void)
 
 void ht_espnow_deinit(void)
 {
+    esp_now_unregister_recv_cb();
+    esp_now_unregister_send_cb();
+
     if (Handle_espnow_task != NULL)
     {
         vTaskDelete(Handle_espnow_task);
         Handle_espnow_task = NULL;
     }
+
+    if (espnow_re_queue != NULL)
+    {
+        vQueueDelete(espnow_re_queue);
+    }
+
+    // 4. deinit espnow
     esp_now_deinit();
+
+    // 5. deinit wifi
     esp_wifi_stop();
     esp_wifi_deinit();
-    vSemaphoreDelete(espnow_re_queue);
 }
 #endif
 
@@ -546,15 +557,25 @@ void rx_espnow_init(void)
 
 void rx_espnow_deinit(void)
 {
+    esp_now_unregister_recv_cb();
+    esp_now_unregister_send_cb();
+
     if (Handle_espnow_task != NULL)
     {
         vTaskDelete(Handle_espnow_task);
         Handle_espnow_task = NULL;
     }
+
+    if (espnow_re_queue != NULL)
+    {
+        vQueueDelete(espnow_re_queue);
+    }
+
+    // 4. deinit espnow
     esp_now_deinit();
+
+    // 5. deinit wifi
     esp_wifi_stop();
-    esp_wifi_deinit();
-    vSemaphoreDelete(espnow_re_queue);
-}
+    esp_wifi_deinit();}
 #endif
 #endif

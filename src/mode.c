@@ -92,6 +92,7 @@ void mode_Thread(void *pvParameters)
         set_binding_mode(true); // set binding mode
         vTaskDelete(NULL); // delete this task
     }
+    ESP_LOGI(TAG, "Power cycle count: %d", power_cycle_cnt);
 
     for (;;)
     {

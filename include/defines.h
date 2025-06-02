@@ -29,11 +29,11 @@
 
 
 // Thread stack size
-#define IO_THREAD_STACK_SIZE    configMINIMAL_STACK_SIZE*2
+#define IO_THREAD_STACK_SIZE    configMINIMAL_STACK_SIZE*1
 #define IMU_THREAD_STACK_SIZE   configMINIMAL_STACK_SIZE*5  //thread stack size
 #define CAL_THREAD_STACK_SIZE   configMINIMAL_STACK_SIZE*20  //thread stack size
 #define BT_THREAD_STACK_SIZE    configMINIMAL_STACK_SIZE*10  //thread stack size
-#define MODE_THREAD_STACK_SIZE  configMINIMAL_STACK_SIZE*1
+#define MODE_THREAD_STACK_SIZE  configMINIMAL_STACK_SIZE*2
 #define ESPNOW_THREAD_STACK_SIZE configMINIMAL_STACK_SIZE*5
 
 // Thread period in milisecond
