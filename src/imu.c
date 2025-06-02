@@ -117,7 +117,7 @@ int imu_Init(void)
 #ifdef HT_NANO
     xTaskCreatePinnedToCore(imu_Thread, "imu_Thread", IMU_THREAD_STACK_SIZE_SET, NULL, IMU_THREAD_PRIORITY_SET, NULL, 1);             // run on core1
     xTaskCreatePinnedToCore(calculate_Thread, "calculate_Thread", CAL_THREAD_STACK_SIZE_SET, NULL, CAL_THREAD_PRIORITY_SET, NULL, 1); // run on core1
-#elif defined HT_NANO_V2
+#elif defined HT_NANO_V2 || defined HT_SE
     xTaskCreate(imu_Thread, "imu_Thread", IMU_THREAD_STACK_SIZE_SET, NULL, IMU_THREAD_PRIORITY_SET, &imuTaskHandle);             // run on core0
     xTaskCreate(calculate_Thread, "calculate_Thread", CAL_THREAD_STACK_SIZE_SET, NULL, CAL_THREAD_PRIORITY_SET, &calculateTaskHandle); // run on core0
 #endif
