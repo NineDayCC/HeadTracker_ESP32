@@ -454,7 +454,7 @@ void calculate_Thread(void *pvParameters)
         // // 12) Set the BT Outputs
         buildBtChannels(channel_data, BT_CHANNELS);
 
-#elif defined HT_NANO || defined HT_NANO_V2
+#elif defined HT_NANO || defined HT_NANO_V2 || defined HT_SE
         // Send channel data to esp now task.
         espnow_data_prepare(channel_data[tltch - 1], channel_data[rllch - 1], channel_data[panch - 1]);
 #endif
