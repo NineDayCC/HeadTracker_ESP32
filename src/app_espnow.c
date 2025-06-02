@@ -322,11 +322,11 @@ static void espnow_rx_task()
     espnow_event_recv_cb_t recv_cb;
     espnow_frame_t *frame;
 
-    set_binding_mode(is_binding_mode);
+    set_binding_mode(binding_flag);
     for (;;)
     {
         // Prase channel data and send to ppm.
-        if (xQueueReceive(espnow_re_queue, &recv_cb, 0) == pdTRUE)
+        if (xQueueReceive(espnow_re_queue, &recv_cb, portMAX_DELAY) == pdTRUE)
         {
             // Check crc.
             if (recv_cb.data_len != sizeof(espnow_frame_t))

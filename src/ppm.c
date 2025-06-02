@@ -162,7 +162,7 @@ int PPMinit(void)
 
     // Init counter data
     buildChannels();
-    printPPMdata(); // test
+    // printPPMdata(); // test
     memcpy(isrchsteps, chsteps, sizeof(isrchsteps[0]) * 35);
 
     // Start ppm counter
