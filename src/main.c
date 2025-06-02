@@ -10,6 +10,7 @@ static const char *MODE_TAG = "MODE";
 
 void app_main()
 {
+    uart_set_baudrate(UART_NUM_0, 921600);
 #ifdef HEADTRACKER
     ESP_LOGI(MODE_TAG, "HeadTracker");
     headtracker_start();

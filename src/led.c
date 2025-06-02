@@ -18,7 +18,7 @@
 
 #define LED_UPDATE_PERIOD 5 // 5ms
 
-const uint8_t LEDSEQ_DISCONNECTED[] = {50, 50};     // 500ms off, 500ms on.
+const uint8_t LEDSEQ_DISCONNECTED[] = {50, 50};     // 500ms on, 500ms off.
 const uint8_t LEDSEQ_WIFI_UPDATE[] = {2, 3};        // 20ms on, 30ms off
 const uint8_t LEDSEQ_BINDING[] = {10, 10, 10, 100}; // 2x 100ms blink, 1s pause
 const uint8_t LEDSEQ_CONNECTED[] = {0xFF};          // solid on
@@ -95,7 +95,7 @@ void led_update(void)
 {
     static led_status_t last_led_status = disconnected;
     static uint8_t effect_cnt = 0;
-    static bool skip_flg = false; // double the period. 5ms * 2 = 10ms
+    static bool skip_flg = true; // double the period. 5ms * 2 = 10ms
 
     skip_flg = !skip_flg; // skip every other update to reduce flicker
     if (skip_flg)
@@ -105,14 +105,7 @@ void led_update(void)
 
     if (led_status != last_led_status)
     {
-        if (led_status == disconnected)
-        {
-            set_led_off(); // turn off led first if disconnected. So it would be easier to find disconnection issue.
-        }
-        else
-        {
-            set_led_on(); // reset led status first
-        }
+        set_led_on(); // reset led status first
 
         last_led_status = led_status;
         led_effect.effect_array_index = 0; // reset effect array index
