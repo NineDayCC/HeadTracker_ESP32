@@ -355,6 +355,7 @@ static void espnow_rx_task()
                     PpmOut_setChannel(getRollChl(), chanl_roll);
                     PpmOut_setChannel(getTiltChl(), chanl_till);
                     PpmOut_setChannel(getPanChl(), chanl_pan);
+                    buildChannels();
                     is_connected = true;
                     printf("%d,%d,%d\n", PpmOut_getChannel(getTiltChl()), PpmOut_getChannel(getRollChl()), PpmOut_getChannel(getPanChl()));
                 }

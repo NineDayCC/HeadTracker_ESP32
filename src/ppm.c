@@ -144,10 +144,8 @@ int PPMinit(void)
     };
     ESP_ERROR_CHECK(gptimer_register_event_callbacks(ppm_timer, &cbs, NULL));
 
-    ESP_LOGI(PPM_TAG, "Enable timer");
     ESP_ERROR_CHECK(gptimer_enable(ppm_timer));
 
-    ESP_LOGI(PPM_TAG, "Start timer, auto-reload at alarm event");
     gptimer_alarm_config_t alarm_config = {
         .reload_count = 0,
         .alarm_count = PPM_INIT_DELAY, // ppm start after 500ms
