@@ -89,7 +89,7 @@ void mode_Thread(void *pvParameters)
     {
         ESP_LOGI(TAG, "Enter binding mode");
         led_set_status(binding);
-        set_binding_mode(true); // set binding mode
+        set_binding_flag(true); // set binding mode
         vTaskDelete(NULL); // delete this task
     }
     ESP_LOGI(TAG, "Power cycle count: %d", power_cycle_cnt);

@@ -38,12 +38,18 @@ static const char *BIND_MSG_TX = "TXTXTX"; // size of payload is 6
 static TaskHandle_t Handle_espnow_task;
 static QueueHandle_t espnow_re_queue;
 static bool is_binding_mode = false;
+static bool binding_flag = false;
 static bool is_send_failed = false;
 static bool is_espnow_connected = false;
 static uint16_t chanl_data[6];
 
 static const uint8_t broadcast_mac[ESP_NOW_ETH_ALEN] = {0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF};
 static uint8_t local_mac[ESP_NOW_ETH_ALEN] = {};
+
+void set_binding_flag(bool true_or_false)
+{
+    binding_flag = true_or_false;
+}
 
 bool isBinding(void)
 {
@@ -269,6 +275,8 @@ static void espnow_send_task()
     espnow_frame_t frame;
     TickType_t xLastWakeTime;
 
+    set_binding_mode(binding_flag);
+
     // Initialise the xLastWakeTime variable with the current time.
     xLastWakeTime = xTaskGetTickCount();
 
@@ -281,7 +289,6 @@ static void espnow_send_task()
         vTaskDelete(NULL);
     }
 
-    set_binding_mode(is_binding_mode);
     for (;;)
     {
         memcpy(frame.payload, chanl_data, sizeof(frame.payload));
@@ -576,6 +583,7 @@ void rx_espnow_deinit(void)
 
     // 5. deinit wifi
     esp_wifi_stop();
-    esp_wifi_deinit();}
+    esp_wifi_deinit();
+}
 #endif
 #endif

@@ -109,10 +109,10 @@ void firmware_Sha256()
             // 运行诊断功能...
             bool diagnostic_is_ok = diagnostic();
             if (diagnostic_is_ok) {
-                ESP_LOGI(TAG, "固件诊断成功完成！继续执行 ...");
+                ESP_LOGI(TAG, "Firmware diagnostic completed successfully! Continuing ...");
                 esp_ota_mark_app_valid_cancel_rollback();
             } else {
-                ESP_LOGE(TAG, "固件诊断失败！开始回滚到以前的版本 ...");
+                ESP_LOGE(TAG, "Firmware diagnostic failed! Starting rollback to previous version ...");
                 esp_ota_mark_app_invalid_rollback_and_reboot();
             }
         }
@@ -131,8 +131,8 @@ void firmware_Sha256()
     esp_app_desc_t running_app_info;
     if (esp_ota_get_partition_description(running, &running_app_info) == ESP_OK)
     {
-        ESP_LOGI(TAG, "当前运行固件版本: %s", running_app_info.version);
-        ESP_LOGI(TAG, "固件编译时间: %s，%s", running_app_info.date, running_app_info.time);
+        ESP_LOGI(TAG, "Current firmware version: %s", running_app_info.version);
+        ESP_LOGI(TAG, "Compile time  %s,%s", running_app_info.date, running_app_info.time);
     }
 }
 
@@ -148,7 +148,7 @@ static esp_err_t upload_post_handler(httpd_req_t *req)
     Upload_Timeout_num = 0;
     /* 文件不能大于限制*/
     if (req->content_len > MAX_FILE_SIZE) {
-        ESP_LOGE(TAG, "文件过大 : %d bytes", req->content_len);
+        ESP_LOGE(TAG, "File too big : %d bytes", req->content_len);
         /* 回应400错误请求 */
         httpd_resp_send_err(req, HTTPD_400_BAD_REQUEST,
                             "File size must be less than"
@@ -166,12 +166,12 @@ static esp_err_t upload_post_handler(httpd_req_t *req)
         if ((received = httpd_req_recv(req, OTA_buf, MIN(remaining, SCRATCH_BUFSIZE))) <= 0) {
             if (received == HTTPD_SOCK_ERR_TIMEOUT) {
                 Upload_Timeout_num++;
-                ESP_LOGE(TAG, "接收文件超时 %d", Upload_Timeout_num);
+                ESP_LOGE(TAG, "Receive overtime %d", Upload_Timeout_num);
                 /* 如果发生超时，请重试 */
                 if (Upload_Timeout_num >= 3)
                 {
                     Upload_Timeout_num = 0;
-                    ESP_LOGE(TAG, "超时过多！");
+                    ESP_LOGE(TAG, "Too many overtime!");
                     httpd_resp_send_err(req, HTTPD_500_INTERNAL_SERVER_ERROR, "File receiving timeout!");
                     return ESP_FAIL;
                 }
@@ -179,7 +179,7 @@ static esp_err_t upload_post_handler(httpd_req_t *req)
             }
             /* 如果出现无法恢复的错误，请关闭并删除未完成的文件*/
             free(OTA_buf);
-            ESP_LOGE(TAG, "文件接收失败!");
+            ESP_LOGE(TAG, "File receive filed");
             /* 响应500内部服务器错误 */
             httpd_resp_send_err(req, HTTPD_500_INTERNAL_SERVER_ERROR, "Unable to receive file!");
             if(update_handle) esp_ota_end(update_handle);   //若已begin OTA则停止OTA
@@ -195,19 +195,19 @@ static esp_err_t upload_post_handler(httpd_req_t *req)
                 const esp_partition_t *running = esp_ota_get_running_partition();
                 if (esp_ota_get_partition_description(running, &running_app_info) == ESP_OK)
                 {
-                    ESP_LOGI(TAG, "当前运行固件版本: %s", running_app_info.version);
-                    ESP_LOGI(TAG, "当前运行固件编译时间: %s，%s", running_app_info.date, running_app_info.time);
+                    ESP_LOGI(TAG, "Current firmware version: %s", running_app_info.version);
+                    ESP_LOGI(TAG, "Comeplie time %s,%s", running_app_info.date, running_app_info.time);
                 }
                 // 通过下载检查新固件版本
                 memcpy(&new_app_info, &OTA_buf[sizeof(esp_image_header_t) + sizeof(esp_image_segment_header_t)], sizeof(esp_app_desc_t));
                 if (strstr(new_app_info.version, "HT_") == NULL)  //版本错误
                 {
-                    ESP_LOGE(TAG, "新固件头错误");
+                    ESP_LOGE(TAG, "Firmware header error!");
                     httpd_resp_send_err(req, HTTPD_500_INTERNAL_SERVER_ERROR, "Firmware header error!");
                     return ESP_FAIL;
                 }
-                ESP_LOGI(TAG, "新固件版本: %s", new_app_info.version);
-                ESP_LOGI(TAG, "新固件编译时间: %s, %s", new_app_info.date, new_app_info.time);
+                ESP_LOGI(TAG, "New firmware version: %s", new_app_info.version);
+                ESP_LOGI(TAG, "New firmware complie time: %s, %s", new_app_info.date, new_app_info.time);
                 
                 //返回下一个应使用新固件写入的OTA应用程序分区
                 //esp_ota_get_next_update_partition 自动选择下一个可用ota分区
@@ -254,7 +254,7 @@ static esp_err_t upload_post_handler(httpd_req_t *req)
         remaining -= received;
     }
     free(OTA_buf);
-    ESP_LOGI(TAG, "文件接收完成: %dByte",L_remaining);
+    ESP_LOGI(TAG, "File receive complete: %dByte",L_remaining);
 
     err = esp_ota_end(update_handle);
     if (err != ESP_OK) {
@@ -267,7 +267,7 @@ static esp_err_t upload_post_handler(httpd_req_t *req)
         httpd_resp_send_err(req, HTTPD_500_INTERNAL_SERVER_ERROR, str);
         return ESP_FAIL;
     }
-    ESP_LOGI(TAG, "固件校验成功!");
+    ESP_LOGI(TAG, "Firmware validation succeeded");
 
     err = esp_ota_set_boot_partition(update_partition);
     if (err != ESP_OK) {
@@ -280,7 +280,7 @@ static esp_err_t upload_post_handler(httpd_req_t *req)
     // httpd_resp_sendstr(req, "OTA successfully");
     httpd_resp_sendstr(req,SendStr);
     vTaskDelay(500 / portTICK_PERIOD_MS);   //延时等待消息发送
-    ESP_LOGI(TAG, "准备重启系统!");
+    ESP_LOGI(TAG, "Ready to reboot.");
     esp_restart();
     return ESP_OK;
 }
