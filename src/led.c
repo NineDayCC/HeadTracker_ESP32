@@ -1,11 +1,20 @@
 #if defined HT_NANO || defined HT_NANO_V2 || defined HT_SE || defined RX_SE
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
-#include "driver/gpio.h"
+#include "driver/ledc.h"
 
 #include "led.h"
 #include "ht.h"
 #include "io.h"
+#include "defines.h"
+
+#define LEDC_TIMER LEDC_TIMER_0
+#define LEDC_MODE LEDC_LOW_SPEED_MODE
+#define LEDC_OUTPUT_IO (GPIO_LED_STATUS) // Define the output GPIO
+#define LEDC_CHANNEL LEDC_CHANNEL_1
+#define LEDC_DUTY_RES LEDC_TIMER_13_BIT // Set duty resolution to 13 bits
+#define LEDC_DUTY (1638)                // Set duty to 50%. (2 ** 13) * 20% = 1638
+#define LEDC_FREQUENCY (2000)           // Frequency in Hertz. Set frequency at 2 kHz
 
 #define LED_UPDATE_PERIOD 5 // 5ms
 
@@ -25,19 +34,47 @@ static bool is_led_on = false; // led status, true means led is on, false means 
 static led_status_t led_status = disconnected;
 static led_effect_t led_effect = {LEDSEQ_DISCONNECTED, sizeof(LEDSEQ_DISCONNECTED), 0};
 
-inline void set_led_on(void)
+// Set the buzzer peripheral configuration
+void led_init(void)
 {
-    gpio_set_level(GPIO_LED_STATUS_SET, GPIO_LED_STATUS_SET_ACTIVE_LEVEL); // set led on
-    is_led_on = true;                                                      // update led status
+    // Prepare and then apply the LEDC PWM timer configuration
+    ledc_timer_config_t ledc_timer = {
+        .speed_mode = LEDC_MODE,
+        .duty_resolution = LEDC_DUTY_RES,
+        .timer_num = LEDC_TIMER,
+        .freq_hz = LEDC_FREQUENCY, // Set output frequency at 4 kHz
+        .clk_cfg = LEDC_AUTO_CLK};
+    ESP_ERROR_CHECK(ledc_timer_config(&ledc_timer));
+
+    // Prepare and then apply the LEDC PWM channel configuration
+    ledc_channel_config_t ledc_channel = {
+        .speed_mode = LEDC_MODE,
+        .channel = LEDC_CHANNEL,
+        .timer_sel = LEDC_TIMER,
+        .intr_type = LEDC_INTR_DISABLE,
+        .gpio_num = LEDC_OUTPUT_IO,
+        .duty = 0, // Set duty to 0%
+        .hpoint = 0,
+        .flags.output_invert = 1, // HT_SE is connected to a blue led.
+    };
+    ESP_ERROR_CHECK(ledc_channel_config(&ledc_channel));
 }
 
-inline void set_led_off(void)
+static inline void set_led_on(void)
 {
-    gpio_set_level(GPIO_LED_STATUS_SET, !GPIO_LED_STATUS_SET_ACTIVE_LEVEL); // set led off
-    is_led_on = false;                                                      // update led status
+    ledc_set_duty(LEDC_MODE, LEDC_CHANNEL, LEDC_DUTY); // Set duty to 50%, LED is on
+    ledc_update_duty(LEDC_MODE, LEDC_CHANNEL);
+    is_led_on = true; // update led status
 }
 
-inline void TOGGLE_LED(void)
+static inline void set_led_off(void)
+{
+    ledc_set_duty(LEDC_MODE, LEDC_CHANNEL, 0); // Set duty to 0%
+    ledc_update_duty(LEDC_MODE, LEDC_CHANNEL);
+    is_led_on = false; // update led status
+}
+
+static inline void TOGGLE_LED(void)
 {
     if (is_led_on)
     {
