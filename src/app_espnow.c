@@ -382,6 +382,7 @@ static void espnow_bind_task()
     espnow_event_recv_cb_t recv_cb;
     espnow_frame_t frame;
     bool success_flag = false;
+    uint8_t delay_cnt = 0;
 
     if (!is_binding_mode)
     {
@@ -462,6 +463,9 @@ static void espnow_bind_task()
                     // save peer info into nvs.
                     esp_now_save_peer(&peer);
                     set_binding_flag(false); // must clear flag, so it will not enter binding mode again.
+#if defined(HEADTRACKER)
+                    buzzer_set_state(BUZZER_SINGLE, 1000, 0);
+#endif
                 }
             }
             free(recv_cb.data);
@@ -469,15 +473,17 @@ static void espnow_bind_task()
         if (success_flag)
         {
             is_binding_mode = false;
+            if (delay_cnt++ >= 5) // delay a while so the other device can receive the binding message.
+            {
 #if defined(HEADTRACKER)
-            buzzer_set_state(BUZZER_SINGLE, 1000, 0);
-            ESP_LOGI(TAG, "End binding, start sending channal data.");
-            xTaskCreate(espnow_send_task, "espnow_send_task", ESPNOW_THREAD_STACK_SIZE_SET, NULL, ESPNOW_THREAD_PRIORITY_SET, &Handle_espnow_task);
+                ESP_LOGI(TAG, "End binding, start sending channal data.");
+                xTaskCreate(espnow_send_task, "espnow_send_task", ESPNOW_THREAD_STACK_SIZE_SET, NULL, ESPNOW_THREAD_PRIORITY_SET, &Handle_espnow_task);
 #elif defined(RX_SE)
-            ESP_LOGI(TAG, "End binding, start receiving data.");
-            xTaskCreate(espnow_rx_task, "espnow_rx_task", ESPNOW_THREAD_STACK_SIZE_SET, NULL, ESPNOW_THREAD_PRIORITY_SET, &Handle_espnow_task);
+                ESP_LOGI(TAG, "End binding, start receiving data.");
+                xTaskCreate(espnow_rx_task, "espnow_rx_task", ESPNOW_THREAD_STACK_SIZE_SET, NULL, ESPNOW_THREAD_PRIORITY_SET, &Handle_espnow_task);
 #endif
-            vTaskDelete(NULL);
+                vTaskDelete(NULL);
+            }
         }
 
         vTaskDelay(pdMS_TO_TICKS(100));
