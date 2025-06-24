@@ -1,4 +1,4 @@
-#ifdef HEADTRAKCER
+#ifdef HEADTRACKER
 #ifdef HT_LITE
 #include "bt.h"
 

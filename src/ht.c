@@ -1,4 +1,4 @@
-#ifdef HEADTRAKCER
+#ifdef HEADTRACKER
 
 #include <stdio.h>
 #include "freertos/FreeRTOS.h"
@@ -16,20 +16,17 @@
 #include "buzzer.h"
 #include "app_espnow.h"
 #include "ota.h"
+#include "mode.h"
 
 void headtracker_start(void)
 {
-    firmware_Sha256();                  //校验当前固件
+    firmware_Sha256(); // Verify current firmware
+
     io_Init();
-    if (is_OTA_Mode())  //是否进入OTA模式
-    {
-        HttpOTA_server_init();          //OTA服务器初始化
-    }
-    else
-    {
-        imu_Init();
-        ht_espnow_init();
-    }
+    mode_init();       // Check bind mode and OTA mode
+
+    imu_Init();
+    ht_espnow_init();
 
 #ifdef HT_LITE
     PPMinit();

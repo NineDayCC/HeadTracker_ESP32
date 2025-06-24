@@ -1,5 +1,4 @@
-#ifndef TRACKERSETTINGS_H
-#define TRACKERSETTINGS_H
+#pragma once
 
 #include <stdint.h>
 #include <stdbool.h>
@@ -153,5 +152,3 @@ bool setPPMchcnt(uint16_t val);
 
 bool setBtMode(uint16_t val);
 
-
-#endif

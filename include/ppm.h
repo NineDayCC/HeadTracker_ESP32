@@ -9,3 +9,4 @@ void buildChannels(void);
 void PpmOut_setChannel(int chan, uint16_t val);
 int PpmOut_getChnCount();
 uint16_t PpmOut_getChannel(uint16_t chan);
+void printPPMdata(void);

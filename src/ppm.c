@@ -1,4 +1,4 @@
-#ifdef RECEIVER_LAUT
+#if defined RECEIVER_LAUT || defined RX_SE
 #include "ppm.h"
 
 #include "freertos/FreeRTOS.h"
@@ -144,10 +144,8 @@ int PPMinit(void)
     };
     ESP_ERROR_CHECK(gptimer_register_event_callbacks(ppm_timer, &cbs, NULL));
 
-    ESP_LOGI(PPM_TAG, "Enable timer");
     ESP_ERROR_CHECK(gptimer_enable(ppm_timer));
 
-    ESP_LOGI(PPM_TAG, "Start timer, auto-reload at alarm event");
     gptimer_alarm_config_t alarm_config = {
         .reload_count = 0,
         .alarm_count = PPM_INIT_DELAY, // ppm start after 500ms
@@ -162,7 +160,7 @@ int PPMinit(void)
 
     // Init counter data
     buildChannels();
-    printPPMdata(); // test
+    // printPPMdata(); // test
     memcpy(isrchsteps, chsteps, sizeof(isrchsteps[0]) * 35);
 
     // Start ppm counter
@@ -218,6 +216,11 @@ void PpmOut_setChannel(int chan, uint16_t val)
 }
 
 int PpmOut_getChnCount() { return ch_count; }
+
+uint16_t PpmOut_getChannel(uint16_t chan)
+{
+    return ch_values[chan];
+}
 
 // test function
 void printPPMdata(void)

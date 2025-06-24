@@ -1,5 +1,4 @@
 #pragma once
-#include "driver/ledc.h"
 
 #define BUZZER_SINGLE_CLICK_MS 100
 
