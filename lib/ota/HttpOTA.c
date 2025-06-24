@@ -306,6 +306,20 @@ static esp_err_t upload_post_handler(httpd_req_t *req)
     return ESP_OK;
 }
 
+// Configurator page
+static esp_err_t Configurator_handler(httpd_req_t *req)
+{
+    httpd_resp_set_hdr(req, "Access-Control-Allow-Origin", "*"); // 跨域传输协议
+
+    extern const unsigned char Configurator_html_gz_start[] asm("_binary_Configurator_html_gz_start");
+    extern const unsigned char Configurator_html_gz_end[] asm("_binary_Configurator_html_gz_end");
+    size_t Configurator_html_gz_len = Configurator_html_gz_end - Configurator_html_gz_start;
+
+    httpd_resp_set_type(req, "text/html");
+    httpd_resp_set_hdr(req, "Content-Encoding", "gzip");
+    return httpd_resp_send(req, (const char *)Configurator_html_gz_start, Configurator_html_gz_len);
+}
+
 // OTA 页面
 static esp_err_t HttpOTA_handler(httpd_req_t *req)
 {
@@ -363,8 +377,15 @@ void HttpOTA_server_init()
     ESP_LOGI(TAG, "Starting OTA server on port: '%d'", config.server_port);
     if (httpd_start(&HttpOTA_httpd, &config) == ESP_OK)
     {
-        httpd_uri_t HttpOTA_uri = {// OTA页面
+        httpd_uri_t Configurator_uri = {// Configurator page
                                    .uri = "/",
+                                   .method = HTTP_GET,
+                                   .handler = Configurator_handler,
+                                   .user_ctx = NULL};
+        httpd_register_uri_handler(HttpOTA_httpd, &Configurator_uri);
+
+        httpd_uri_t HttpOTA_uri = {// OTA页面
+                                   .uri = "/OTA",
                                    .method = HTTP_GET,
                                    .handler = HttpOTA_handler,
                                    .user_ctx = NULL};

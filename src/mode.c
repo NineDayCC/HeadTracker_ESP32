@@ -17,7 +17,7 @@
 #define MODE_NVS_CNT_KEY "cycle_cnt"
 
 #define POWER_CYCLE_WINDOW_US 2 * 1000 * 1000 // 2 seconds
-#define OTA_WAIT_US 60 * 1000 * 1000          // 60 seconds
+#define OTA_WAIT_US 3 * 1000 * 1000          // 60 seconds
 #define BIND_MODE_COUNT 3
 
 #define TASK_DISTROY_TIME_US (OTA_WAIT_US + 500 * 1000)
