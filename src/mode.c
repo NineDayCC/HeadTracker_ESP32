@@ -17,10 +17,10 @@
 #define MODE_NVS_CNT_KEY "cycle_cnt"
 
 #define POWER_CYCLE_WINDOW_US 2 * 1000 * 1000 // 2 seconds
-#define OTA_WAIT_US 3 * 1000 * 1000          // 60 seconds
+#define OTA_WAIT_US 60 * 1000 * 1000          // 60 seconds
 #define BIND_MODE_COUNT 3
 
-#define TASK_DISTROY_TIME_US (OTA_WAIT_US + 500 * 1000)
+#define TASK_DISTROY_TIME_US (OTA_WAIT_US + 1 * 1000 * 1000)
 
 static const char *TAG = "MODE";
 static uint8_t power_cycle_cnt = 0; // count power cycle
@@ -96,6 +96,7 @@ void mode_Thread(void *pvParameters)
 
     for (;;)
     {
+        ESP_LOGI(TAG, "Mode thread running");
         if (esp_timer_get_time() > POWER_CYCLE_WINDOW_US && power_cycle_cnt != 0)
         {
             power_cycle_cnt = 0; // reset the count
@@ -103,7 +104,7 @@ void mode_Thread(void *pvParameters)
             ESP_LOGD(TAG, "Power cycle count reset");
         }
 
-        if (!isconnected() && !isBinding() && !get_OTA_Mode() && esp_timer_get_time() > OTA_WAIT_US)
+        if (!isconnected() && !isBinding() && !get_OTA_Mode() && esp_timer_get_time() >= OTA_WAIT_US)
         {
             ESP_LOGI(TAG, "Enter OTA mode");
             #ifdef HEADTRACKER

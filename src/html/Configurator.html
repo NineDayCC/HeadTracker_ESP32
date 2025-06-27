@@ -1,5 +1,1035 @@
-<form action="/submit" method="post">
-  <input type="text" name="username">
-  <input type="password" name="password">
-  <button type="submit">提交</button>
-</form>
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>HeadTracker_ESP32 Setting</title>
+    <style>
+        :root {
+            --dark-bg: #222831;
+            --dark-panel: #393e46;
+            --primary: #00adb5;
+            --light-text: #eeeeee;
+            --border-radius: 6px;
+            --box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--dark-bg);
+            margin: 0;
+            padding: 0;
+            color: var(--light-text);
+        }
+
+        /* 导航栏样式 */
+        .navbar {
+            background-color: var(--dark-panel);
+            padding: 0 10px;
+            box-shadow: var(--box-shadow);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .nav-container {
+            display: flex;
+            align-items: center;
+            overflow-x: auto;
+            white-space: nowrap;
+        }
+
+        .logo {
+            color: var(--primary);
+            font-weight: bold;
+            font-size: 1.2rem;
+            margin-right: 15px;
+            padding: 10px 0;
+        }
+
+        .nav-menu {
+            display: flex;
+            list-style: none;
+            margin: 0;
+            padding: 0;
+        }
+
+        .nav-item {
+            position: relative;
+        }
+
+        .nav-link {
+            color: rgba(255, 255, 255, 0.9);
+            text-decoration: none;
+            padding: 15px 10px;
+            display: block;
+            font-weight: 500;
+            transition: all 0.3s;
+            font-size: 0.9rem;
+        }
+
+        .nav-link:hover,
+        .nav-link.active {
+            color: var(--primary);
+            background-color: rgba(0, 173, 181, 0.1);
+        }
+
+        .nav-link.active {
+            font-weight: 600;
+        }
+
+        .nav-link.active::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 10px;
+            right: 10px;
+            height: 3px;
+            background-color: var(--primary);
+        }
+
+        .lang-switcher {
+            margin-right: 10px;
+            display: flex;
+        }
+
+        .lang-btn {
+            background: none;
+            border: 1px solid var(--primary);
+            color: var(--primary);
+            padding: 3px 8px;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-left: 5px;
+            font-size: 0.8rem;
+        }
+
+        .lang-btn.active {
+            background-color: var(--primary);
+            color: var(--dark-bg);
+        }
+
+        .lang-btn:hover {
+            background-color: rgba(0, 173, 181, 0.1);
+        }
+
+        .container {
+            width: 95%;
+            max-width: 1200px;
+            margin: 10px auto;
+            padding: 15px;
+            background-color: var(--dark-panel);
+            border-radius: var(--border-radius);
+            box-shadow: var(--box-shadow);
+            overflow-x: auto;
+        }
+
+        h1 {
+            color: var(--primary);
+            text-align: center;
+            margin-bottom: 20px;
+            font-weight: 600;
+            font-size: 1.5rem;
+        }
+
+        .card {
+            background-color: rgba(0, 0, 0, 0.2);
+            border-radius: var(--border-radius);
+            padding: 15px;
+            margin-bottom: 15px;
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 15px;
+            min-width: 600px;
+        }
+
+        th {
+            background-color: var(--primary);
+            color: var(--dark-bg);
+            padding: 10px;
+            text-align: left;
+            font-weight: 500;
+            font-size: 0.9rem;
+        }
+
+        td {
+            padding: 10px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            font-size: 0.85rem;
+        }
+
+        tr:hover {
+            background-color: rgba(0, 173, 181, 0.05);
+        }
+
+        input[type="text"],
+        input[type="number"] {
+            width: 100%;
+            padding: 6px 10px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 4px;
+            background-color: rgba(0, 0, 0, 0.2);
+            color: var(--light-text);
+            transition: all 0.3s;
+            font-size: 0.85rem;
+            box-sizing: border-box;
+        }
+
+        input[type="text"]:focus,
+        input[type="number"]:focus {
+            border-color: var(--primary);
+            outline: none;
+            box-shadow: 0 0 0 2px rgba(0, 173, 181, 0.2);
+        }
+
+        .switch {
+            position: relative;
+            display: inline-block;
+            width: 40px;
+            height: 20px;
+        }
+
+        .switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #ccc;
+            transition: .4s;
+            border-radius: 20px;
+        }
+
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 14px;
+            width: 14px;
+            left: 3px;
+            bottom: 3px;
+            background-color: white;
+            transition: .4s;
+            border-radius: 50%;
+        }
+
+        input:checked+.slider {
+            background-color: var(--primary);
+        }
+
+        input:checked+.slider:before {
+            transform: translateX(20px);
+        }
+
+        .btn {
+            display: inline-block;
+            padding: 8px 15px;
+            background-color: var(--primary);
+            color: var(--dark-bg);
+            border: none;
+            border-radius: var(--border-radius);
+            cursor: pointer;
+            font-size: 0.9rem;
+            font-weight: 500;
+            transition: all 0.3s;
+            box-shadow: var(--box-shadow);
+            margin: 0 3px;
+        }
+
+        .btn:hover {
+            background-color: #00c4cc;
+            transform: translateY(-2px);
+        }
+
+        .btn:active {
+            transform: translateY(0);
+        }
+
+        .btn-secondary {
+            background-color: var(--dark-panel);
+            color: var(--light-text);
+            border: 1px solid var(--primary);
+        }
+
+        .btn-secondary:hover {
+            background-color: rgba(0, 173, 181, 0.1);
+        }
+
+        .btn-container {
+            text-align: center;
+            margin-top: 15px;
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 5px;
+        }
+
+        .param-name {
+            font-weight: 500;
+            color: var(--primary);
+            font-size: 0.85rem;
+        }
+
+        .param-value {
+            font-family: 'Courier New', monospace;
+            background-color: rgba(0, 0, 0, 0.2);
+            padding: 2px 5px;
+            border-radius: 4px;
+            font-size: 0.85rem;
+        }
+
+        .param-range {
+            color: rgba(255, 255, 255, 0.6);
+            font-size: 0.8rem;
+            font-style: italic;
+        }
+
+        .param-desc {
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 0.8rem;
+            line-height: 1.4;
+        }
+
+        .status-bar {
+            padding: 10px;
+            margin-top: 15px;
+            border-radius: var(--border-radius);
+            text-align: center;
+            display: none;
+            font-size: 0.9rem;
+        }
+
+        .success {
+            background-color: rgba(76, 201, 240, 0.2);
+            color: #4cc9f0;
+            border: 1px solid #4cc9f0;
+        }
+
+        .error {
+            background-color: rgba(239, 71, 111, 0.2);
+            color: #ef476f;
+            border: 1px solid #ef476f;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 20px;
+            font-size: 1rem;
+            color: var(--primary);
+        }
+
+        .info-icon {
+            display: inline-block;
+            width: 14px;
+            height: 14px;
+            background-color: var(--primary);
+            color: var(--dark-bg);
+            border-radius: 50%;
+            text-align: center;
+            line-height: 14px;
+            font-size: 10px;
+            font-weight: bold;
+            margin-left: 5px;
+            cursor: help;
+            position: relative;
+        }
+
+        .info-tooltip {
+            position: absolute;
+            bottom: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: var(--dark-panel);
+            color: var(--light-text);
+            padding: 8px;
+            border-radius: var(--border-radius);
+            width: 180px;
+            font-size: 0.8rem;
+            box-shadow: var(--box-shadow);
+            z-index: 100;
+            display: none;
+        }
+
+        .info-icon:hover .info-tooltip {
+            display: block;
+        }
+
+        /* 移动端特定样式 */
+        @media (max-width: 768px) {
+            .navbar {
+                padding: 0 5px;
+            }
+
+            .logo {
+                font-size: 1rem;
+                margin-right: 10px;
+                padding: 8px 0;
+            }
+
+            .nav-link {
+                padding: 12px 8px;
+                font-size: 0.8rem;
+            }
+
+            .container {
+                width: 98%;
+                padding: 10px;
+            }
+
+            h1 {
+                font-size: 1.3rem;
+                margin-bottom: 15px;
+            }
+
+            .card {
+                padding: 10px;
+            }
+
+            table {
+                min-width: 800px;
+            }
+
+            th,
+            td {
+                padding: 8px;
+            }
+
+            .btn {
+                padding: 6px 12px;
+                font-size: 0.8rem;
+                margin: 2px;
+            }
+
+            .btn-container {
+                gap: 3px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .logo {
+                font-size: 0.9rem;
+            }
+
+            .nav-link {
+                padding: 10px 6px;
+                font-size: 0.75rem;
+            }
+
+            .lang-btn {
+                padding: 2px 6px;
+                font-size: 0.7rem;
+            }
+
+            h1 {
+                font-size: 1.2rem;
+            }
+
+            .info-tooltip {
+                width: 150px;
+                font-size: 0.7rem;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <!-- 导航栏 -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="logo">HeadTracker</div>
+            <ul class="nav-menu">
+                <li class="nav-item">
+                    <a href="#" class="nav-link active" data-page="parameter">Parameters</a>
+                </li>
+                <li class="nav-item">
+                    <a href="#" class="nav-link" data-page="data-stream">Data Stream</a>
+                </li>
+                <li class="nav-item">
+                    <a href="#" class="nav-link" data-page="ota">OTA</a>
+                </li>
+            </ul>
+        </div>
+        <div class="lang-switcher">
+            <button class="lang-btn active" id="lang-zh">中文</button>
+            <button class="lang-btn" id="lang-en">EN</button>
+        </div>
+    </nav>
+
+    <!-- 主内容区 -->
+    <div class="container" id="parameter-page">
+        <h1 data-i18n="server_params">参数设置</h1>
+
+        <div class="card">
+            <table>
+                <thead>
+                    <tr>
+                        <th width="20%" data-i18n="param_name">参数名称</th>
+                        <th width="15%" data-i18n="current_value">当前值</th>
+                        <th width="15%" data-i18n="value_range">取值范围</th>
+                        <th width="20%" data-i18n="new_value">新值</th>
+                        <th width="30%" data-i18n="description">说明</th>
+                    </tr>
+                </thead>
+                <tbody id="paramsTable">
+                    <!-- 参数行将通过JavaScript动态添加 -->
+                </tbody>
+            </table>
+
+            <div id="statusBar" class="status-bar"></div>
+
+            <div class="btn-container">
+                <button id="saveBtn" class="btn" data-i18n="save_config">保存配置</button>
+                <button id="resetBtn" class="btn btn-secondary" data-i18n="reset_defaults">恢复默认</button>
+                <button id="refreshBtn" class="btn btn-secondary" data-i18n="refresh_data">刷新数据</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Data Stream 页面容器 -->
+    <div class="container" id="data-stream-page" style="display: none;">
+    </div>
+
+    <!-- OTA 页面容器 -->
+    <div class="container" id="ota-page" style="display: none;">
+    </div>
+
+    <script>
+        // 多语言资源
+        const i18nResources = {
+            'zh': {
+                'server_params': '参数设置',
+                'param_name': '参数名称',
+                'current_value': '当前值',
+                'value_range': '取值范围',
+                'new_value': '新值',
+                'description': '说明',
+                'save_config': '保存配置',
+                'reset_defaults': '恢复默认',
+                'refresh_data': '刷新数据',
+                'loading_data_stream': '正在加载数据流页面...',
+                'loading_ota': '正在加载OTA页面...',
+                'save_success': '参数保存成功',
+                'save_failed': '参数保存失败',
+                'reset_confirm': '确定要恢复默认参数吗？',
+                'reset_success': '已恢复默认参数',
+                'reset_failed': '恢复默认参数失败',
+                'refresh_success': '数据刷新成功',
+                'refresh_failed': '数据刷新失败',
+                'upload_success': '上传成功',
+                'upload_failed': '上传失败'
+            },
+            'en': {
+                'server_params': 'Parameter Settings',
+                'param_name': 'Parameter',
+                'current_value': 'Current Value',
+                'value_range': 'Value Range',
+                'new_value': 'New Value',
+                'description': 'Description',
+                'save_config': 'Save Config',
+                'reset_defaults': 'Reset Defaults',
+                'refresh_data': 'Refresh Data',
+                'loading_data_stream': 'Loading Data Stream...',
+                'loading_ota': 'Loading OTA Page...',
+                'save_success': 'Parameters saved successfully',
+                'save_failed': 'Failed to save parameters',
+                'reset_confirm': 'Are you sure to reset to defaults?',
+                'reset_success': 'Defaults restored successfully',
+                'reset_failed': 'Failed to restore defaults',
+                'refresh_success': 'Data refreshed successfully',
+                'refresh_failed': 'Failed to refresh data',
+                'upload_success': 'Upload successful',
+                'upload_failed': 'Upload failed'
+            }
+        };
+
+        // 当前语言
+        let currentLang = 'zh';
+
+        // 云台参数配置
+        let serverParams = {
+            "Roll_Reverse": false,
+            "Tilt_Reverse": false,
+            "Pan_Reverse": false,
+            "Roll_Enable": true,
+            "Tilt_Enable": true,
+            "Pan_Enable": true,
+            "PPM_Invert": false,
+            "Roll_PWM_Max": 2012,
+            "Roll_PWM_Min": 988,
+            "Tilt_PWM_Max": 2012,
+            "Tilt_PWM_Min": 988,
+            "Pan_PWM_Max": 2012,
+            "Pan_PWM_Min": 988,
+            "Roll_Gain": 14.3,
+            "Tilt_Gain": 14.3,
+            "Pan_Gain": 8.3,
+            "Roll_Center": 1500,
+            "Tilt_Center": 1500,
+            "Pan_Center": 1500,
+            "PPM_Channels": 8,
+            "Roll_Channel": 6,
+            "Tilt_Channel": 7,
+            "Pan_Channel": 8
+        };
+
+        // 默认参数
+        const defaultParams = JSON.parse(JSON.stringify(serverParams));
+
+        // 参数取值范围
+        const paramRanges = {
+            "*_PWM_*": "988-2020",
+            "*_Gain": "1.0-99.0",
+            "*_Channel": "3-15",
+            "*_Center": "988-2020"
+        };
+
+        // 参数说明（中英文）
+        const paramDescriptions = {
+            'zh': {
+                "Roll_Reverse": "横滚方向反转，开启后舵机动作方向相反",
+                "Tilt_Reverse": "俯仰方向反转，开启后舵机动作方向相反",
+                "Pan_Reverse": "偏航方向反转，开启后舵机动作方向相反",
+                "Roll_Enable": "是否输出横滚通道PPM信号",
+                "Tilt_Enable": "是否输出俯仰通道PPM信号",
+                "Pan_Enable": "是否输出偏航通道PPM信号",
+                "PPM_Invert": "PPM信号极性反转",
+                "Roll_PWM_Max": "横滚通道PWM最大值",
+                "Roll_PWM_Min": "横滚通道PWM最小值",
+                "Tilt_PWM_Max": "俯仰通道PWM最大值",
+                "Tilt_PWM_Min": "俯仰通道PWM最小值",
+                "Pan_PWM_Max": "偏航通道PWM最大值",
+                "Pan_PWM_Min": "偏航通道PWM最小值",
+                "Roll_Gain": "增益（识别范围）",
+                "Tilt_Gain": "增益（识别范围）",
+                "Pan_Gain": "增益（识别范围）",
+                "Roll_Center": "横滚通道PWM中位值",
+                "Tilt_Center": "俯仰通道PWM中位值",
+                "Pan_Center": "偏航通道PWM中位值",
+                "PPM_Channels": "PPM输出通道数",
+                "Roll_Channel": "横滚对应的PPM通道号",
+                "Tilt_Channel": "俯仰对应的PPM通道号",
+                "Pan_Channel": "偏航对应的PPM通道号"
+            },
+            'en': {
+                "Roll_Reverse": "Reverse roll direction. When enabled, servo moves in opposite direction.",
+                "Tilt_Reverse": "Reverse tilt direction. When enabled, servo moves in opposite direction.",
+                "Pan_Reverse": "Reverse pan direction. When enabled, servo moves in opposite direction.",
+                "Roll_Enable": "Enable PPM output for roll channel.",
+                "Tilt_Enable": "Enable PPM output for tilt channel.",
+                "Pan_Enable": "Enable PPM output for pan channel.",
+                "PPM_Invert": "Invert PPM signal polarity.",
+                "Roll_PWM_Max": "Maximum PWM value for roll channel.",
+                "Roll_PWM_Min": "Minimum PWM value for roll channel.",
+                "Tilt_PWM_Max": "Maximum PWM value for tilt channel.",
+                "Tilt_PWM_Min": "Minimum PWM value for tilt channel.",
+                "Pan_PWM_Max": "Maximum PWM value for pan channel.",
+                "Pan_PWM_Min": "Minimum PWM value for pan channel.",
+                "Roll_Gain": "Gain (Detection Range)",
+                "Tilt_Gain": "Gain (Detection Range)",
+                "Pan_Gain": "Gain (Detection Range)",
+                "Roll_Center": "Center PWM value for roll channel.",
+                "Tilt_Center": "Center PWM value for tilt channel.",
+                "Pan_Center": "Center PWM value for pan channel.",
+                "PPM_Channels": "Number of PPM output channels.",
+                "Roll_Channel": "PPM channel number for roll.",
+                "Tilt_Channel": "PPM channel number for tilt.",
+                "Pan_Channel": "PPM channel number for pan."
+            }
+        };
+
+        // 增益提示信息
+        const gainTooltip = {
+            'zh': "增益值与识别角度对应关系：<br>14.3 - 约70度<br>11 - 约90度<br>8.3 - 约120度<br>5.5 - 约180度",
+            'en': "Gain value vs detection angle:<br>14.3 - ~70°<br>11 - ~90°<br>8.3 - ~120°<br>5.5 - ~180°"
+        };
+
+        // 格式化数值，保留2位小数
+        function formatNumber(value) {
+            if (typeof value === 'number') {
+                // 如果是整数，直接返回
+                if (value % 1 === 0) {
+                    return value.toString();
+                }
+                // 如果是小数，保留2位
+                return parseFloat(value.toFixed(2)).toString();
+            }
+            return value;
+        }
+
+        // 获取参数取值范围
+        function getParamRange(param) {
+            for (const pattern in paramRanges) {
+                if (new RegExp(pattern.replace(/\*/g, '.*')).test(param)) {
+                    return paramRanges[pattern];
+                }
+            }
+            return "";
+        }
+
+        // 切换语言
+        function switchLanguage(lang) {
+            currentLang = lang;
+
+            // 更新按钮状态
+            document.getElementById('lang-zh').classList.toggle('active', lang === 'zh');
+            document.getElementById('lang-en').classList.toggle('active', lang === 'en');
+
+            // 更新界面文本
+            document.querySelectorAll('[data-i18n]').forEach(el => {
+                const key = el.getAttribute('data-i18n');
+                if (i18nResources[lang][key]) {
+                    el.textContent = i18nResources[lang][key];
+                }
+            });
+
+            // 重新显示参数表格以更新描述
+            displayParams();
+        }
+
+        // 显示参数表格
+        function displayParams() {
+            const tableBody = document.getElementById('paramsTable');
+            tableBody.innerHTML = '';
+
+            for (const [param, value] of Object.entries(serverParams)) {
+                // 跳过undefined的值
+                if (value === undefined) continue;
+
+                const row = document.createElement('tr');
+
+                // 参数名
+                const nameCell = document.createElement('td');
+                nameCell.innerHTML = `<span class="param-name">${param}</span>`;
+                row.appendChild(nameCell);
+
+                // 当前值
+                const valueCell = document.createElement('td');
+                const displayValue = typeof value === 'boolean' ? (value ? 'true' : 'false') : formatNumber(value);
+                valueCell.innerHTML = `<span class="param-value">${displayValue}</span>`;
+                row.appendChild(valueCell);
+
+                // 取值范围
+                const rangeCell = document.createElement('td');
+                const range = getParamRange(param);
+                rangeCell.innerHTML = `<span class="param-range">${range}</span>`;
+                row.appendChild(rangeCell);
+
+                // 新值输入
+                const newValueCell = document.createElement('td');
+                if (typeof value === 'boolean') {
+                    newValueCell.innerHTML = `
+                        <label class="switch">
+                            <input type="checkbox" ${value ? 'checked' : ''} data-param="${param}">
+                            <span class="slider"></span>
+                        </label>
+                    `;
+                } else {
+                    const inputType = typeof value === 'number' ? 'number' : 'text';
+                    const step = typeof value === 'number' && (param.includes('Gain') || param.includes('Center')) ? '0.1' : '1';
+                    const inputValue = typeof value === 'number' ? formatNumber(value) : value;
+                    newValueCell.innerHTML = `
+                        <input type="${inputType}" value="${inputValue}" data-param="${param}" 
+                               ${inputType === 'number' ? `step="${step}" min="${range.split('-')[0]}" max="${range.split('-')[1]}"` : ''}>
+                    `;
+                }
+                row.appendChild(newValueCell);
+
+                // 参数说明（根据当前语言）
+                const descCell = document.createElement('td');
+                const description = paramDescriptions[currentLang][param] || paramDescriptions['zh'][param] || '无说明';
+
+                let descHtml = `<div class="param-desc">${description}`;
+
+                // 如果是增益参数，添加提示图标
+                if (param.includes('Gain')) {
+                    descHtml += `
+                        <span class="info-icon">!
+                            <span class="info-tooltip">${gainTooltip[currentLang]}</span>
+                        </span>
+                    `;
+                }
+
+                descHtml += `</div>`;
+                descCell.innerHTML = descHtml;
+                row.appendChild(descCell);
+
+                tableBody.appendChild(row);
+            }
+        }
+
+        // 显示状态消息
+        function showStatus(message, isSuccess) {
+            const statusBar = document.getElementById('statusBar');
+            statusBar.textContent = message;
+            statusBar.className = `status-bar ${isSuccess ? 'success' : 'error'}`;
+            statusBar.style.display = 'block';
+
+            setTimeout(() => {
+                statusBar.style.opacity = '0';
+                setTimeout(() => {
+                    statusBar.style.display = 'none';
+                    statusBar.style.opacity = '1';
+                }, 500);
+            }, 3000);
+        }
+
+        // 收集修改后的参数
+        function collectModifiedParams() {
+            const modifiedParams = {};
+
+            // 处理数值和文本输入
+            const inputs = document.querySelectorAll('#paramsTable input[type="text"], #paramsTable input[type="number"]');
+            inputs.forEach(input => {
+                const param = input.dataset.param;
+                const newValue = input.value.trim();
+                modifiedParams[param] = isNaN(newValue) ? newValue : Number(newValue);
+            });
+
+            // 处理复选框
+            const checkboxes = document.querySelectorAll('#paramsTable input[type="checkbox"]');
+            checkboxes.forEach(checkbox => {
+                const param = checkbox.dataset.param;
+                modifiedParams[param] = checkbox.checked;
+            });
+
+            return modifiedParams;
+        }
+
+        // 保存参数
+        function saveParams() {
+            const modifiedParams = collectModifiedParams();
+            console.log('修改的参数:', modifiedParams);
+
+            showStatus(currentLang === 'zh' ? '正在保存参数...' : 'Saving parameters...', true);
+
+            setTimeout(() => {
+                // 这里应该是实际的保存逻辑
+                fetch('/api/saveParams', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(modifiedParams)
+                })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            showStatus(i18nResources[currentLang]['save_success'], true);
+                            Object.assign(serverParams, modifiedParams);
+                            displayParams();
+                        } else {
+                            showStatus(`${i18nResources[currentLang]['save_failed']}: ${data.message || ''}`, false);
+                        }
+                    })
+                    .catch(error => showStatus(`${i18nResources[currentLang]['save_failed']}: ${error}`, false));
+            }, 1000);
+        }
+
+        // 恢复默认参数
+        function resetToDefaults() {
+            if (!confirm(i18nResources[currentLang]['reset_confirm'])) {
+                return;
+            }
+
+            showStatus(currentLang === 'zh' ? '正在恢复默认参数...' : 'Resetting to defaults...', true);
+
+            // 发送重置命令到后端
+            fetch('/api/resetToDefaults', {
+                method: 'POST'
+            })
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Reset failed');
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    if (data.success) {
+                        showStatus(i18nResources[currentLang]['reset_success'], true);
+                        // 刷新参数
+                        refreshParams();
+                    } else {
+                        showStatus(`${i18nResources[currentLang]['reset_failed']}: ${data.message || ''}`, false);
+                    }
+                })
+                .catch(error => {
+                    showStatus(`${i18nResources[currentLang]['reset_failed']}: ${error}`, false);
+                });
+        }
+
+        // 刷新参数
+        function refreshParams() {
+            showStatus(currentLang === 'zh' ? '正在刷新数据...' : 'Refreshing data...', true);
+
+            // 这里应该是实际的获取逻辑
+            fetch('/api/getParams')
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Failed to fetch parameters');
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    // 过滤掉undefined的值
+                    const filteredData = {};
+                    for (const key in data) {
+                        if (data[key] !== undefined) {
+                            // 格式化数值，保留2位小数
+                            filteredData[key] = typeof data[key] === 'number' ? parseFloat(data[key].toFixed(2)) : data[key];
+                        }
+                    }
+                    serverParams = filteredData;
+                    displayParams();
+                    showStatus(i18nResources[currentLang]['refresh_success'], true);
+                })
+                .catch(error => {
+                    console.error('刷新参数失败:', error);
+                    showStatus(`${i18nResources[currentLang]['refresh_failed']}: ${error}`, false);
+                });
+        }
+
+        // 加载Data Stream页面内容
+        async function loadDataStreamPage() {
+            const page = document.getElementById('data-stream-page');
+            page.innerHTML = `<div class="loading">${i18nResources[currentLang]['loading_data_stream']}</div>`;
+
+            try {
+                // 发送GET请求获取Data Stream页面内容
+                const response = await fetch('/DataStream');
+
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+
+                const htmlContent = await response.text();
+                page.innerHTML = htmlContent;
+
+                // 初始化Data Stream页面的特定功能
+                initDataStreamPage();
+
+            } catch (error) {
+                console.error('加载Data Stream页面失败:', error);
+                page.innerHTML = `
+                    <div class="error">
+                        <h1>Data Stream</h1>
+                        <p>${currentLang === 'zh' ? '加载失败:' : 'Load failed:'} ${error.message}</p>
+                        <button onclick="loadDataStreamPage()">${currentLang === 'zh' ? '重试' : 'Retry'}</button>
+                    </div>
+                `;
+            }
+        }
+
+        // 初始化Data Stream页面功能
+        function initDataStreamPage() {
+            console.log('Data Stream页面已加载，初始化特定功能...');
+            // 这里可以添加Data Stream页面特定的JavaScript功能
+        }
+
+        // 加载OTA页面内容
+        function loadOTAPage() {
+            const page = document.getElementById('ota-page');
+            page.innerHTML = `
+        <iframe 
+            id="otaIframe"
+            src="/OTA" 
+            style="width:100%; border:none;"
+            onload="adjustIframeHeight(this)" 
+            onerror="showOTALoadError()"
+        ></iframe>
+                <div class="loading">${i18nResources[currentLang]['loading_ota']}</div>
+            `;
+
+            function adjustIframeHeight(iframe) {
+                try {
+                    var doc = iframe.contentDocument ? iframe.contentDocument :
+                        (iframe.contentWindow ? iframe.contentWindow.document : null);
+                    if (doc && doc.body) {
+                        // Set the iframe's height to the scroll height of its content
+                        iframe.style.height = doc.body.scrollHeight + 'px';
+                    }
+                } catch (e) {
+                    console.error("Cannot access iframe document content due to cross-origin restrictions.");
+                }
+            }
+            function showOTALoadError(error) {
+                page.innerHTML = `
+            <div class="error">
+                <h1>OTA</h1>
+                <p>${currentLang === 'zh' ? '加载失败:' : 'Load failed:'} ${error.message}</p>
+                <button onclick="loadOTAPage()">${currentLang === 'zh' ? '重试' : 'Retry'}</button>
+            </div>
+        `;
+            }
+        }
+        // 切换页面
+        function switchPage(pageId) {
+            // 隐藏所有页面
+            document.querySelectorAll('.container').forEach(page => {
+                page.style.display = 'none';
+            });
+
+            // 显示选中的页面
+            const targetPage = document.getElementById(`${pageId}-page`);
+            targetPage.style.display = 'block';
+
+            // 动态加载页面内容
+            if (pageId === 'data-stream' && targetPage.innerHTML.includes('loading')) {
+                loadDataStreamPage();
+            } else if (pageId === 'ota' && targetPage.innerHTML.includes('loading')) {
+                loadOTAPage();
+            }
+
+            // 更新导航栏活动状态
+            document.querySelectorAll('.nav-link').forEach(link => {
+                link.classList.remove('active');
+            });
+            document.querySelector(`.nav-link[data-page="${pageId}"]`).classList.add('active');
+        }
+
+        // 初始化页面
+        document.addEventListener('DOMContentLoaded', () => {
+            displayParams();
+            refreshParams();
+
+            // 保存按钮点击事件
+            document.getElementById('saveBtn').addEventListener('click', saveParams);
+
+            // 恢复默认按钮点击事件
+            document.getElementById('resetBtn').addEventListener('click', resetToDefaults);
+
+            // 刷新按钮点击事件
+            document.getElementById('refreshBtn').addEventListener('click', refreshParams);
+
+            // 导航栏点击事件
+            document.querySelectorAll('.nav-link').forEach(link => {
+                link.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    const pageId = link.dataset.page;
+                    switchPage(pageId);
+                });
+            });
+
+            // 语言切换按钮
+            document.getElementById('lang-en').addEventListener('click', () => switchLanguage('en'));
+            document.getElementById('lang-zh').addEventListener('click', () => switchLanguage('zh'));
+
+            // 默认显示参数页面
+            switchPage('parameter');
+        });
+    </script>
+</body>
+
+</html>

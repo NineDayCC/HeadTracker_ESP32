@@ -2,6 +2,7 @@
 
 #include <stdint.h>
 #include <stdbool.h>
+#include "cJSON.h"
 
 #define FLOAT_MIN -1000000
 #define FLOAT_MAX 1000000
@@ -40,16 +41,16 @@ typedef union
 
     struct __attribute__((packed))
     {
-        uint8_t rollReverse : 1; // Roll direction reversed. Y:1 N:0
-        uint8_t tiltReverse : 1; // Tilt direction reversed. Y:1 N:0
-        uint8_t panReverse : 1;  // Pan direction reversed. Y:1 N:0
+        bool rollReverse; // Roll direction reversed. Y:1 N:0
+        bool tiltReverse; // Tilt direction reversed. Y:1 N:0
+        bool panReverse;  // Pan direction reversed. Y:1 N:0
 
-        uint8_t useMagn : 1;     // Use Magnetometer. Y:1 N:0
-        uint8_t useBlutooth : 1; // Open Blutooth. Y:1 N:0
+        bool useMagn;     // Use Magnetometer. Y:1 N:0
+        bool useBlutooth; // Open Blutooth. Y:1 N:0
 
-        uint8_t rollEn : 1; // Enable roll ppm output
-        uint8_t tiltEn : 1; // Enable tilt ppm output
-        uint8_t panEn : 1;  // Enable pan ppm output
+        bool rollEn; // Enable roll ppm output
+        bool tiltEn; // Enable tilt ppm output
+        bool panEn;  // Enable pan ppm output
 
         uint16_t rollMax; // pwm max
         uint16_t rollMin; // pwm min
@@ -73,14 +74,12 @@ typedef union
         float accOffset[3]; // accelerometerOffset in g, X Y Z
         float gyrOffset[3]; // gyroscopeOffset in degrees/s, X Y Z
 
-        uint8_t ppmininvert : 1;
-        uint8_t reserved : 7;
-
+        bool ppmininvert;
         uint16_t ppmframe; // PPM Frame Length (us)
         uint16_t ppmsync;  // PPM Sync Pulse Length (us)
         uint8_t ppmchcnt;  // PPM channels to output
 
-        uint8_t btmode; // Bluetooth mode 0:off 1:output mode
+        bool btmode; // Bluetooth mode 0:off 1:output mode
     } v;                // Value
 } TrackerSettings;
 
@@ -152,3 +151,7 @@ bool setPPMchcnt(uint16_t val);
 
 bool setBtMode(uint16_t val);
 
+cJSON *nvs_to_json();
+void json_to_nvs(cJSON *json);
+void trkset_init();
+void trkset_restore_defaults();
