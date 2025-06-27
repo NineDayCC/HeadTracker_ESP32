@@ -502,10 +502,12 @@
 
     <!-- Data Stream 页面容器 -->
     <div class="container" id="data-stream-page" style="display: none;">
+        <div class="loading" data-i18n="loading_data_stream">正在加载数据流页面...</div>
     </div>
 
     <!-- OTA 页面容器 -->
     <div class="container" id="ota-page" style="display: none;">
+        <div class="loading" data-i18n="loading_ota">正在加载OTA页面...</div>
     </div>
 
     <script>
@@ -943,27 +945,14 @@
             const page = document.getElementById('ota-page');
             page.innerHTML = `
         <iframe 
-            id="otaIframe"
             src="/OTA" 
-            style="width:100%; border:none;"
-            onload="adjustIframeHeight(this)" 
+            style="width:100%; height:100%; border:none;"
+            onload="this.style.visibility='visible'" 
             onerror="showOTALoadError()"
         ></iframe>
-                <div class="loading">${i18nResources[currentLang]['loading_ota']}</div>
-            `;
+        <div class="loading">${i18nResources[currentLang]['loading_ota']}</div>
+    `;
 
-            function adjustIframeHeight(iframe) {
-                try {
-                    var doc = iframe.contentDocument ? iframe.contentDocument :
-                        (iframe.contentWindow ? iframe.contentWindow.document : null);
-                    if (doc && doc.body) {
-                        // Set the iframe's height to the scroll height of its content
-                        iframe.style.height = doc.body.scrollHeight + 'px';
-                    }
-                } catch (e) {
-                    console.error("Cannot access iframe document content due to cross-origin restrictions.");
-                }
-            }
             function showOTALoadError(error) {
                 page.innerHTML = `
             <div class="error">
