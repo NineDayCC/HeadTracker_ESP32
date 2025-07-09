@@ -454,13 +454,13 @@
             <div class="logo">HeadTracker</div>
             <ul class="nav-menu">
                 <li class="nav-item">
-                    <a href="#" class="nav-link active" data-page="parameter">Parameters</a>
+                    <a href="#" class="nav-link active" data-page="parameter">参数</a>
                 </li>
                 <li class="nav-item">
-                    <a href="#" class="nav-link" data-page="data-stream">Data Stream</a>
+                    <a href="#" class="nav-link" data-page="data-stream">数据流</a>
                 </li>
                 <li class="nav-item">
-                    <a href="#" class="nav-link" data-page="ota">OTA</a>
+                    <a href="#" class="nav-link" data-page="ota">升级固件</a>
                 </li>
             </ul>
         </div>
@@ -696,6 +696,19 @@
                 const key = el.getAttribute('data-i18n');
                 if (i18nResources[lang][key]) {
                     el.textContent = i18nResources[lang][key];
+                }
+            });
+
+            // === 新增：更新导航栏文字 ===
+            const navI18nMap = {
+                'parameter': { zh: '参数', en: 'Parameters' },
+                'data-stream': { zh: '数据流', en: 'Data Stream' },
+                'ota': { zh: '升级固件', en: 'OTA' }
+            };
+            document.querySelectorAll('.nav-link').forEach(link => {
+                const page = link.dataset.page;
+                if (navI18nMap[page]) {
+                    link.textContent = navI18nMap[page][lang];
                 }
             });
 
@@ -944,25 +957,81 @@
         function loadOTAPage() {
             const page = document.getElementById('ota-page');
             page.innerHTML = `
+        <div class="loading" id="ota-loading">${i18nResources[currentLang]['loading_ota']}</div>
         <iframe 
+            id="ota-iframe"
             src="/OTA" 
-            style="width:100%; height:100%; border:none;"
-            onload="this.style.visibility='visible'" 
-            onerror="showOTALoadError()"
+            style="width:100%; border:none; height:450px; overflow:hidden;"
+            onload="adjustIframeHeight();"
         ></iframe>
-        <div class="loading">${i18nResources[currentLang]['loading_ota']}</div>
     `;
+            window.addEventListener('resize', adjustIframeHeight);
+        }
 
-            function showOTALoadError(error) {
-                page.innerHTML = `
-            <div class="error">
-                <h1>OTA</h1>
-                <p>${currentLang === 'zh' ? '加载失败:' : 'Load failed:'} ${error.message}</p>
-                <button onclick="loadOTAPage()">${currentLang === 'zh' ? '重试' : 'Retry'}</button>
-            </div>
-        `;
+        // 监听来自iframe的高度调整消息
+        window.addEventListener('message', function(event) {
+            if (event.data && event.data.type === 'iframeHeightChange') {
+                const iframe = document.getElementById('ota-iframe');
+                if (iframe) {
+                    iframe.style.height = event.data.height + 'px';
+                }
+            }
+        });
+
+        function adjustIframeHeight() {
+            const iframe = document.getElementById('ota-iframe');
+            const loadingDiv = iframe && iframe.parentElement ? iframe.parentElement.querySelector('.loading') : null;
+            try {
+                // 检查iframe内容是否为错误页面
+                const doc = iframe.contentDocument || iframe.contentWindow.document;
+                const bodyText = doc.body ? doc.body.textContent || "" : "";
+                if (
+                    bodyText.includes("Cannot GET /OTA") ||
+                    doc.title.toLowerCase().includes("error") ||
+                    doc.body.innerHTML.trim() === ""
+                ) {
+                    // 显示自定义错误和重试按钮
+                    const page = document.getElementById('ota-page');
+                    page.innerHTML = `
+                <div class="error">
+                    <h1>OTA</h1>
+                    <p>${currentLang === 'zh' ? '加载失败: 无法获取OTA页面' : 'Load failed: Cannot GET /OTA'}</p>
+                    <button onclick="loadOTAPage()">${currentLang === 'zh' ? '重试' : 'Retry'}</button>
+                </div>
+            `;
+                    return;
+                }
+                // 正常加载，移除loading（高度由postMessage主控）
+                if (loadingDiv) loadingDiv.remove();
+            } catch (e) {
+                if (iframe) iframe.style.height = '400px';
+                if (loadingDiv) loadingDiv.remove();
             }
         }
+
+        // 如果目标页面和主页面同源，可以在目标页面中添加这段代码
+        // 当内容高度变化时通知父页面调整iframe高度
+        // 目标页面(/OTA)中的代码:
+        function notifyParentHeight() {
+            if (window.parent !== window) {
+                const height = document.documentElement.scrollHeight;
+                window.parent.postMessage({
+                    type: 'iframeHeightChange',
+                    height: height
+                }, '*');
+            }
+        }
+
+        // 监听内容变化
+        new MutationObserver(notifyParentHeight).observe(document.body, {
+            subtree: true,
+            childList: true,
+            attributes: true,
+            characterData: true
+        });
+
+        // 初始通知
+        window.addEventListener('load', notifyParentHeight);
         // 切换页面
         function switchPage(pageId) {
             // 隐藏所有页面
