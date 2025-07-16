@@ -2,5 +2,6 @@
 
 ```{toctree}
 schematic.md
-PCBA.md
+Nano_PCBA.md
+SE_PCBA.md
 ```

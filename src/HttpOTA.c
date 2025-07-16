@@ -1,4 +1,7 @@
+#include <string.h>
+
 #include "ota.h"
+#include "trackersettings.h"
 
 #define WIFI_SSID "HeadTracker_OTA"
 #define WIFI_PASS "123456789"
@@ -306,6 +309,94 @@ static esp_err_t upload_post_handler(httpd_req_t *req)
     return ESP_OK;
 }
 
+// Configurator page
+static esp_err_t Configurator_handler(httpd_req_t *req)
+{
+    httpd_resp_set_hdr(req, "Access-Control-Allow-Origin", "*"); // 跨域传输协议
+
+    extern const unsigned char Configurator_html_gz_start[] asm("_binary_Configurator_html_gz_start");
+    extern const unsigned char Configurator_html_gz_end[] asm("_binary_Configurator_html_gz_end");
+    size_t Configurator_html_gz_len = Configurator_html_gz_end - Configurator_html_gz_start;
+
+    httpd_resp_set_type(req, "text/html; charset=utf-8");
+    httpd_resp_set_hdr(req, "Content-Encoding", "gzip");
+    return httpd_resp_send(req, (const char *)Configurator_html_gz_start, Configurator_html_gz_len);
+}
+
+static esp_err_t getParams_handler(httpd_req_t *req)
+{
+    httpd_resp_set_hdr(req, "Access-Control-Allow-Origin", "*"); // 跨域传输协议
+
+    cJSON *json_str = nvs_to_json();
+    if (json_str == NULL)
+    {
+        httpd_resp_send_err(req, HTTPD_500_INTERNAL_SERVER_ERROR, "Failed to get NVS data");
+        return ESP_FAIL;
+    }
+
+    httpd_resp_set_type(req, "application/json");
+    char *json_str_buf = cJSON_PrintUnformatted(json_str);
+    esp_err_t ret = httpd_resp_send(req, json_str_buf, strlen(json_str_buf));
+    cJSON_Delete(json_str);
+    free(json_str_buf);
+    return ret;
+}
+
+esp_err_t saveparams_handler(httpd_req_t *req)
+{
+    // 1. 读取POST数据
+    int total_len = req->content_len;
+    char *buf = malloc(total_len + 1);
+    if (!buf)
+    {
+        httpd_resp_send_err(req, HTTPD_500_INTERNAL_SERVER_ERROR, "No mem");
+        return ESP_FAIL;
+    }
+    int received = 0, ret;
+    while (received < total_len)
+    {
+        ret = httpd_req_recv(req, buf + received, total_len - received);
+        if (ret <= 0)
+        {
+            free(buf);
+            httpd_resp_send_err(req, HTTPD_500_INTERNAL_SERVER_ERROR, "Recv error");
+            return ESP_FAIL;
+        }
+        received += ret;
+    }
+    buf[total_len] = 0;
+
+    // 2. 解析JSON
+    cJSON *json = cJSON_Parse(buf);
+    free(buf);
+    if (!json)
+    {
+        httpd_resp_send_err(req, HTTPD_400_BAD_REQUEST, "Invalid JSON");
+        return ESP_FAIL;
+    }
+
+    // 3. 保存到NVS
+    json_to_nvs(json);
+    cJSON_Delete(json);
+
+    // 4. 返回结果
+    httpd_resp_set_type(req, "application/json");
+    httpd_resp_sendstr(req, "{\"success\":true}");
+
+    return ESP_OK;
+}
+
+esp_err_t resetToDefaults_handler(httpd_req_t *req)
+{
+    // 调用恢复默认值的函数
+    trkset_restore_defaults();
+
+    // 返回 JSON 成功响应
+    httpd_resp_set_type(req, "application/json");
+    const char *response = "{\"success\":true}";
+    return httpd_resp_send(req, response, strlen(response));
+}
+
 // OTA 页面
 static esp_err_t HttpOTA_handler(httpd_req_t *req)
 {
@@ -363,8 +454,36 @@ void HttpOTA_server_init()
     ESP_LOGI(TAG, "Starting OTA server on port: '%d'", config.server_port);
     if (httpd_start(&HttpOTA_httpd, &config) == ESP_OK)
     {
+        httpd_uri_t Configurator_uri = {// Configurator page
+                                        .uri = "/",
+                                        .method = HTTP_GET,
+                                        .handler = Configurator_handler,
+                                        .user_ctx = NULL};
+        httpd_register_uri_handler(HttpOTA_httpd, &Configurator_uri);
+
+        httpd_uri_t getParams_uri = {// parameter setting page
+                                     .uri = "/api/getParams",
+                                     .method = HTTP_GET,
+                                     .handler = getParams_handler,
+                                     .user_ctx = NULL};
+        httpd_register_uri_handler(HttpOTA_httpd, &getParams_uri);
+
+        httpd_uri_t saveparams_uri = {
+                                     .uri = "/api/saveParams",
+                                     .method = HTTP_POST,
+                                     .handler = saveparams_handler,
+                                     .user_ctx = NULL};
+        httpd_register_uri_handler(HttpOTA_httpd, &saveparams_uri);
+
+        httpd_uri_t resetToDefaults_uri = {
+                                     .uri = "/api/resetToDefaults",
+                                     .method = HTTP_POST,
+                                     .handler = resetToDefaults_handler,
+                                     .user_ctx = NULL};
+        httpd_register_uri_handler(HttpOTA_httpd, &resetToDefaults_uri);
+
         httpd_uri_t HttpOTA_uri = {// OTA页面
-                                   .uri = "/",
+                                   .uri = "/OTA",
                                    .method = HTTP_GET,
                                    .handler = HttpOTA_handler,
                                    .user_ctx = NULL};

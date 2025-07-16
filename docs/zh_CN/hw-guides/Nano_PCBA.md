@@ -1,6 +1,6 @@
-# PCBA
+# Nano PCBA
 
-本页面会指导您完成头追硬件的制作，包括**发射端**和**接收端**。
+本页面会指导您完成 **Nano 版** 头追硬件的制作，包括**发射端**和**接收端**。
 
 :::{note}
 获取工程文件，请跳转至[立创开源广场](http://oshwhub.com/nineday/headtracker_esp32-nano-wu-xian-tou-zhui)
@@ -116,7 +116,7 @@ PCB由三块小板拼接而成，第一步要先将他们分开。
 焊接完成后，需要使用万用表对芯片引脚连接的元器件焊盘进行检测，**排查虚焊短路**。
 
 :::{seealso}
-引脚列表请查看[原理图](schematic.md#io-list)。
+引脚列表请查看[原理图](schematic.md#io-list-Nano)。
 :::
 
 :::{tip}

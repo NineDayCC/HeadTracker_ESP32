@@ -1,6 +1,6 @@
-# PCBA
+# Nano PCBA
 
-This page will guide you through the hardware assembly of the head tracker, including the **transmitter** and **receiver**.
+This page will guide you through the **Nano Version** of hardware assembly of the head tracker, including the **transmitter** and **receiver**.
 
 :::{note}
 To obtain the EDA project files, please visit JLC’s [oshwhub](http://oshwhub.com/nineday/headtracker_esp32-nano-wu-xian-tou-zhui)

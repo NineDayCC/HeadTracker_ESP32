@@ -28,6 +28,9 @@ In addition to the items related to the head tracker in this project, you may ge
 
 ::::
 
+:::{note}
+The SE hardware version is not fully released yet, and some operations may differ. Details will be updated later.
+:::
 
 (update)=
 ## 2. Firmware Update
@@ -40,6 +43,9 @@ You need a computer or smartphone with WiFi capability. Connect to the hotspot c
 Ensure that the transmitter and receiver are running the same firmware version; otherwise, the head tracker may not function properly.  
 :::
 
+:::{note}
+Version v1.1.x (not officially released yet) supports automatically entering OTA mode if it remains unconnected for 1 minute after powering on.
+:::
 
 (insatll)=
 ## 3. Installation
@@ -90,6 +96,10 @@ Once paired successfully, the transmitter will emit a **long beep**.
 
 :::{seealso}
 For more details on pairing, please refer to [Pairing and Binding](getting-started/binding.md)
+:::
+
+:::{note}
+Version v1.1.x (not officially released yet) supports entering pairing mode automatically by powering on 3 times in a row (powering on for more than 2 seconds will clear the count).
 :::
 
 (setup)=
