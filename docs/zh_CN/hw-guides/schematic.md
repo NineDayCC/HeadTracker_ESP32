@@ -19,7 +19,7 @@
 
 
 :::{table} 引脚连接表
-:name: io-list
+:name: io-list-Nano
 :width: 450px
 :widths: auto
 :align: center
@@ -85,7 +85,7 @@ ESP32/ESP8266 通过串口进行烧录时，需要将烧录短接口与GND短接
 
 
 :::{table} 引脚连接表
-:name: io-list
+:name: io-list-SE
 :width: 450px
 :widths: auto
 :align: center
@@ -121,7 +121,6 @@ ESP32/ESP8266 通过串口进行烧录时，需要将烧录短接口与GND短接
 
 
 :::{table} 引脚连接表
-:name: io-list
 :width: 450px
 :widths: auto
 :align: center
