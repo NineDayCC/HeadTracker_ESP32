@@ -30,7 +30,7 @@ When ordering the PCB, select a finished board thickness of **0.8 mm**, surface 
 JLCPCB offers a free ENIG prototyping coupon every month, which can be used for free fabrication.
 :::
 
-(HT_nano_BOM)=
+(ht-nano-bom)=
 ## Bill of Materials (BOM)
 
 For the detailed BOM, download it here: [BOM_HT_nano.xlsx](../../_static/BOM_HT_nano.xlsx)
@@ -116,7 +116,7 @@ After reflow, inspect the surrounding pins and remove any solder bridges to prev
 After soldering, use a multimeter to check the connections between the chip pins and the corresponding component pads to **identify any cold joints or short circuits**.
 
 :::{seealso}
-For the pin list, refer to the [schematic](schematic.md#io-list).
+For the pin list, refer to the [schematic](Nano_schematic.md#io-list-nano).
 :::
 
 :::{tip}
@@ -205,6 +205,7 @@ At this point, the soldering of the PCB is complete.
 ![3boards]( ../../_static/PCB_3boards.png){.bg-primary align=center}
 
 
+(ht-nano-flash)=
 ### 4. Flashing Initial Firmware
 
 Before assembly, the initial firmware needs to be flashed onto the main controller.
@@ -342,6 +343,7 @@ After assembly, it is recommended to perform the following basic functionality t
 4. **OTA Hotspot Connection** Test.  
     Follow the [OTA](../getting-started/flashing-firmware.md) instructions to test if the OTA upgrade page opens correctly.
 
+***
 
 # Nano Receiver
 

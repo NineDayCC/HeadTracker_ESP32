@@ -1,6 +1,6 @@
 # Flashing Firmware
 
-(OTA)=
+(ota)=
 ## OTA Process
 
 1. Press and hold the micro switch on the side of the head tracker. Release it after the light turns on to enter OTA mode.
