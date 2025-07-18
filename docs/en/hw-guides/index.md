@@ -1,7 +1,8 @@
 # Hardware Guides
 
 ```{toctree}
-schematic.md
+Nano_schematic.md
 Nano_PCBA.md
+SE_schematic.md
 SE_PCBA.md
 ```

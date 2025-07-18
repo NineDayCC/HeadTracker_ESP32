@@ -3,6 +3,10 @@
 This page will guide you through the production of the **SE version** Head Tracker hardware, including both the **transmitter** and **receiver**.
 
 :::{note}
+To obtain the EDA project files, please visit JLC's [oshwhub](https://oshwhub.com/nineday/headtracker_esp32-se-ban-wu-xian-tou-zhui).
+:::
+
+:::{note}
 The SE version hardware has not been officially released yet. Information will be updated later.
 :::
 

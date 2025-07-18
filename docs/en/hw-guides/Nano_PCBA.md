@@ -116,7 +116,7 @@ After reflow, inspect the surrounding pins and remove any solder bridges to prev
 After soldering, use a multimeter to check the connections between the chip pins and the corresponding component pads to **identify any cold joints or short circuits**.
 
 :::{seealso}
-For the pin list, refer to the [schematic](schematic.md#io-list).
+For the pin list, refer to the [schematic](Nano_schematic.md#io-list).
 :::
 
 :::{tip}

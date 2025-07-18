@@ -116,7 +116,7 @@ PCB由三块小板拼接而成，第一步要先将他们分开。
 焊接完成后，需要使用万用表对芯片引脚连接的元器件焊盘进行检测，**排查虚焊短路**。
 
 :::{seealso}
-引脚列表请查看[原理图](schematic.md#io-list-Nano)。
+引脚列表请查看[原理图](Nano_schematic.md#io-list-Nano)。
 :::
 
 :::{tip}

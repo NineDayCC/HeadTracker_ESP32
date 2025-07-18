@@ -3,6 +3,10 @@
 本页面会指导您完成 **SE 版** 头追硬件的制作，包括**发射端**和**接收端**。
 
 :::{note}
+获取工程文件，请跳转至[立创开源广场](https://oshwhub.com/nineday/headtracker_esp32-se-ban-wu-xian-tou-zhui)
+:::
+
+:::{note}
 SE 版硬件尚未正式发布，信息待后续完善。
 :::
 
