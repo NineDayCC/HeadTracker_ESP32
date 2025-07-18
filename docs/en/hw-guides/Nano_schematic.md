@@ -18,7 +18,7 @@ To obtain the EDA project files, please visit JLC's [oshwhub](http://oshwhub.com
 ### Pins
 
 :::{table} Pin Connection Table
-:name: io-list-Nano
+:name: io-list-nano
 :width: 450px
 :widths: auto
 :align: center

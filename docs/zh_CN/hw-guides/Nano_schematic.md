@@ -19,7 +19,7 @@
 
 
 :::{table} 引脚连接表
-:name: io-list-Nano
+:name: io-list-nano
 :width: 450px
 :widths: auto
 :align: center

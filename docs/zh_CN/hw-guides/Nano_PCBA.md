@@ -30,7 +30,7 @@ PCB 下单时，成品板厚选择 **0.8**，焊盘喷镀选择**沉金**，阻�
 嘉立创每个月可领取一张免费沉金打样券，可以使用此券来免费打样。
 :::
 
-(HT_nano_BOM)=
+(ht-nano-bom)=
 ## 物料清单
 
 详细物料清单(BOM)，点击下载BOM。[BOM_HT_nano.xlsx](../../_static/BOM_HT_nano.xlsx)
@@ -116,7 +116,7 @@ PCB由三块小板拼接而成，第一步要先将他们分开。
 焊接完成后，需要使用万用表对芯片引脚连接的元器件焊盘进行检测，**排查虚焊短路**。
 
 :::{seealso}
-引脚列表请查看[原理图](Nano_schematic.md#io-list-Nano)。
+引脚列表请查看[原理图](Nano_schematic.md#io-list-nano)。
 :::
 
 :::{tip}
@@ -205,6 +205,7 @@ Type-C 引脚处**锡膏量不宜过多**，否则容易连锡。
 ![3boards]( ../../_static/PCB_3boards.png){.bg-primary align=center}
 
 
+(ht-nano-flash)=
 ### 4. 烧录初始固件
 
 在进行组装前，需要给主控烧录初始固件。
