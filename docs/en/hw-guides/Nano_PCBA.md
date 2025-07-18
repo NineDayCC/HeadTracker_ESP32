@@ -342,6 +342,7 @@ After assembly, it is recommended to perform the following basic functionality t
 4. **OTA Hotspot Connection** Test.  
     Follow the [OTA](../getting-started/flashing-firmware.md) instructions to test if the OTA upgrade page opens correctly.
 
+***
 
 # Nano Receiver
 

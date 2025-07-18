@@ -344,6 +344,7 @@ Type-C 引脚处**锡膏量不宜过多**，否则容易连锡。
 4. **OTA** 热点连接测试。  
     按照 [OTA](../getting-started/flashing-firmware.md) 的方法测试是否能正常打开 OTA 升级页面。
 
+***
 
 # Nano 接收端
 
